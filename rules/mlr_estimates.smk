@@ -20,15 +20,9 @@ def _get_models_option(wildcards, option_name):
 
     return ''
 
-def _get_sequence_counts_input(wildcards):
-    variant_classification = _get_models_option(wildcards, 'variant_classification')
-    if variant_classification == '--variant-classification pango_lineages':
-        return "sequence-counts/{dataset}/collapsed_seq_counts.tsv"
-    return "sequence-counts/{dataset}/prepared_seq_counts.tsv"
-
 rule mlr_model:
     input:
-        sequence_counts = _get_sequence_counts_input
+        sequence_counts = "sequence-counts/{dataset}/collapsed_seq_counts.tsv"
     output:
         # Note this output is not used in the shell command because it is one of the many
         # files generated and output to the export path.

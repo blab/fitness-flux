@@ -81,9 +81,12 @@ def collapse_lineages(seq_counts, collapse_threshold, aliasor: Aliasor):
     print(seq_counts.variant.unique())
 
     low_count_lineages = get_low_count_lineages(seq_counts, collapse_threshold)
+    print("Low count lineages:", low_count_lineages)
 
     # Find max depth of lineage tree
-    max_lineage_depth = max(map(lambda x: lineage_depth(x, aliasor), low_count_lineages))
+    max_lineage_depth = 0
+    if low_count_lineages:
+        max_lineage_depth = max(map(lambda x: lineage_depth(x, aliasor), low_count_lineages))
 
     # Collapse lineages from highest depth to lowest depth
     for depth in range(max_lineage_depth, 0, -1):
@@ -119,7 +122,7 @@ def main():
         Pango aliasing file, collapse Pango lineages into their parental lineages \
         based on supplied threshold and output a new sequence counts file")
     parser.add_argument("--seq-counts", type=str, required=True, help="input TSV of sequence counts")
-    parser.add_argument("--collapse-threshold", type=int, default=1000, help="threshold count to collapse lineage into parental lineage")
+    parser.add_argument("--collapse-threshold", type=int, default=1, help="threshold count to collapse lineage into parental lineage")
     parser.add_argument("--output-seq-counts", type=str, required=True, help="output TSV of collapsed sequence counts")
     args = parser.parse_args()
 
