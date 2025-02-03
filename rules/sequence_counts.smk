@@ -100,3 +100,15 @@ rule collapse_sequence_counts:
             {params.collapse_threshold} \
             --output-seq-counts {output.sequence_counts} 2>&1 | tee {log}
         """
+
+rule annotate_sequence_counts:
+    "Annotate location with dataset suffix"
+    input:
+        sequence_counts = "sequence-counts/{dataset}/collapsed_seq_counts.tsv",
+    output:
+        sequence_counts = "sequence-counts/{dataset}/annotated_seq_counts.tsv"
+    shell:
+        """
+        dataset_suffix=$(echo "{wildcards.dataset}" | awk -F'_' '{{print $NF}}')
+        awk -v dataset="$dataset_suffix" 'BEGIN {{OFS="\t"}} NR==1 {{print}} NR>1 {{$1=$1"_"dataset; print}}' {input.sequence_counts} > {output.sequence_counts}
+        """
