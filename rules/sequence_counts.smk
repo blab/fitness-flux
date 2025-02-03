@@ -102,15 +102,17 @@ rule collapse_sequence_counts:
         """
 
 rule annotate_sequence_counts:
-    "Annotate location with dataset suffix"
     input:
-        sequence_counts = "sequence-counts/{dataset}/collapsed_seq_counts.tsv",
+        sequence_counts = "sequence-counts/{dataset}/collapsed_seq_counts.tsv"
     output:
         sequence_counts = "sequence-counts/{dataset}/annotated_seq_counts.tsv"
     shell:
         """
         dataset_suffix=$(echo "{wildcards.dataset}" | awk -F'_' '{{print $NF}}')
-        awk -v dataset="$dataset_suffix" 'BEGIN {{OFS="\t"}} NR==1 {{print}} NR>1 {{$1=$1"_"dataset; print}}' {input.sequence_counts} > {output.sequence_counts}
+        python scripts/annotate_sequence_counts.py \
+            --input {input.sequence_counts} \
+            --output {output.sequence_counts} \
+            --dataset-suffix $dataset_suffix
         """
 
 import os
@@ -127,7 +129,7 @@ rule aggregate_sequence_counts:
     run:
         # Ensure the output directory exists
         os.makedirs(os.path.dirname(output.combined), exist_ok=True)
-        
+
         # Handle the case where no input files are present
         if len(input) == 0:
             with open(output.combined, 'w') as out_file:
