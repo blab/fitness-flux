@@ -112,3 +112,27 @@ rule annotate_sequence_counts:
         dataset_suffix=$(echo "{wildcards.dataset}" | awk -F'_' '{{print $NF}}')
         awk -v dataset="$dataset_suffix" 'BEGIN {{OFS="\t"}} NR==1 {{print}} NR>1 {{$1=$1"_"dataset; print}}' {input.sequence_counts} > {output.sequence_counts}
         """
+
+import os
+
+# Rule to combine annotated sequence counts for each analysis
+rule aggregate_sequence_counts:
+    input:
+        lambda wildcards: expand(
+            "sequence-counts/{dataset}/annotated_seq_counts.tsv",
+            dataset=[d for d in config["datasets"] if d.startswith(f"{wildcards.analysis}_")]
+        )
+    output:
+        combined = "aggregated-counts/{analysis}/aggregated_sequence_counts.tsv"
+    run:
+        # Ensure the output directory exists
+        os.makedirs(os.path.dirname(output.combined), exist_ok=True)
+        
+        # Handle the case where no input files are present
+        if len(input) == 0:
+            with open(output.combined, 'w') as out_file:
+                out_file.write("location\tvariant\tdate\tsequences\n")  # Example header
+        else:
+            shell("""
+                (head -n 1 {input[0]} && tail -n +2 -q {input}) > {output.combined}
+            """)
