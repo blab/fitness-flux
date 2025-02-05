@@ -4,6 +4,7 @@ logs/
 results/
 benchmarks/
 sequence-counts/
+aggregated-counts/
 mlr-estimates/
 
 # Specific Auspice JSONs
