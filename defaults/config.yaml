@@ -26,8 +26,14 @@ datasets:
   - h3n2_clades_2022-23
   - h3n2_clades_2023-24
 
-# H3N2 uses a 2-year analysis window and slides 1-year forward
+analyses:
+  - sarscov2_clades
 
+sarscov2_clades:
+  pivot: "19B"
+  generation_time: 3.2
+
+# H3N2 uses a 2-year analysis window and slides 1-year forward
 h3n2_clades_2016-17:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
