@@ -14,6 +14,10 @@ nextclade_sars-cov-2.json
 nextclade_sars-cov-2_flat.json
 nextclade_sars-cov-2_root-sequence.json
 
+# Specific ESM files
+embeddings_pretrained.tsv
+embeddings_fine_tuned.tsv
+
 # Errors from tests
 *.err
 
