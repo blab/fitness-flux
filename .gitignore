@@ -10,6 +10,9 @@ mlr-estimates/
 ncov_gisaid_global_all-time.json
 ncov_gisaid_global_all-time_root-sequence.json
 ncov_gisaid_global_all-time_tip-frequencies.json
+nextclade_sars-cov-2.json
+nextclade_sars-cov-2_flat.json
+nextclade_sars-cov-2_root-sequence.json
 
 # Errors from tests
 *.err
