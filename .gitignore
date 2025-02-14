@@ -18,6 +18,9 @@ nextclade_sars-cov-2_root-sequence.json
 embeddings_pretrained.tsv
 embeddings_fine_tuned.tsv
 
+# Compiled manuscript files
+fitness_flux.pdf
+
 # Errors from tests
 *.err
 
@@ -32,6 +35,14 @@ environment*
 *.pyc
 .tox/
 .cache/
+
+# LaTeX intermediaries #
+########################
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
 
 # Compiled source #
 ###################
