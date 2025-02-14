@@ -2,6 +2,20 @@
 
 ## Prep
 
-Run `python ../scripts/prepare-pango-relationships.py --seq-counts ../scaffolded-fitness/sarscov2_lineages_scaffolded_fitness.tsv --output-relationships source-data/sarscov2_lineages_variant_relationships.tsv`.
+Running the analysis notebook `lineage-deltas.nb` requires timepoint-specific MLR estimates populated as:
+```
+mlr-estimates/sarscov2_lineages_2020/mlr_results.json
+mlr-estimates/sarscov2_lineages_2020-21/mlr_results.json
+...
+```
+as well as timepoint-specific Pango lineage relationships populated as:
+```
+sequence-counts/sarscov2_lineages_2020/variant_relationships.tsv
+sequence-counts/sarscov2_lineages_2020-21/variant_relationships.tsv
+...
+```
 
-Recombinant viruses don't have a canonical parent. Manually update `XEC` to have parent `KP.3.3` based on spike sequence and `XBB` to have parent `BA.2.75.3` (this is the closest lineage to the canonical RBD parent of `BM.1.1.1` that's in the dataset). _This identification of best parents of recombinant lineages should probably be automated._
+Additionally, source data has been versioned to `lineage-deltas-analysis/source-data/` containing:
+- `sarscov2_lineages_mut_counts.tsv` versioned after running notebook in `mutation-counts/`
+- `COVID19_all.csv` of EvEscape scores downloaded via "All Strain Data" at https://evescape.org/data
+- `embeddings_fine_tuned.tsv` and `log_likelihoods_fine_tuned.tsv` from running ESM-2 on SARS-CoV-2 spike sequences (experimental)
