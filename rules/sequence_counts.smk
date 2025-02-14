@@ -100,3 +100,18 @@ rule collapse_sequence_counts:
             {params.collapse_threshold} \
             --output-seq-counts {output.sequence_counts} 2>&1 | tee {log}
         """
+
+rule pango_relationships:
+    "Prepare Pango relationships based on sequence counts"
+    input:
+        sequence_counts = "sequence-counts/{dataset}/collapsed_seq_counts.tsv",
+    output:
+        relationships = "sequence-counts/{dataset}/variant_relationships.tsv"
+    log:
+        "logs/{dataset}/pango_relationships.txt"
+    shell:
+        """
+        python ./scripts/prepare-pango-relationships.py \
+            --seq-counts {input.sequence_counts} \
+            --output-relationships {output.relationships} 2>&1 | tee {log}
+        """

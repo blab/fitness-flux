@@ -3,7 +3,7 @@ configfile: "defaults/config.yaml"
 rule all_sequence_counts:
     input:
         sequence_counts = expand(
-            "sequence-counts/{virus}/prepared_seq_counts.tsv",
+            "sequence-counts/{virus}/collapsed_seq_counts.tsv",
             virus=config["datasets"]
         )
 
@@ -16,6 +16,14 @@ rule all_mlr_estimates:
 
 rule all:
     input:
+        sequence_counts = expand(
+            "sequence-counts/{virus}/collapsed_seq_counts.tsv",
+            virus=config["datasets"]
+        ),
+        variant_relationships = expand(
+            "sequence-counts/{virus}/variant_relationships.tsv",
+            virus=config["datasets"]
+        ),
         mlr_estimates = expand(
             "mlr-estimates/{virus}/mlr_results.json",
             virus=config["datasets"]

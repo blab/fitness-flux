@@ -2,12 +2,25 @@ import argparse
 import pandas as pd
 from pango_aliasor.aliasor import Aliasor
 
+def get_parent(variant: str, aliasor: Aliasor):
+    mapping = {
+        "BA.4": "BA.2",
+        "BA.5": "BA.2",
+        "XBB": "BA.2.75.3",
+        "XEC": "KP.3.3"
+    }
+    if variant in mapping.keys():
+        parent = mapping[variant]
+    else:
+        parent = aliasor.parent(variant)
+    return parent
+
 def find_closest_parents(variant: str, variants: list[str], aliasor: Aliasor):
-    parent = aliasor.parent(variant)
+    parent = get_parent(variant, aliasor)
     while parent != "":
         if parent in variants:
             return parent
-        parent = aliasor.parent(parent)
+        parent = get_parent(parent, aliasor)
     return parent
 
 def main():
