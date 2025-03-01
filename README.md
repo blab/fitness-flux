@@ -16,14 +16,12 @@ zstd -c -d sarscov2_metadata.tsv.zst \
 ```
 and move to `fitness-dynamics/data/`.
 
-For H3N2, clone https://github.com/blab/flu-geo-fitness and then run
+For H3N2, clone https://github.com/nextstrain/forecasts-flu and then run
 ```
-nextstrain build . data/h3n2/metadata_with_nextclade.tsv
+nextstrain build --docker --image=ghcr.io/blab/flu-geo-fitness:latest . data/h3n2/metadata_with_nextclade.tsv
 cd data/h3n2/
-sed -i -e 's/\tseqName\t/\tstrain\t/' metadata_with_nextclade.tsv
 sed -i -e 's/\tUsa\t/\tUSA\t/g' metadata_with_nextclade.tsv
-sed -i -e '1s/$/\tinclusion/; 2,$s/$/\tglobal/' metadata_with_nextclade.tsv
-tsv-select -H -f strain,date,region,country,inclusion,subclade,qc.overallStatus metadata_with_nextclade.tsv > metadata_selected.tsv
+tsv-select -H -f strain,date,region,country,subclade,proposedSubclade,qc.overallStatus metadata_with_nextclade.tsv > metadata_selected.tsv
 tsv-filter -H --str-ne subclade:unassigned --str-gt date:2000-01-01 metadata_selected.tsv > metadata_filtered.tsv
 zstd -c metadata_filtered.tsv > h3n2_subset_metadata.tsv.zst
 ```
