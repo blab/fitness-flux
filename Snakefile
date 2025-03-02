@@ -7,6 +7,13 @@ rule all_sequence_counts:
             virus=config["datasets"]
         )
 
+rule all_variant_relationships:
+    input:
+        variant_relationships = expand(
+            "sequence-counts/{virus}/variant_relationships.tsv",
+            virus=config["datasets"]
+        )
+
 rule all_mlr_estimates:
     input:
         mlr_estimates = expand(
