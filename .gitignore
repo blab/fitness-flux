@@ -17,6 +17,10 @@ nextclade_sars-cov-2_root-sequence.json
 # Specific ESM files
 embeddings_pretrained.tsv
 embeddings_fine_tuned.tsv
+embeddings_650M_pretrained.tsv
+embeddings_650M_fine_tuned.tsv
+embeddings_3B_pretrained.tsv
+embeddings_3B_fine_tuned.tsv
 
 # Compiled manuscript files
 fitness_flux.pdf
