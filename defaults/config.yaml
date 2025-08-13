@@ -8,6 +8,7 @@ datasets:
   - sarscov2_clades_2023
   - sarscov2_clades_2023-24
   - sarscov2_clades_2024
+  - sarscov2_clades_2024-25
   - sarscov2_lineages_2020
   - sarscov2_lineages_2020-21
   - sarscov2_lineages_2021
@@ -250,6 +251,18 @@ sarscov2_clades_2024:
   min_date: "2024-01-01"
   max_date: "2024-12-31"
   clade_min_seq: 3000
+  pivot: "24A"
+  generation_time: 3.2
+
+sarscov2_clades_2024-25:
+  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column clade_nextstrain
+    --filter-columns QC_overall_status country
+    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+  min_date: "2024-07-01"
+  max_date: "2025-06-30"
+  clade_min_seq: 500
   pivot: "24A"
   generation_time: 3.2
 
