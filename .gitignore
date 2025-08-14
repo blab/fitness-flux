@@ -5,6 +5,7 @@ results/
 benchmarks/
 sequence-counts/
 mlr-estimates/
+covfit/CoVFit_CLI/
 
 # Specific Auspice JSONs
 ncov_gisaid_global_all-time.json
