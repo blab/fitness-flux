@@ -14,6 +14,9 @@ ncov_gisaid_global_all-time_tip-frequencies.json
 nextclade_sars-cov-2.json
 nextclade_sars-cov-2_flat.json
 nextclade_sars-cov-2_root-sequence.json
+ncov_global_all-time_6k_2026-03-02.json
+ncov_global_all-time_6k_2026-03-02_root-sequence.json
+ncov_global_all-time_6k_2026-03-02_tip-frequencies.json
 
 # Specific ESM files
 embeddings_pretrained.tsv
