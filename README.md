@@ -18,8 +18,7 @@ and move to `fitness-dynamics/data/`.
 
 For H3N2, clone https://github.com/nextstrain/forecasts-flu and then run
 ```
-nextstrain build --docker --image=ghcr.io/blab/flu-geo-fitness:latest . data/h3n2/metadata_with_nextclade.tsv
-cd data/h3n2/
+nextstrain build --docker --image=ghcr.io/blab/flu-geo-fitness:latest . data/gisaid/h3n2/metadata_with_nextclade.tsv
 sed -i -e 's/\tUsa\t/\tUSA\t/g' metadata_with_nextclade.tsv
 tsv-select -H -f strain,date,region,country,subclade,proposedSubclade,qc.overallStatus metadata_with_nextclade.tsv > metadata_selected.tsv
 tsv-filter -H --str-ne subclade:unassigned --str-gt date:2000-01-01 metadata_selected.tsv > metadata_filtered.tsv
@@ -62,4 +61,4 @@ mlr-estimates/sarscov2_clades_2020/mlr_results.json
 
 ### Scaffolded fitnesses
 
-Fitnesses within each timepoint are measured relative to an arbitrary pivot variant. The Mathematica notebook `fitness-flux-analysis/fitness-flux.nb` takes `mlr_results.json` across timepoints and combines into a single `scaffolded-fitness/sarscov2_clades_scaffolded_fitness.tsv`. This notebook needs to be run separately for virus `sarscov2` classification `clades`, virus `sarscov2` classification `lineages` and virus `h3n2` classification `clades`. 
+Fitnesses within each timepoint are measured relative to an arbitrary pivot variant. The Mathematica notebook `fitness-flux-analysis/fitness-flux.nb` takes `mlr_results.json` across timepoints and combines into a single `scaffolded-fitness/sarscov2_clades_scaffolded_fitness.tsv`. This notebook needs to be run separately for virus `sarscov2` classification `clades`, virus `sarscov2` classification `lineages` and virus `h3n2` classification `clades`.

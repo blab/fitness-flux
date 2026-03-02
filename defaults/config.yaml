@@ -28,6 +28,7 @@ datasets:
   - h3n2_clades_2021-22
   - h3n2_clades_2022-23
   - h3n2_clades_2023-24
+  - h3n2_clades_2024-25
 
 # H3N2 uses a 2-year analysis window and slides 1-year forward
 
@@ -131,6 +132,19 @@ h3n2_clades_2023-24:
     --location-column country
   min_date: "2023-01-01"
   max_date: "2024-12-31"
+  clade_min_seq: 100
+  pivot: "J.2"
+  generation_time: 3.2
+
+h3n2_clades_2024-25:
+  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2024-01-01"
+  max_date: "2025-12-31"
   clade_min_seq: 100
   pivot: "J.2"
   generation_time: 3.2
