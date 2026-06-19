@@ -164,16 +164,16 @@
                 );
                 draw(
                     "plot-branch-scatter",
-                    Plot.plot({
+                    Plot.plot({ style: { fontSize: "14px" },
                         width: 1000,
                         height: 380,
                         marginLeft: 64,
                         marginBottom: 48,
-                        grid: true,
                         x: { label: `Δ ${REGION_LABELS[region]} mutations` },
-                        y: { label: "Δ log fitness" },
+                        y: { label: "Δ log fitness", labelAnchor: "center", labelArrow: "none" },
                         marks: [
-                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.frame({ anchor: "left", stroke: "#333" }),
+                            Plot.frame({ anchor: "bottom", stroke: "#333" }),
                             Plot.ruleY([0], { stroke: "#ddd" }),
                             Plot.ruleX([0], { stroke: "#ddd" }),
                             Plot.dot(data, {
@@ -199,17 +199,17 @@
                 const order = [...new Set(rows.map((d) => d.timepoint))].sort();
                 draw(
                     "plot-slope-time",
-                    Plot.plot({
+                    Plot.plot({ style: { fontSize: "14px" },
                         width: 1000,
                         height: 320,
                         marginLeft: 60,
                         marginBottom: 60,
-                        grid: true,
                         x: { label: "Season", domain: order, tickRotate: -40 },
-                        y: { label: "Slope (Δ fitness per mutation)" },
+                        y: { label: "Slope (Δ fitness per mutation)", labelAnchor: "center", labelArrow: "none" },
                         color: { legend: true },
                         marks: [
-                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.frame({ anchor: "left", stroke: "#333" }),
+                            Plot.frame({ anchor: "bottom", stroke: "#333" }),
                             Plot.ruleY([0], { stroke: "#ddd" }),
                             Plot.line(rows, {
                                 x: "timepoint",
@@ -238,13 +238,13 @@
                 );
                 draw(
                     "plot-coefficients",
-                    Plot.plot({
+                    Plot.plot({ style: { fontSize: "14px" },
                         width: 1000,
                         height: 340,
                         marginLeft: 70,
                         marginBottom: 80,
                         x: { label: null, tickRotate: -35 },
-                        y: { label: "Coefficient" },
+                        y: { label: "Coefficient", labelAnchor: "center", labelArrow: "none" },
                         color: { legend: true, domain: ["all", "early", "late"] },
                         fx: { label: null },
                         marks: [
@@ -267,12 +267,11 @@
                     .sort((a, b) => b.pearson_r - a.pearson_r);
                 draw(
                     "plot-correlations",
-                    Plot.plot({
+                    Plot.plot({ style: { fontSize: "14px" },
                         width: 1000,
                         height: 420,
                         marginLeft: 180,
                         marginBottom: 44,
-                        grid: true,
                         x: { label: "Pearson r (predictor Δ vs. Δ fitness)" },
                         y: { label: null, domain: data.map((d) => d.predictor) },
                         marks: [
@@ -295,16 +294,16 @@
                 );
                 draw(
                     "plot-predictor-scatter",
-                    Plot.plot({
+                    Plot.plot({ style: { fontSize: "14px" },
                         width: 1000,
                         height: 360,
                         marginLeft: 64,
                         marginBottom: 48,
-                        grid: true,
                         x: { label: `Δ ${predictor}` },
-                        y: { label: "Δ log fitness" },
+                        y: { label: "Δ log fitness", labelAnchor: "center", labelArrow: "none" },
                         marks: [
-                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.frame({ anchor: "left", stroke: "#333" }),
+                            Plot.frame({ anchor: "bottom", stroke: "#333" }),
                             Plot.ruleY([0], { stroke: "#ddd" }),
                             Plot.ruleX([0], { stroke: "#ddd" }),
                             Plot.dot(data, {
