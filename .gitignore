@@ -9,10 +9,11 @@ covfit/CoVFit_CLI/
 
 # ...but the analysis result tables/JSONs are small and are committed so the
 # static viz/ dashboards can fetch them on GitHub Pages.
-!fitness-flux-analysis/results/
-!fitness-flux-analysis/results/**
-!lineage-deltas-analysis/results/
-!lineage-deltas-analysis/results/**
+# currently waiting however to version these until we launch GitHub Pages
+# !fitness-flux-analysis/results/
+# !fitness-flux-analysis/results/**
+# !lineage-deltas-analysis/results/
+# !lineage-deltas-analysis/results/**
 
 # Specific Auspice JSONs
 ncov_gisaid_global_all-time.json
