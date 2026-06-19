@@ -1,0 +1,35 @@
+# Python dependencies for the full fitness-flux workflow (`snakemake all`,
+# `snakemake all_fitness_flux`, `snakemake all_lineage_deltas`).
+#
+# evofr is only needed to regenerate mlr-estimates/ (scripts/run-mlr-model.py);
+# the analysis scripts + viz need only numpy + scipy.
+#
+# Note: the evofr published on PyPI still caps pandas<2 / numpy<2, which has no
+# wheel on Python 3.12 and fails to build from source. Install the local,
+# constraint-relaxed copy first so it works on 3.12 with modern pandas/numpy:
+#     pip install -e ../evofr
+#     pip install -r requirements.txt   # evofr already satisfied, not re-fetched
+
+# Workflow engine
+snakemake
+
+# Sequence-count prep + MLR fitness estimation
+#   scripts/summarize-clade-sequence-counts, prepare-data.py,
+#   collapse-lineage-counts.py, prepare-pango-relationships.py, run-mlr-model.py
+pandas
+numpy
+PyYAML
+zstandard          # lets pandas read the .tsv.zst metadata
+pango_aliasor      # Pango lineage aliasing / collapsing
+evofr              # multinomial logistic regression fitness model
+
+# Data provisioning / alignment utilities
+#   scripts/alignment.py, flatten_auspice_json.py
+biopython
+nextstrain-augur
+requests
+tqdm
+
+# Analysis scripts
+#   fitness-flux-analysis/scripts/, lineage-deltas-analysis/scripts/
+scipy
