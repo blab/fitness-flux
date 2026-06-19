@@ -183,10 +183,58 @@ rule fitness_flux_seasonal_frequencies:
         """
 
 
+rule viz_fitness_flux_data:
+    """Build the fitness-flux component's data.json (per dataset): the
+    frequency/fitness join plus the embedded variant color table."""
+    input:
+        frequencies = "fitness-flux-analysis/results/{analysis}_frequencies.tsv",
+        scaffolded = "fitness-flux-analysis/results/{analysis}_scaffolded_fitness.tsv",
+        colors = "fitness-flux-analysis/results/{analysis}_colors.tsv"
+    output:
+        "viz/figures/fitness-flux/data/{analysis}.json"
+    log:
+        "logs/fitness_flux/{analysis}_viz_fitness_flux.txt"
+    shell:
+        """
+        python -u fitness-flux-analysis/scripts/viz_fitness_flux_data.py \
+            --frequencies {input.frequencies} \
+            --scaffolded {input.scaffolded} \
+            --colors {input.colors} \
+            --output {output} 2>&1 | tee {log}
+        """
+
+
+rule viz_frequency_panels_data:
+    """Build the frequency-panels component's data.json (per dataset): the
+    per-season empirical/modeled frequencies plus the embedded color table."""
+    input:
+        seasonal = "fitness-flux-analysis/results/{analysis}_seasonal_frequencies.tsv",
+        colors = "fitness-flux-analysis/results/{analysis}_colors.tsv"
+    output:
+        "viz/figures/frequency-panels/data/{analysis}.json"
+    log:
+        "logs/fitness_flux/{analysis}_viz_frequency_panels.txt"
+    shell:
+        """
+        python -u fitness-flux-analysis/scripts/viz_frequency_panels_data.py \
+            --seasonal {input.seasonal} \
+            --colors {input.colors} \
+            --output {output} 2>&1 | tee {log}
+        """
+
+
 rule all_fitness_flux:
     input:
         expand(
             "fitness-flux-analysis/results/{analysis}_{output}",
             analysis=FITNESS_FLUX_ANALYSES,
             output=FITNESS_FLUX_OUTPUTS,
+        ),
+        expand(
+            "viz/figures/fitness-flux/data/{analysis}.json",
+            analysis=FITNESS_FLUX_ANALYSES,
+        ),
+        expand(
+            "viz/figures/frequency-panels/data/{analysis}.json",
+            analysis=FITNESS_FLUX_ANALYSES,
         )
