@@ -2,6 +2,20 @@
 Summarize sequence counts from existing metadata for a particular dataset
 """
 
+rule all_sequence_counts:
+    input:
+        sequence_counts = expand(
+            "sequence-counts/{virus}/collapsed_seq_counts.tsv",
+            virus=config["datasets"]
+        )
+
+rule all_variant_relationships:
+    input:
+        variant_relationships = expand(
+            "sequence-counts/{virus}/variant_relationships.tsv",
+            virus=config["datasets"]
+        )
+
 # rule subset_metadata:
 #     input:
 #         metadata = lambda w: config[w.dataset]["local_metadata"]

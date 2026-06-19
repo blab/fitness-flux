@@ -2,6 +2,13 @@
 This part of the workflow runs the model scripts.
 """
 
+rule all_mlr_estimates:
+    input:
+        mlr_estimates = expand(
+            "mlr-estimates/{virus}/mlr_results.json",
+            virus=config["datasets"]
+        )
+
 def _get_models_option(wildcards, option_name):
     """
     Return the option for model from the config based on the
