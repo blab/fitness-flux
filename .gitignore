@@ -7,6 +7,13 @@ sequence-counts/
 mlr-estimates/
 covfit/CoVFit_CLI/
 
+# ...but the analysis result tables/JSONs are small and are committed so the
+# static viz/ dashboards can fetch them on GitHub Pages.
+!fitness-flux-analysis/results/
+!fitness-flux-analysis/results/**
+!lineage-deltas-analysis/results/
+!lineage-deltas-analysis/results/**
+
 # Specific Auspice JSONs
 ncov_gisaid_global_all-time.json
 ncov_gisaid_global_all-time_root-sequence.json
