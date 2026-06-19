@@ -399,7 +399,11 @@
             }).observe(document.getElementById("plot-fitness-flux"));
 
             // Per-season frequency panels: empirical (dots) vs modeled (lines).
-            function renderFrequencyPanels(seasonal) {
+            function renderFrequencyPanels(seasonal, dataset) {
+                // H3N2 seasons span ~2 years, so tick yearly; SARS-CoV-2 ~1 year, tick every 6 months
+                const tickInterval = dataset.startsWith("h3n2")
+                    ? d3.utcYear
+                    : d3.utcMonth.every(6);
                 const grid = document.createElement("div");
                 grid.className = "panel-grid";
                 const bySeason = d3.group(seasonal, (d) => d.timepoint);
@@ -423,7 +427,7 @@
                         marginTop: 6,
                         marginRight: 28,
                         color: { type: "identity" },
-                        x: { type: "utc", ticks: d3.utcMonth.every(6), tickFormat: "%b %Y", nice: d3.utcMonth.every(6), label: null },
+                        x: { type: "utc", ticks: tickInterval, tickFormat: "%b %Y", nice: tickInterval, label: null },
                         y: { domain: [0, 1], ticks: [0, 0.5, 1], tickFormat: ".0%", label: null },
                         marks: [
                             Plot.frame({ anchor: "left", stroke: "#333" }),
@@ -643,7 +647,7 @@
                         ]);
                     buildColors(colorRows);
                     renderFitnessFlux(freqs, mutFit);
-                    renderFrequencyPanels(seasonal);
+                    renderFrequencyPanels(seasonal, dataset);
                     renderMutations(mutFit);
                     renderFlux(flux, summary);
                     status.textContent = "";
