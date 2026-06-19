@@ -80,14 +80,24 @@ def variant_growth_advantages(mlr):
 
 def variant_weekly_frequencies(mlr):
     """variant -> {date: weekly_raw_freq} for the primary-location series."""
+    return _variant_date_series(mlr, site="weekly_raw_freq")
+
+
+def variant_modeled_frequencies(mlr):
+    """variant -> {date: MLR-modeled freq} (median) for the primary location."""
+    return _variant_date_series(mlr, site="freq", ps="median")
+
+
+def _variant_date_series(mlr, site, ps=None):
     location = primary_location(mlr)
     series = {}
     for record in mlr["data"]:
         if record.get("value") is None:
             continue
         if (
-            record.get("site") == "weekly_raw_freq"
+            record.get("site") == site
             and record.get("location") == location
+            and (ps is None or record.get("ps") == ps)
         ):
             series.setdefault(record["variant"], {})[record["date"]] = record["value"]
     return series

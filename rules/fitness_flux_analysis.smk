@@ -9,6 +9,11 @@ and are visualized by viz/fitness-flux.html.
 
 FITNESS_FLUX_ANALYSES = ["h3n2_clades", "sarscov2_clades", "sarscov2_lineages"]
 
+# Pin {analysis} to the dataset names so the greedy wildcard can't, e.g., claim
+# "{analysis}_frequencies.tsv" for "..._seasonal_frequencies.tsv".
+wildcard_constraints:
+    analysis = "|".join(FITNESS_FLUX_ANALYSES)
+
 FITNESS_FLUX_OUTPUTS = [
     "direct_fitness.tsv",
     "scaffolded_fitness.tsv",
@@ -17,7 +22,13 @@ FITNESS_FLUX_OUTPUTS = [
     "flux_timeseries.tsv",
     "flux_summary.json",
     "mutation_fitness.tsv",
+    "colors.tsv",
+    "seasonal_frequencies.tsv",
 ]
+
+# The Nextstrain tree JSON supplies the sarscov2_clades clade colors; the other
+# datasets derive colors from a Rainbow gradient and need no external input.
+NCOV_TREE_JSON = "fitness-flux-analysis/ncov_global_all-time_6k_2026-03-02.json"
 
 
 def _fitness_flux_season_inputs(wildcards):
@@ -120,6 +131,54 @@ rule fitness_flux_mutation_fitness:
             --mut-counts {input.mut_counts} \
             --scaffolded {input.scaffolded} \
             --mean-date {input.mean_date} \
+            --output {output} 2>&1 | tee {log}
+        """
+
+
+def _fitness_flux_colors_inputs(wildcards):
+    inputs = {
+        "scaffolded": f"fitness-flux-analysis/results/{wildcards.analysis}_scaffolded_fitness.tsv",
+        "mean_date": f"fitness-flux-analysis/results/{wildcards.analysis}_mean_date.tsv",
+        "frequencies": f"fitness-flux-analysis/results/{wildcards.analysis}_frequencies.tsv",
+    }
+    if wildcards.analysis == "sarscov2_clades":
+        inputs["ncov"] = NCOV_TREE_JSON
+    return inputs
+
+
+rule fitness_flux_colors:
+    input:
+        unpack(_fitness_flux_colors_inputs)
+    output:
+        "fitness-flux-analysis/results/{analysis}_colors.tsv"
+    params:
+        ncov_flag = lambda w: f"--ncov-json {NCOV_TREE_JSON}" if w.analysis == "sarscov2_clades" else ""
+    log:
+        "logs/fitness_flux/{analysis}_colors.txt"
+    shell:
+        """
+        python -u fitness-flux-analysis/scripts/colors.py \
+            --dataset {wildcards.analysis} \
+            --scaffolded {input.scaffolded} \
+            --mean-date {input.mean_date} \
+            --frequencies {input.frequencies} \
+            {params.ncov_flag} \
+            --output {output} 2>&1 | tee {log}
+        """
+
+
+rule fitness_flux_seasonal_frequencies:
+    input:
+        mlr = _fitness_flux_season_inputs
+    output:
+        "fitness-flux-analysis/results/{analysis}_seasonal_frequencies.tsv"
+    log:
+        "logs/fitness_flux/{analysis}_seasonal_frequencies.txt"
+    shell:
+        """
+        python -u fitness-flux-analysis/scripts/seasonal_frequencies.py \
+            --dataset {wildcards.analysis} \
+            --mlr-dir mlr-estimates \
             --output {output} 2>&1 | tee {log}
         """
 
