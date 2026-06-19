@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fitness flux</title>
+        <style>
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+                    Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+                color: #222;
+            }
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                background: white;
+                padding: 30px 36px 48px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                color: #222;
+                border-bottom: 2px solid #e1e4e8;
+                padding-bottom: 10px;
+            }
+            h2 {
+                color: #444;
+                margin-top: 40px;
+                border-bottom: 1px solid #e1e4e8;
+                padding-bottom: 8px;
+            }
+            p.lede {
+                color: #555;
+                max-width: 70ch;
+            }
+            p.note {
+                color: #888;
+                font-size: 13px;
+                max-width: 72ch;
+            }
+            nav a {
+                color: #0969da;
+                text-decoration: none;
+                margin-right: 16px;
+                font-size: 14px;
+            }
+            .controls {
+                position: sticky;
+                top: 0;
+                background: white;
+                padding: 12px 0;
+                border-bottom: 1px solid #eee;
+                z-index: 5;
+            }
+            label {
+                font-size: 13px;
+                color: #555;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+            select {
+                font-size: 14px;
+                padding: 4px 8px;
+                margin-left: 8px;
+            }
+            .plot {
+                margin-top: 12px;
+                overflow-x: auto;
+            }
+            .stat {
+                display: inline-block;
+                background: #eef4ff;
+                border-left: 3px solid #0969da;
+                padding: 6px 12px;
+                margin: 6px 8px 6px 0;
+                font-size: 13px;
+            }
+            .split {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 24px;
+            }
+            @media (max-width: 820px) {
+                .split { grid-template-columns: 1fr; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <nav><a href="index.html">&larr; Fitness flux overview</a></nav>
+            <h1>Fitness flux</h1>
+            <p class="lede">
+                Variant fitness reconstructed across overlapping seasonal
+                multinomial-logistic-regression (MLR) fits, stitched onto a common
+                "scaffolded" scale, and used to characterize the traveling wave of
+                fitness through time. This is a Python + Observable&nbsp;Plot port of
+                <code>fitness-flux-analysis/fitness-flux.nb</code>.
+            </p>
+
+            <div class="controls">
+                <label for="dataset-select">Dataset</label>
+                <select id="dataset-select">
+                    <option value="sarscov2_clades">SARS-CoV-2 clades</option>
+                    <option value="sarscov2_lineages">SARS-CoV-2 lineages</option>
+                    <option value="h3n2_clades">H3N2 clades</option>
+                </select>
+                <span id="status" style="margin-left:16px;color:#999;font-size:13px"></span>
+            </div>
+
+            <h2>Scaffolded fitness through time</h2>
+            <p class="note">
+                Each variant's scaffolded log fitness plotted at its
+                frequency-weighted mean date. Fitness climbs as the population
+                explores successive adaptive variants.
+            </p>
+            <div id="plot-fitness-time" class="plot"></div>
+
+            <h2>Variant frequencies through time</h2>
+            <p class="note">
+                Empirical weekly frequencies (renormalized across the retained
+                variants). Only variants reaching an appreciable peak frequency are
+                drawn.
+            </p>
+            <div id="plot-frequencies" class="plot"></div>
+
+            <h2>Mutations and fitness</h2>
+            <p class="note">
+                Receptor-binding-protein amino-acid substitution count versus
+                scaffolded fitness (left) and versus mean date (right): fitness and
+                mutational distance both accrue over time.
+            </p>
+            <div class="split">
+                <div id="plot-mut-fitness" class="plot"></div>
+                <div id="plot-mut-time" class="plot"></div>
+            </div>
+
+            <h2>The fitness wave (flux)</h2>
+            <p class="note">
+                The population mean log fitness is the centre of a traveling wave.
+                Its rate of advance (velocity, the flux) tracks the variance in
+                fitness across co-circulating variants &mdash; Fisher's fundamental
+                theorem. The variance-vs-velocity slope is reported below.
+            </p>
+            <div id="flux-stats"></div>
+            <div class="split">
+                <div id="plot-flux-location" class="plot"></div>
+                <div id="plot-flux-variance" class="plot"></div>
+            </div>
+            <div id="plot-flux-fisher" class="plot"></div>
+
+            <p class="note" style="margin-top:40px">
+                Data files are fetched at runtime from
+                <code>../fitness-flux-analysis/results/</code>. The Mathematica
+                notebook is retained for reference.
+            </p>
+        </div>
+
+        <script type="module">
+            import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+            import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+            const RESULTS = "../fitness-flux-analysis/results";
+
+            function parseTSV(text) {
+                const lines = text.trim().split(/\r?\n/);
+                const headers = lines[0].split("\t");
+                return lines.slice(1).map((line) => {
+                    const values = line.split("\t");
+                    const obj = {};
+                    headers.forEach((header, i) => {
+                        const value = values[i];
+                        obj[header] =
+                            value !== undefined && value !== "" && !isNaN(value)
+                                ? +value
+                                : value;
+                    });
+                    return obj;
+                });
+            }
+
+            async function fetchText(url) {
+                const response = await fetch(`${url}?t=${Date.now()}`);
+                if (!response.ok) throw new Error(`${response.status} ${url}`);
+                return response.text();
+            }
+            async function fetchTSV(url) {
+                return parseTSV(await fetchText(url));
+            }
+            async function fetchJSON(url) {
+                return JSON.parse(await fetchText(url));
+            }
+
+            function clear(id) {
+                document.getElementById(id).replaceChildren();
+            }
+            function draw(id, figure) {
+                document.getElementById(id).replaceChildren(figure);
+            }
+
+            function renderFitnessTime(rows) {
+                const data = rows.filter(
+                    (d) => typeof d.mean_date === "number" && typeof d.log_fitness === "number",
+                );
+                draw(
+                    "plot-fitness-time",
+                    Plot.plot({
+                        width: 1000,
+                        height: 360,
+                        marginLeft: 60,
+                        marginBottom: 44,
+                        grid: true,
+                        x: { label: "Mean date (decimal year)" },
+                        y: { label: "Scaffolded log fitness" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.dot(data, {
+                                x: "mean_date",
+                                y: "log_fitness",
+                                fill: "#0969da",
+                                fillOpacity: 0.7,
+                                r: 4,
+                                tip: true,
+                                title: (d) =>
+                                    `${d.variant}\nfitness ${d.log_fitness}\nmean date ${d.mean_date}`,
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            function renderFrequencies(rows) {
+                // keep variants whose peak frequency is appreciable
+                const peak = d3.rollup(
+                    rows,
+                    (v) => d3.max(v, (d) => d.frequency),
+                    (d) => d.variant,
+                );
+                const major = new Set(
+                    [...peak.entries()].filter(([, p]) => p >= 0.05).map(([k]) => k),
+                );
+                const data = rows
+                    .filter((d) => major.has(d.variant))
+                    .map((d) => ({ ...d, date: new Date(d.date) }));
+                draw(
+                    "plot-frequencies",
+                    Plot.plot({
+                        width: 1000,
+                        height: 360,
+                        marginLeft: 50,
+                        marginBottom: 40,
+                        x: { label: null, type: "utc" },
+                        y: { label: "Frequency", percent: true },
+                        color: { legend: true },
+                        marks: [
+                            Plot.areaY(data, {
+                                x: "date",
+                                y: "frequency",
+                                fill: "variant",
+                                order: "appearance",
+                                tip: true,
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            function renderMutations(rows) {
+                const data = rows.filter((d) => typeof d.mut_count === "number");
+                draw(
+                    "plot-mut-fitness",
+                    Plot.plot({
+                        width: 500,
+                        height: 340,
+                        marginLeft: 56,
+                        marginBottom: 44,
+                        grid: true,
+                        x: { label: "RB-protein mutation count" },
+                        y: { label: "Scaffolded log fitness" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.dot(data, {
+                                x: "mut_count",
+                                y: "log_fitness",
+                                fill: "#0969da",
+                                fillOpacity: 0.7,
+                                r: 4,
+                                tip: true,
+                                title: (d) => d.variant,
+                            }),
+                            Plot.linearRegressionY(data, {
+                                x: "mut_count",
+                                y: "log_fitness",
+                                stroke: "#842029",
+                            }),
+                        ],
+                    }),
+                );
+                const timed = data.filter((d) => typeof d.mean_date === "number");
+                draw(
+                    "plot-mut-time",
+                    Plot.plot({
+                        width: 500,
+                        height: 340,
+                        marginLeft: 56,
+                        marginBottom: 44,
+                        grid: true,
+                        x: { label: "Mean date (decimal year)" },
+                        y: { label: "RB-protein mutation count" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.dot(timed, {
+                                x: "mean_date",
+                                y: "mut_count",
+                                fill: "#0969da",
+                                fillOpacity: 0.7,
+                                r: 4,
+                                tip: true,
+                                title: (d) => d.variant,
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            function renderFlux(series, summary) {
+                const data = series.map((d) => ({ ...d, date: new Date(d.date) }));
+                const vv = summary.variance_vs_velocity || {};
+                const stats = [
+                    `avg variance = ${summary.avg_variance?.toExponential(2)}`,
+                    `avg velocity (per gen) = ${summary.avg_velocity?.toExponential(2)}`,
+                    vv.slope !== undefined
+                        ? `variance→velocity slope = ${vv.slope.toFixed(2)} (r² = ${vv.r_squared.toFixed(2)})`
+                        : "",
+                ].filter(Boolean);
+                document.getElementById("flux-stats").replaceChildren(
+                    ...stats.map((s) => {
+                        const span = document.createElement("span");
+                        span.className = "stat";
+                        span.textContent = s;
+                        return span;
+                    }),
+                );
+
+                draw(
+                    "plot-flux-location",
+                    Plot.plot({
+                        width: 500,
+                        height: 320,
+                        marginLeft: 60,
+                        marginBottom: 40,
+                        grid: true,
+                        x: { label: null, type: "utc" },
+                        y: { label: "Population mean log fitness" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.line(data, { x: "date", y: "mean_log_fitness", stroke: "#0969da" }),
+                        ],
+                    }),
+                );
+                draw(
+                    "plot-flux-variance",
+                    Plot.plot({
+                        width: 500,
+                        height: 320,
+                        marginLeft: 60,
+                        marginBottom: 40,
+                        grid: true,
+                        x: { label: null, type: "utc" },
+                        y: { label: "Fitness variance" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.dot(data, {
+                                x: "date",
+                                y: "variance",
+                                fill: "#842029",
+                                r: 1.5,
+                                fillOpacity: 0.5,
+                            }),
+                        ],
+                    }),
+                );
+
+                const fisher = data.filter(
+                    (d) => typeof d.velocity === "number" && typeof d.variance === "number",
+                );
+                draw(
+                    "plot-flux-fisher",
+                    Plot.plot({
+                        width: 1000,
+                        height: 340,
+                        marginLeft: 64,
+                        marginBottom: 48,
+                        grid: true,
+                        x: { label: "Fitness variance" },
+                        y: { label: "Fitness flux (velocity, per generation)" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.dot(fisher, {
+                                x: "variance",
+                                y: "velocity",
+                                fill: "#0969da",
+                                fillOpacity: 0.4,
+                                r: 2,
+                            }),
+                            Plot.linearRegressionY(fisher, {
+                                x: "variance",
+                                y: "velocity",
+                                stroke: "#842029",
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            const status = document.getElementById("status");
+            const ids = [
+                "plot-fitness-time",
+                "plot-frequencies",
+                "plot-mut-fitness",
+                "plot-mut-time",
+                "plot-flux-location",
+                "plot-flux-variance",
+                "plot-flux-fisher",
+            ];
+
+            async function load(dataset) {
+                status.textContent = "loading…";
+                ids.forEach(clear);
+                try {
+                    const [mutFit, freqs, flux, summary] = await Promise.all([
+                        fetchTSV(`${RESULTS}/${dataset}_mutation_fitness.tsv`),
+                        fetchTSV(`${RESULTS}/${dataset}_frequencies.tsv`),
+                        fetchTSV(`${RESULTS}/${dataset}_flux_timeseries.tsv`),
+                        fetchJSON(`${RESULTS}/${dataset}_flux_summary.json`),
+                    ]);
+                    renderFitnessTime(mutFit);
+                    renderFrequencies(freqs);
+                    renderMutations(mutFit);
+                    renderFlux(flux, summary);
+                    status.textContent = "";
+                } catch (err) {
+                    status.textContent = `error: ${err.message}`;
+                    console.error(err);
+                }
+            }
+
+            const select = document.getElementById("dataset-select");
+            select.addEventListener("change", () => load(select.value));
+            load(select.value);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lineage deltas</title>
+        <style>
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+                    Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+                color: #222;
+            }
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                background: white;
+                padding: 30px 36px 48px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                color: #222;
+                border-bottom: 2px solid #e1e4e8;
+                padding-bottom: 10px;
+            }
+            h2 {
+                color: #444;
+                margin-top: 40px;
+                border-bottom: 1px solid #e1e4e8;
+                padding-bottom: 8px;
+            }
+            p.lede { color: #555; max-width: 72ch; }
+            p.note { color: #888; font-size: 13px; max-width: 72ch; }
+            nav a { color: #0969da; text-decoration: none; margin-right: 16px; font-size: 14px; }
+            label { font-size: 13px; color: #555; text-transform: uppercase; letter-spacing: 0.3px; }
+            select { font-size: 14px; padding: 4px 8px; margin: 0 16px 0 8px; }
+            .plot { margin-top: 12px; overflow-x: auto; }
+            .stat {
+                display: inline-block; background: #eef4ff; border-left: 3px solid #0969da;
+                padding: 6px 12px; margin: 6px 8px 6px 0; font-size: 13px;
+            }
+            #status { color: #999; font-size: 13px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <nav><a href="index.html">&larr; Fitness flux overview</a></nav>
+            <h1>Lineage deltas</h1>
+            <p class="lede">
+                Along each SARS-CoV-2 parent&rarr;child lineage branch, how does the
+                change in fitness relate to the mutations acquired and to
+                mutation-effect predictors (CoVFit, EvEscape, Bloom-lab deep
+                mutational scanning, and ESM protein-language-model embeddings)? A
+                Python + Observable&nbsp;Plot port of
+                <code>lineage-deltas-analysis/lineage-deltas.nb</code>.
+            </p>
+            <span id="status"></span>
+
+            <h2>Branch mutations vs. fitness change</h2>
+            <p class="note">
+                Each point is one parent&rarr;child branch in one season: change in a
+                chosen mutation region against change in log fitness. RBD substitutions
+                carry the strongest positive signal; non-spike substitutions almost none.
+            </p>
+            <div>
+                <label for="region-select">Mutation region</label>
+                <select id="region-select">
+                    <option value="delta_nuc_muts">all (nucleotide)</option>
+                    <option value="delta_spike_muts">spike</option>
+                    <option value="delta_nonspike_muts">non-spike</option>
+                    <option value="delta_rbd_muts">RBD</option>
+                    <option value="delta_ntd_muts">NTD</option>
+                </select>
+            </div>
+            <div id="plot-branch-scatter" class="plot"></div>
+
+            <h2>Slope of the mutation&ndash;fitness relationship through time</h2>
+            <p class="note">
+                Per-season regression slope of fitness change on mutation change. The
+                fitness value of spike change is largest early and erodes as the
+                population approaches the limits of antigenic escape.
+            </p>
+            <div id="plot-slope-time" class="plot"></div>
+
+            <h2>Linear model across mutation regions</h2>
+            <p class="note">
+                Coefficients of a multiple regression of fitness change on per-region
+                mutation-count change, fit over all branches and split into early
+                vs. late seasons. R&sup2; is shown per group.
+            </p>
+            <div id="lm-stats"></div>
+            <div id="plot-coefficients" class="plot"></div>
+
+            <h2>Predictor correlations</h2>
+            <p class="note">
+                Pearson correlation of each predictor's branch delta with the fitness
+                change. Select a predictor to see its scatter.
+            </p>
+            <div id="plot-correlations" class="plot"></div>
+            <div>
+                <label for="predictor-select">Predictor</label>
+                <select id="predictor-select"></select>
+            </div>
+            <div id="plot-predictor-scatter" class="plot"></div>
+
+            <p class="note" style="margin-top:40px">
+                Data files are fetched at runtime from
+                <code>../lineage-deltas-analysis/results/</code>. The Mathematica
+                notebook is retained for reference.
+            </p>
+        </div>
+
+        <script type="module">
+            import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+            import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+            const RESULTS = "../lineage-deltas-analysis/results";
+
+            function parseTSV(text) {
+                const lines = text.trim().split(/\r?\n/);
+                const headers = lines[0].split("\t");
+                return lines.slice(1).map((line) => {
+                    const values = line.split("\t");
+                    const obj = {};
+                    headers.forEach((header, i) => {
+                        const value = values[i];
+                        obj[header] =
+                            value !== undefined && value !== "" && !isNaN(value)
+                                ? +value
+                                : value;
+                    });
+                    return obj;
+                });
+            }
+            async function fetchTSV(url) {
+                const response = await fetch(`${url}?t=${Date.now()}`);
+                if (!response.ok) throw new Error(`${response.status} ${url}`);
+                return parseTSV(await response.text());
+            }
+            function draw(id, figure) {
+                document.getElementById(id).replaceChildren(figure);
+            }
+
+            const REGION_LABELS = {
+                delta_nuc_muts: "all nucleotide",
+                delta_spike_muts: "spike",
+                delta_nonspike_muts: "non-spike",
+                delta_rbd_muts: "RBD",
+                delta_ntd_muts: "NTD",
+            };
+
+            const state = {
+                branches: [],
+                predictorRows: [], // long: {predictor, delta_predictor, delta_log_fitness}
+            };
+
+            function renderBranchScatter(region) {
+                const data = state.branches.filter(
+                    (d) => typeof d[region] === "number" && typeof d.delta_log_fitness === "number",
+                );
+                draw(
+                    "plot-branch-scatter",
+                    Plot.plot({
+                        width: 1000,
+                        height: 380,
+                        marginLeft: 64,
+                        marginBottom: 48,
+                        grid: true,
+                        x: { label: `Δ ${REGION_LABELS[region]} mutations` },
+                        y: { label: "Δ log fitness" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.ruleY([0], { stroke: "#ddd" }),
+                            Plot.ruleX([0], { stroke: "#ddd" }),
+                            Plot.dot(data, {
+                                x: region,
+                                y: "delta_log_fitness",
+                                fill: "#0969da",
+                                fillOpacity: 0.35,
+                                r: 3,
+                                tip: true,
+                                title: (d) => `${d.parent} → ${d.child}\n(${d.timepoint})`,
+                            }),
+                            Plot.linearRegressionY(data, {
+                                x: region,
+                                y: "delta_log_fitness",
+                                stroke: "#842029",
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            function renderSlopeTime(rows) {
+                const order = [...new Set(rows.map((d) => d.timepoint))].sort();
+                draw(
+                    "plot-slope-time",
+                    Plot.plot({
+                        width: 1000,
+                        height: 320,
+                        marginLeft: 60,
+                        marginBottom: 60,
+                        grid: true,
+                        x: { label: "Season", domain: order, tickRotate: -40 },
+                        y: { label: "Slope (Δ fitness per mutation)" },
+                        color: { legend: true },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.ruleY([0], { stroke: "#ddd" }),
+                            Plot.line(rows, {
+                                x: "timepoint",
+                                y: "slope",
+                                stroke: "predictor",
+                                marker: "circle",
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            function renderCoefficients(rows) {
+                const data = rows.filter((d) => d.term !== "intercept");
+                const stats = [...new Set(rows.map((d) => d.group))].map((g) => {
+                    const r = rows.find((d) => d.group === g);
+                    return `${g}: R² = ${(+r.r_squared).toFixed(2)} (n = ${r.n})`;
+                });
+                document.getElementById("lm-stats").replaceChildren(
+                    ...stats.map((s) => {
+                        const span = document.createElement("span");
+                        span.className = "stat";
+                        span.textContent = s;
+                        return span;
+                    }),
+                );
+                draw(
+                    "plot-coefficients",
+                    Plot.plot({
+                        width: 1000,
+                        height: 340,
+                        marginLeft: 70,
+                        marginBottom: 80,
+                        x: { label: null, tickRotate: -35 },
+                        y: { label: "Coefficient" },
+                        color: { legend: true, domain: ["all", "early", "late"] },
+                        fx: { label: null },
+                        marks: [
+                            Plot.ruleY([0], { stroke: "#888" }),
+                            Plot.barY(data, {
+                                x: "group",
+                                y: "coefficient",
+                                fx: (d) => d.term.replace("delta_", "").replace("_muts", ""),
+                                fill: "group",
+                                tip: true,
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            function renderCorrelations(rows) {
+                const data = rows
+                    .map((d) => ({ ...d, pearson_r: +d.pearson_r }))
+                    .sort((a, b) => b.pearson_r - a.pearson_r);
+                draw(
+                    "plot-correlations",
+                    Plot.plot({
+                        width: 1000,
+                        height: 420,
+                        marginLeft: 180,
+                        marginBottom: 44,
+                        grid: true,
+                        x: { label: "Pearson r (predictor Δ vs. Δ fitness)" },
+                        y: { label: null, domain: data.map((d) => d.predictor) },
+                        marks: [
+                            Plot.ruleX([0], { stroke: "#888" }),
+                            Plot.barX(data, {
+                                x: "pearson_r",
+                                y: "predictor",
+                                fill: (d) => (d.pearson_r >= 0 ? "#0969da" : "#842029"),
+                                tip: true,
+                                title: (d) => `${d.predictor}\nr = ${d.pearson_r.toFixed(3)}\nn = ${d.n}`,
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            function renderPredictorScatter(predictor) {
+                const data = state.predictorRows.filter(
+                    (d) => d.predictor === predictor && typeof d.delta_predictor === "number",
+                );
+                draw(
+                    "plot-predictor-scatter",
+                    Plot.plot({
+                        width: 1000,
+                        height: 360,
+                        marginLeft: 64,
+                        marginBottom: 48,
+                        grid: true,
+                        x: { label: `Δ ${predictor}` },
+                        y: { label: "Δ log fitness" },
+                        marks: [
+                            Plot.frame({ stroke: "#ccc" }),
+                            Plot.ruleY([0], { stroke: "#ddd" }),
+                            Plot.ruleX([0], { stroke: "#ddd" }),
+                            Plot.dot(data, {
+                                x: "delta_predictor",
+                                y: "delta_log_fitness",
+                                fill: "#0969da",
+                                fillOpacity: 0.35,
+                                r: 3,
+                                tip: true,
+                                title: (d) => `${d.parent} → ${d.child}`,
+                            }),
+                            Plot.linearRegressionY(data, {
+                                x: "delta_predictor",
+                                y: "delta_log_fitness",
+                                stroke: "#842029",
+                            }),
+                        ],
+                    }),
+                );
+            }
+
+            async function init() {
+                const status = document.getElementById("status");
+                status.textContent = "loading…";
+                try {
+                    const [branches, predictorDeltas, esm, slope, coeffs, corr] =
+                        await Promise.all([
+                            fetchTSV(`${RESULTS}/branch_deltas.tsv`),
+                            fetchTSV(`${RESULTS}/predictor_deltas.tsv`),
+                            fetchTSV(`${RESULTS}/esm_deltas.tsv`),
+                            fetchTSV(`${RESULTS}/slope_through_time.tsv`),
+                            fetchTSV(`${RESULTS}/linear_model_coefficients.tsv`),
+                            fetchTSV(`${RESULTS}/predictor_correlations.tsv`),
+                        ]);
+                    state.branches = branches;
+
+                    // unify predictor + ESM deltas into one long table for the scatter
+                    const esmCols = [
+                        "esm_650M_pretrained",
+                        "esm_650M_fine_tuned",
+                        "esm_3B_pretrained",
+                        "esm_3B_fine_tuned",
+                    ];
+                    const esmLong = [];
+                    for (const row of esm) {
+                        for (const col of esmCols) {
+                            if (typeof row[col] === "number") {
+                                esmLong.push({
+                                    predictor: col,
+                                    delta_predictor: row[col],
+                                    delta_log_fitness: row.delta_log_fitness,
+                                    parent: row.parent,
+                                    child: row.child,
+                                });
+                            }
+                        }
+                    }
+                    state.predictorRows = predictorDeltas.concat(esmLong);
+
+                    const predictors = [...new Set(state.predictorRows.map((d) => d.predictor))];
+                    const predSelect = document.getElementById("predictor-select");
+                    predSelect.replaceChildren(
+                        ...predictors.map((p) => {
+                            const opt = document.createElement("option");
+                            opt.value = p;
+                            opt.textContent = p;
+                            return opt;
+                        }),
+                    );
+                    predSelect.value = predictors.includes("covfit") ? "covfit" : predictors[0];
+                    predSelect.addEventListener("change", () =>
+                        renderPredictorScatter(predSelect.value),
+                    );
+
+                    const regionSelect = document.getElementById("region-select");
+                    regionSelect.addEventListener("change", () =>
+                        renderBranchScatter(regionSelect.value),
+                    );
+
+                    renderBranchScatter(regionSelect.value);
+                    renderSlopeTime(slope);
+                    renderCoefficients(coeffs);
+                    renderCorrelations(corr);
+                    renderPredictorScatter(predSelect.value);
+                    status.textContent = "";
+                } catch (err) {
+                    status.textContent = `error: ${err.message}`;
+                    console.error(err);
+                }
+            }
+
+            init();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fitness flux</title>
+        <style>
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+                    Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+                color: #222;
+            }
+            .container {
+                max-width: 760px;
+                margin: 0 auto;
+                background: white;
+                padding: 30px 36px 44px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            h1 { border-bottom: 2px solid #e1e4e8; padding-bottom: 10px; }
+            p { color: #555; max-width: 70ch; }
+            .card {
+                display: block;
+                border: 1px solid #e1e4e8;
+                border-radius: 8px;
+                padding: 18px 20px;
+                margin: 16px 0;
+                text-decoration: none;
+                color: inherit;
+                transition: border-color 0.15s, box-shadow 0.15s;
+            }
+            .card:hover {
+                border-color: #0969da;
+                box-shadow: 0 2px 8px rgba(9, 105, 218, 0.12);
+            }
+            .card h2 { margin: 0 0 6px; color: #0969da; font-size: 18px; }
+            .card p { margin: 0; font-size: 14px; }
+            footer { color: #999; font-size: 13px; margin-top: 32px; }
+            code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Fitness flux</h1>
+            <p>
+                Interactive dashboards for two analyses of viral fitness dynamics,
+                built from the Snakemake pipeline's MLR fitness estimates. Each page
+                fetches its data tables at runtime from the analysis
+                <code>results/</code> directories, so the whole site is static.
+            </p>
+
+            <a class="card" href="fitness-flux.html">
+                <h2>Fitness flux &rarr;</h2>
+                <p>
+                    Scaffolded variant fitness through time, empirical frequencies,
+                    mutation&ndash;fitness relationships, and the traveling fitness
+                    wave (flux vs. variance) for SARS-CoV-2 clades and lineages and
+                    H3N2 clades.
+                </p>
+            </a>
+
+            <a class="card" href="lineage-deltas.html">
+                <h2>Lineage deltas &rarr;</h2>
+                <p>
+                    Per-branch change in SARS-CoV-2 lineage fitness against mutation
+                    counts and mutation-effect predictors (CoVFit, EvEscape, DMS, ESM
+                    embeddings), with linear models and predictor correlations.
+                </p>
+            </a>
+
+            <footer>
+                Ported from Mathematica notebooks to Python + Observable Plot / d3.
+                Source: <code>fitness-flux-analysis/</code> and
+                <code>lineage-deltas-analysis/</code>.
+            </footer>
+        </div>
+    </body>
+</html>
