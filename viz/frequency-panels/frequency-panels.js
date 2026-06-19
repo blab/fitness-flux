@@ -13,9 +13,9 @@
 // Pure: no fetching, no ResizeObserver. The host owns data loading and resize.
 // Returns { element, resize(width?), destroy() }.
 
-import * as Plot from "../../lib/plot.js";
-import * as d3 from "../../lib/d3.js";
-import { colorScale, buildLegend } from "../../lib/colors.js";
+import * as Plot from "../lib/plot.js";
+import * as d3 from "../lib/d3.js";
+import { colorScale, buildLegend } from "../lib/colors.js";
 
 const COL_GAP = 10; // px between panel columns
 const YEAR_MS = 365.25 * 24 * 3600 * 1000;

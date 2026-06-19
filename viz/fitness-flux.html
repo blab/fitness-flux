@@ -103,11 +103,7 @@
 
             <div class="controls">
                 <label for="dataset-select">Dataset</label>
-                <select id="dataset-select">
-                    <option value="sarscov2_clades">SARS-CoV-2 clades</option>
-                    <option value="sarscov2_lineages">SARS-CoV-2 lineages</option>
-                    <option value="h3n2_clades">H3N2 clades</option>
-                </select>
+                <select id="dataset-select"></select>
                 <span id="status" style="margin-left:16px;color:#999;font-size:13px"></span>
             </div>
 
@@ -162,11 +158,10 @@
         <script type="module">
             import * as Plot from "./lib/plot.js";
             import { fetchTSV, fetchJSON } from "./lib/data.js";
-            import { render as renderFitnessFlux } from "./figures/fitness-flux/fitness-flux.js";
-            import { render as renderFrequencyPanels } from "./figures/frequency-panels/frequency-panels.js";
+            import { render as renderFitnessFlux } from "./fitness-flux/fitness-flux.js";
+            import { render as renderFrequencyPanels } from "./frequency-panels/frequency-panels.js";
 
             const RESULTS = "../fitness-flux-analysis/results";
-            const FIGURES = "./figures";
 
             function clear(id) {
                 document.getElementById(id).replaceChildren();
@@ -360,8 +355,8 @@
                 try {
                     const [fluxData, panelsData, mutFit, flux, summary] =
                         await Promise.all([
-                            fetchJSON(`${FIGURES}/fitness-flux/data/${dataset}.json`),
-                            fetchJSON(`${FIGURES}/frequency-panels/data/${dataset}.json`),
+                            fetchJSON(`./fitness-flux/data/${dataset}.json`),
+                            fetchJSON(`./frequency-panels/data/${dataset}.json`),
                             fetchTSV(`${RESULTS}/${dataset}_mutation_fitness.tsv`),
                             fetchTSV(`${RESULTS}/${dataset}_flux_timeseries.tsv`),
                             fetchJSON(`${RESULTS}/${dataset}_flux_summary.json`),
@@ -381,7 +376,17 @@
                 }
             }
 
+            // Build the dataset selector from the component manifest (both
+            // components carry the same dataset list).
             const select = document.getElementById("dataset-select");
+            const meta = await fetchJSON("./fitness-flux/meta.json");
+            for (const { id, label } of meta.datasets) {
+                const option = document.createElement("option");
+                option.value = id;
+                option.textContent = label;
+                select.appendChild(option);
+            }
+            select.value = meta.default ?? meta.datasets[0]?.id;
             select.addEventListener("change", () => load(select.value));
             load(select.value);
         </script>

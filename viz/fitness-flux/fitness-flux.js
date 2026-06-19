@@ -14,9 +14,9 @@
 // Pure: no fetching, no ResizeObserver. The host owns data loading and resize.
 // Returns { element, resize(width?, height?), destroy() }.
 
-import * as Plot from "../../lib/plot.js";
-import * as d3 from "../../lib/d3.js";
-import { colorScale, buildLegend } from "../../lib/colors.js";
+import * as Plot from "../lib/plot.js";
+import * as d3 from "../lib/d3.js";
+import { colorScale, buildLegend } from "../lib/colors.js";
 
 const FLUX_HALF_HEIGHT = 0.13; // fitness units at frequency 1
 const GAP = 16; // px between plot and legend
@@ -54,7 +54,7 @@ export function render(container, data, opts = {}) {
     const mode = opts.mode ?? "inline";
     const axisFont = mode === "slide" ? "16px" : "14px";
     const legendFont = mode === "slide" ? "15px" : "14px";
-    const height = opts.height ?? (mode === "slide" ? 480 : 430);
+    let height = opts.height ?? (mode === "slide" ? 480 : 430);
 
     const scale = colorScale(data.colors);
     const points = data.fitnessFlux.map((d) => ({
@@ -162,7 +162,8 @@ export function render(container, data, opts = {}) {
 
     return {
         element: root,
-        resize(width) {
+        resize(width, newHeight) {
+            if (newHeight) height = newHeight;
             draw(width ? Math.max(MIN_PLOT, Math.floor(width)) : measure());
         },
         destroy() {

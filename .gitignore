@@ -15,6 +15,9 @@ covfit/CoVFit_CLI/
 # !lineage-deltas-analysis/results/
 # !lineage-deltas-analysis/results/**
 
+# Generated viz component manifests (deferred like the data/ tables they index)
+viz/*/meta.json
+
 # Specific Auspice JSONs
 ncov_gisaid_global_all-time.json
 ncov_gisaid_global_all-time_root-sequence.json

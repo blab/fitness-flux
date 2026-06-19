@@ -31,9 +31,12 @@ def build_colors(colors_path):
     ]
 
 
-def write_json(path, obj):
+def write_json(path, obj, indent=None):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as handle:
-        json.dump(obj, handle, separators=(",", ":"))
+        if indent is None:
+            json.dump(obj, handle, separators=(",", ":"))
+        else:
+            json.dump(obj, handle, indent=indent)
         handle.write("\n")
