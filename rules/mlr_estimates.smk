@@ -42,7 +42,11 @@ rule mlr_model:
         model_config = config.get("mlr_config"),
         export_path = lambda w: f"mlr-estimates/{w.dataset}",
         pivot = lambda wildcards: _get_models_option(wildcards, 'pivot'),
-        generation_time = lambda wildcards: _get_models_option(wildcards, 'generation_time')
+        generation_time = lambda wildcards: _get_models_option(wildcards, 'generation_time'),
+        # Empirical weekly_raw_freq smoothing window (days), from config
+        # (raw_freq_window). H3N2 sets 14; datasets without the key use the
+        # run-mlr-model.py default of 7.
+        raw_freq_window = lambda wildcards: _get_models_option(wildcards, 'raw_freq_window')
     resources:
         mem_mb=4000
     shell:
@@ -53,5 +57,6 @@ rule mlr_model:
             --export-path {params.export_path} \
             {params.pivot} \
             {params.generation_time} \
+            {params.raw_freq_window} \
             --data-name mlr 2>&1 | tee {log}
         """

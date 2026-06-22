@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-Build the fitness-flux component's data.json: each frequency point above a
-threshold whose variant has a scaffolded log fitness, joined to that fitness and
-bundled with the variant color table.
+Build the fitness-flux component's data.json: each empirical-frequency point
+above a threshold whose variant has a scaffolded log fitness, joined to that
+fitness and bundled with the variant color table. Emits per record
+{variant, date, emp_freq, log_fitness} (emp_freq = empirical frequency,
+log_fitness = scaffolded log fitness).
 
 The join is frozen here so the browser component stays pure. Mirrors the inline
 join in the original viz/fitness-flux.html renderFitnessFlux. Dates stay ISO
@@ -26,7 +28,12 @@ def build_fitness_flux(frequencies_path, scaffolded_path, min_freq):
         if freq is None or freq <= min_freq or variant not in log_fit:
             continue
         flux.append(
-            {"variant": variant, "date": row["date"], "freq": freq, "fit": log_fit[variant]}
+            {
+                "variant": variant,
+                "date": row["date"],
+                "emp_freq": freq,
+                "log_fitness": log_fit[variant],
+            }
         )
     return flux
 

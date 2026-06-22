@@ -1,15 +1,19 @@
-// Fitness flux through time: each variant is a horizontal violin centred on its
-// scaffolded log fitness, with half-height proportional to frequency. A traveling
-// wave of fitness as the population explores successive adaptive variants.
+// Fitness through time: each variant is a horizontal violin whose half-height is
+// proportional to its empirical frequency. Two y-axis modes, toggled in the UI:
+//   • "flux"     — y is the variant's fixed scaffolded log fitness (cumulative
+//                  fitness flux); each blob sits at a constant height.
+//   • "relative" — y is log fitness relative to the daily population mean:
+//                  log_fitness_i − log(f̄(t)), with f̄(t) = Σ_i x_i e^{log_fitness_i}.
+//                  Blobs start above 0, drift down as the mean rises, and fade past 0.
 //
 // Adapted from fitness-flux@da79fa9:viz/fitness-flux.html (renderFitnessFlux,
 // drawFitnessFlux) on 2026-06-19.
 //
 // data = {
-//   fitnessFlux: Array<{ variant, date (ISO string), fit (number), freq (number) }>,
+//   fitnessFlux: Array<{ variant, date (ISO string), log_fitness (number), emp_freq (number) }>,
 //   colors:      Array<{ variant, color, display_name, is_major, order }>
 // }
-// opts = { mode?: "inline"|"slide"|"dashboard", width?, height? }
+// opts = { mode?: "inline"|"slide"|"dashboard", measure?: "flux"|"relative", width?, height? }
 //
 // Pure: no fetching, no ResizeObserver. The host owns data loading and resize.
 // Returns { element, resize(width?, height?), destroy() }.
@@ -18,7 +22,10 @@ import * as Plot from "../lib/plot.js";
 import * as d3 from "../lib/d3.js";
 import { colorScale, buildLegend } from "../lib/colors.js";
 
-const FLUX_HALF_HEIGHT = 0.13; // fitness units at frequency 1
+// Blob half-height as a fraction of the y-axis span, so the visual thickness is
+// uniform across datasets and across both modes. Calibrated so the reference
+// (SARS-CoV-2 clades cumulative, span ≈ 2.66) keeps its ~0.13 thickness.
+const HALF_HEIGHT_FRACTION = 0.049;
 const GAP = 16; // px between plot and legend
 const MIN_PLOT = 360; // px below which the legend folds under
 
@@ -38,11 +45,12 @@ function linearFitSlope(points) {
     return denom === 0 ? null : (n * sxy - sx * sy) / denom;
 }
 
+// Wave velocity from the dominant variant (freq > 0.5) at each date — flux mode only.
 function slopeText(points) {
     const dominant = [];
     for (const [, rows] of d3.group(points, (d) => +d.date)) {
-        const top = d3.greatest(rows, (d) => d.freq);
-        if (top && top.freq > 0.5) dominant.push([decimalYear(top.date), top.fit]);
+        const top = d3.greatest(rows, (d) => d.empFreq);
+        if (top && top.empFreq > 0.5) dominant.push([decimalYear(top.date), top.logFitness]);
     }
     const slope = linearFitSlope(dominant);
     return slope && slope > 0
@@ -50,38 +58,125 @@ function slopeText(points) {
         : "";
 }
 
+const MEASURES = [
+    ["flux", "Cumulative fitness flux"],
+    ["relative", "Relative to population average"],
+];
+
 export function render(container, data, opts = {}) {
     const mode = opts.mode ?? "inline";
     const axisFont = mode === "slide" ? "16px" : "14px";
     const legendFont = mode === "slide" ? "15px" : "14px";
     let height = opts.height ?? (mode === "slide" ? 480 : 430);
+    let measure = opts.measure === "relative" ? "relative" : "flux";
 
     const scale = colorScale(data.colors);
     const points = data.fitnessFlux.map((d) => ({
         variant: d.variant,
         date: d.date instanceof Date ? d.date : new Date(d.date),
-        freq: d.freq,
-        fit: d.fit,
+        empFreq: d.emp_freq,
+        logFitness: d.log_fitness,
     }));
+
+    // Darker stroke per variant for the blob centerline — a stable hex string per
+    // variant so Plot groups the line into one path per variant (not per point).
+    const darkerByVariant = new Map(
+        [...new Set(points.map((d) => d.variant))].map((v) => [
+            v,
+            d3.color(scale.color(v)).darker(0.6).formatHex(),
+        ]),
+    );
+
+    // Per-day population mean log fitness: log( Σ x_i e^{logFitness_i} / Σ x_i ).
+    // Normalized by Σ x_i since the >1% data cutoff leaves daily sums a touch under 1.
+    const logBarFByDate = new Map();
+    for (const [date, rows] of d3.group(points, (d) => +d.date)) {
+        let num = 0, den = 0;
+        for (const r of rows) {
+            num += r.empFreq * Math.exp(r.logFitness);
+            den += r.empFreq;
+        }
+        if (den > 0) logBarFByDate.set(date, Math.log(num / den));
+    }
+    const yOf = (d) =>
+        measure === "relative" ? d.logFitness - logBarFByDate.get(+d.date) : d.logFitness;
+
+    // Half-height tracks the current view's y-axis span (per mode), so blobs are
+    // the same visual thickness in both modes and across datasets.
+    const [fluxLo, fluxHi] = d3.extent(points, (d) => d.logFitness);
+    const [relLo, relHi] = d3.extent(points, (d) => d.logFitness - logBarFByDate.get(+d.date));
+    const spanFlux = fluxHi - fluxLo;
+    const spanRel = relHi - relLo;
+    const halfHeightFor = (m) =>
+        HALF_HEIGHT_FRACTION * (m === "relative" ? spanRel : spanFlux);
+
     const annotation = slopeText(points);
 
     const root = document.createElement("div");
     container.appendChild(root);
 
-    function measure() {
+    let lastWidth = 0;
+
+    function measureWidth() {
         const w = opts.width ?? Math.floor(container.clientWidth);
         return Math.max(MIN_PLOT, w || 820);
     }
 
+    function buildToggle() {
+        const wrap = document.createElement("div");
+        Object.assign(wrap.style, {
+            display: "inline-flex",
+            border: "1px solid #ccc",
+            borderRadius: "5px",
+            overflow: "hidden",
+            fontSize: "13px",
+        });
+        MEASURES.forEach(([key, label], i) => {
+            const active = key === measure;
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = label;
+            Object.assign(button.style, {
+                border: "none",
+                borderLeft: i ? "1px solid #ccc" : "none",
+                padding: "4px 11px",
+                cursor: active ? "default" : "pointer",
+                font: "inherit",
+                background: active ? "#333" : "#fff",
+                color: active ? "#fff" : "#555",
+            });
+            button.addEventListener("click", () => {
+                if (measure === key) return;
+                measure = key;
+                animateToggle();
+            });
+            wrap.appendChild(button);
+        });
+        return wrap;
+    }
+
     function draw(totalWidth) {
+        lastWidth = totalWidth;
+        const relative = measure === "relative";
+        const halfHeight = halfHeightFor(measure);
         root.replaceChildren();
 
-        if (annotation) {
-            const note = document.createElement("div");
-            Object.assign(note.style, { fontSize: "13px", color: "#555", margin: "4px 0" });
-            note.textContent = annotation;
-            root.appendChild(note);
-        }
+        // Header row: slope annotation on the left (flux mode only), mode toggle on
+        // the right. Always rendered with the toggle so switching modes doesn't
+        // shift the plot vertically.
+        const header = document.createElement("div");
+        Object.assign(header.style, {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "16px",
+            margin: "0 0 4px",
+        });
+        const note = document.createElement("div");
+        Object.assign(note.style, { fontSize: "13px", color: "#555" });
+        note.textContent = !relative && annotation ? annotation : "";
+        header.append(note, buildToggle());
+        root.appendChild(header);
 
         const figRow = document.createElement("div");
         Object.assign(figRow.style, {
@@ -131,26 +226,45 @@ export function render(container, data, opts = {}) {
                 marginRight: 12,
                 color: { type: "identity" },
                 x: { type: "utc", label: null },
-                y: { label: "Cumulative fitness flux", labelAnchor: "center", labelArrow: "none" },
+                y: {
+                    label: relative
+                        ? "Relative fitness to population average"
+                        : "Cumulative fitness flux",
+                    labelAnchor: "center",
+                    labelArrow: "none",
+                },
                 marks: [
                     Plot.frame({ anchor: "left", stroke: "#333" }),
                     Plot.frame({ anchor: "bottom", stroke: "#333" }),
+                    ...(relative
+                        ? [Plot.ruleY([0], { stroke: "#bbb", strokeDasharray: "3,3" })]
+                        : []),
                     Plot.areaY(points, {
                         x: "date",
-                        y1: (d) => d.fit - FLUX_HALF_HEIGHT * d.freq,
-                        y2: (d) => d.fit + FLUX_HALF_HEIGHT * d.freq,
+                        y1: (d) => yOf(d) - halfHeight * d.empFreq,
+                        y2: (d) => yOf(d) + halfHeight * d.empFreq,
                         z: "variant",
                         fill: (d) => scale.color(d.variant),
                         fillOpacity: 0.85,
+                        curve: "basis",
+                    }),
+                    // Darker centerline tracing each blob's mid-point: flat in
+                    // flux mode, drifting in relative mode.
+                    Plot.line(points, {
+                        x: "date",
+                        y: (d) => yOf(d),
+                        z: "variant",
+                        stroke: (d) => darkerByVariant.get(d.variant),
+                        strokeWidth: 1,
                         curve: "basis",
                     }),
                     Plot.tip(
                         points,
                         Plot.pointerX({
                             x: "date",
-                            y: (d) => d.fit,
+                            y: (d) => yOf(d),
                             title: (d) =>
-                                `${scale.name(d.variant)}\ndate ${d3.utcFormat("%Y-%m-%d")(d.date)}\nfitness ${d.fit.toFixed(2)}\nfrequency ${(d.freq * 100).toFixed(1)}%`,
+                                `${scale.name(d.variant)}\ndate ${d3.utcFormat("%Y-%m-%d")(d.date)}\n${relative ? "relative fitness" : "fitness"} ${yOf(d).toFixed(2)}\nfrequency ${(d.empFreq * 100).toFixed(1)}%`,
                         }),
                     ),
                 ],
@@ -158,13 +272,32 @@ export function render(container, data, opts = {}) {
         );
     }
 
-    draw(measure());
+    // Toggle modes with the blobs and centerlines gliding to their new y-positions
+    // instead of snapping: rebuild in the new mode (axis/labels/legend snap), then
+    // transition each area/line path's `d` from its old shape to the new one.
+    function animateToggle(duration = 500) {
+        const oldArea = [...root.querySelectorAll('g[aria-label="area"] path')].map((p) => p.getAttribute("d"));
+        const oldLine = [...root.querySelectorAll('g[aria-label="line"] path')].map((p) => p.getAttribute("d"));
+        draw(lastWidth || measureWidth());
+        const areaPaths = [...root.querySelectorAll('g[aria-label="area"] path')];
+        const linePaths = [...root.querySelectorAll('g[aria-label="line"] path')];
+        const finalArea = areaPaths.map((p) => p.getAttribute("d"));
+        const finalLine = linePaths.map((p) => p.getAttribute("d"));
+        areaPaths.forEach((p, j) => oldArea[j] != null && p.setAttribute("d", oldArea[j]));
+        linePaths.forEach((p, j) => oldLine[j] != null && p.setAttribute("d", oldLine[j]));
+        if (areaPaths.length)
+            d3.selectAll(areaPaths).data(finalArea).transition().duration(duration).attr("d", (d) => d);
+        if (linePaths.length)
+            d3.selectAll(linePaths).data(finalLine).transition().duration(duration).attr("d", (d) => d);
+    }
+
+    draw(measureWidth());
 
     return {
         element: root,
         resize(width, newHeight) {
             if (newHeight) height = newHeight;
-            draw(width ? Math.max(MIN_PLOT, Math.floor(width)) : measure());
+            draw(width ? Math.max(MIN_PLOT, Math.floor(width)) : measureWidth());
         },
         destroy() {
             root.remove();

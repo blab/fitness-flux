@@ -211,20 +211,20 @@ def make_model_directories(path):
     make_path_if_absent(path + "/models")
 
 
-def make_raw_freq_tidy(data, location):
+def make_raw_freq_tidy(data, location, window=7):
     # Unpack HierFrequencies
     variants = data.var_names
     date_map = data.date_to_index
 
-    # Calculate the 7-day moving sum for each of the clades
-    kernel = np.ones(7)  # 7-day window
+    # Calculate the moving sum for each of the clades over a `window`-day window
+    kernel = np.ones(window)
     numerator = np.apply_along_axis(lambda x: np.convolve(x, kernel, mode='same'), axis=0, arr=data.seq_counts)
 
-    # Calculate the 7-day moving sum for the total count across all clades (Denominator)
+    # Moving sum of the total count across all clades (denominator)
     total_counts = data.seq_counts.sum(axis=1)
     denominator = np.convolve(total_counts, kernel, mode='same')
 
-    # Calculate the 7-day smoothed daily frequency
+    # Smoothed daily frequency over the window
     weekly_raw_freq = numerator / denominator[:, None]
 
     # Create metadata
@@ -253,7 +253,7 @@ def make_raw_freq_tidy(data, location):
     return {"metadata": metadata, "data": entries}
 
 
-def export_results(multi_posterior, ps, path, data_name, hier):
+def export_results(multi_posterior, ps, path, data_name, hier, raw_freq_window=7):
     EXPORT_SITES = ["freq", "ga"]
     EXPORT_DATED = [True, False, True]
     EXPORT_FORECASTS = [False, False, True]
@@ -323,7 +323,7 @@ def export_results(multi_posterior, ps, path, data_name, hier):
     for location, posterior in multi_posterior.locator.items():
         if location != "hierarchical":
             results.append(
-                make_raw_freq_tidy(posterior.data, location)
+                make_raw_freq_tidy(posterior.data, location, window=raw_freq_window)
             )
 
     results = ef.posterior.combine_sites_tidy(results)
@@ -363,6 +363,12 @@ if __name__ == "__main__":
         "--hier",  action='store_true', default=False,
         help="Whether to run the model as hierarchical. Overrides model.hierarchical in config. "
         + "Default is false if unspecified."
+    )
+    parser.add_argument(
+        "--raw-freq-window",
+        type=int,
+        default=7,
+        help="Moving-average window in days for the empirical weekly_raw_freq. Default 7.",
     )
     args = parser.parse_args()
 
@@ -441,4 +447,4 @@ if __name__ == "__main__":
             config.config["settings"], "ps", dflt=[0.5, 0.8, 0.95]
         )
         data_name = args.data_name or config.config["data"]["name"]
-        export_results(multi_posterior, ps, export_path, data_name, hier)
+        export_results(multi_posterior, ps, export_path, data_name, hier, raw_freq_window=args.raw_freq_window)

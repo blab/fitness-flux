@@ -31,7 +31,9 @@ datasets:
   - h3n2_clades_2023-24
   - h3n2_clades_2024-25
 
-# H3N2 uses a 2-year analysis window and slides 1-year forward
+# H3N2 uses a 2-year analysis window and slides 1-year forward, and a 2-week
+# (14-day) empirical-frequency smoothing window (raw_freq_window) since it is
+# sparser than SARS-CoV-2, which stays at the 1-week default.
 
 h3n2_clades_2016-17:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -45,6 +47,7 @@ h3n2_clades_2016-17:
   clade_min_seq: 100
   pivot: "B.1"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2017-18:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -58,6 +61,7 @@ h3n2_clades_2017-18:
   clade_min_seq: 100
   pivot: "B.2"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2018-19:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -71,6 +75,7 @@ h3n2_clades_2018-19:
   clade_min_seq: 100
   pivot: "C.1"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2019-20:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -84,6 +89,7 @@ h3n2_clades_2019-20:
   clade_min_seq: 100
   pivot: "E.2"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2020-21:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -97,6 +103,7 @@ h3n2_clades_2020-21:
   clade_min_seq: 50
   pivot: "G.1.1.1"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2021-22:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -110,6 +117,7 @@ h3n2_clades_2021-22:
   clade_min_seq: 50
   pivot: "G.1.1.1"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2022-23:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -123,6 +131,7 @@ h3n2_clades_2022-23:
   clade_min_seq: 100
   pivot: "G.2"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2023-24:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -136,6 +145,7 @@ h3n2_clades_2023-24:
   clade_min_seq: 100
   pivot: "J.2"
   generation_time: 3.2
+  raw_freq_window: 14
 
 h3n2_clades_2024-25:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
@@ -149,6 +159,7 @@ h3n2_clades_2024-25:
   clade_min_seq: 100
   pivot: "J.2"
   generation_time: 3.2
+  raw_freq_window: 14
 
 sarscov2_clades_2020:
   local_metadata: "data/sarscov2_subset_metadata.tsv.zst"

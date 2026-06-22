@@ -54,6 +54,18 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
+We take a similar approach to estimating frequencies and fitnesses of seasonal influenza H3N2 ([@fig:time-vs-frequency-h3n2]).
+However, here we use 2-year sliding windows to account for slower frequency dynamics in seasonal influenza.
+The model fits are not as good for H3N2 compared to SARS-CoV-2.
+This is especially apparent at junctions between influenza seasons where stochastic seeding of new season may result in a discontinuity of clade frequency compared to MLR expectation.
+
+:::figure{#fig:time-vs-frequency-h3n2 component=time-vs-frequency dataset=h3n2_clades static=figures/h3n2_clades_time_vs_frequency.png}
+**Relative frequencies of H3N2 clades through time.**
+Points represent empirical frequencies of H3N2 Nextstrain clades, while solid lines represent modeled frequencies from Multinomial Logistic Regression (MLR).
+All data is taken from the USA.
+The MLR analysis assumes that the fitness of each clade is constant through time.
+:::
+
 With variant frequency $x_i(t)$ and constant variant fitness $f_i$, we can describe the mean population fitness as a standard weighted sum $\bar{f}(t) = \sum_i x_i(t) \, f_i$.
 The fitness flux [@mustonen2010fitness] of the population is then the rate of change of population fitness at a given time $\phi(t) = \Delta \bar{f}(t) / \Delta t$.
 
@@ -66,12 +78,6 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
-:::figure{#fig:time-vs-frequency-h3n2 component=time-vs-frequency dataset=h3n2_clades static=figures/h3n2_clades_time_vs_frequency.png}
-**Relative frequencies of H3N2 clades through time.**
-Points represent empirical frequencies of H3N2 Nextstrain clades, while solid lines represent modeled frequencies from Multinomial Logistic Regression (MLR).
-All data is taken from the USA.
-The MLR analysis assumes that the fitness of each clade is constant through time.
-:::
 
 :::figure{#fig:time-vs-fitness-h3n2 component=time-vs-fitness dataset=h3n2_clades static=figures/h3n2_clades_time_vs_fitness.png}
 **Cumulative H3N2 fitness flux.**
