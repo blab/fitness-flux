@@ -184,14 +184,14 @@ rule fitness_flux_seasonal_frequencies:
 
 
 rule viz_fitness_flux_data:
-    """Build the fitness-flux component's data.json (per dataset): the
+    """Build the time-vs-fitness component's data.json (per dataset): the
     frequency/fitness join plus the embedded variant color table."""
     input:
         frequencies = "fitness-flux-analysis/results/{analysis}_frequencies.tsv",
         scaffolded = "fitness-flux-analysis/results/{analysis}_scaffolded_fitness.tsv",
         colors = "fitness-flux-analysis/results/{analysis}_colors.tsv"
     output:
-        "viz/fitness-flux/data/{analysis}.json"
+        "viz/time-vs-fitness/data/{analysis}.json"
     log:
         "logs/fitness_flux/{analysis}_viz_fitness_flux.txt"
     shell:
@@ -205,13 +205,13 @@ rule viz_fitness_flux_data:
 
 
 rule viz_frequency_panels_data:
-    """Build the frequency-panels component's data.json (per dataset): the
+    """Build the time-vs-frequency component's data.json (per dataset): the
     per-season empirical/modeled frequencies plus the embedded color table."""
     input:
         seasonal = "fitness-flux-analysis/results/{analysis}_seasonal_frequencies.tsv",
         colors = "fitness-flux-analysis/results/{analysis}_colors.tsv"
     output:
-        "viz/frequency-panels/data/{analysis}.json"
+        "viz/time-vs-frequency/data/{analysis}.json"
     log:
         "logs/fitness_flux/{analysis}_viz_frequency_panels.txt"
     shell:
@@ -227,8 +227,8 @@ rule viz_meta:
     """Emit each component's meta.json manifest (dataset ids + labels + default)
     for the dashboard selector and dev harness. Content is shared, so write both."""
     output:
-        fitness_flux = "viz/fitness-flux/meta.json",
-        frequency_panels = "viz/frequency-panels/meta.json"
+        fitness_flux = "viz/time-vs-fitness/meta.json",
+        frequency_panels = "viz/time-vs-frequency/meta.json"
     log:
         "logs/fitness_flux/viz_meta.txt"
     shell:
@@ -246,12 +246,12 @@ rule all_fitness_flux:
             output=FITNESS_FLUX_OUTPUTS,
         ),
         expand(
-            "viz/fitness-flux/data/{analysis}.json",
+            "viz/time-vs-fitness/data/{analysis}.json",
             analysis=FITNESS_FLUX_ANALYSES,
         ),
         expand(
-            "viz/frequency-panels/data/{analysis}.json",
+            "viz/time-vs-frequency/data/{analysis}.json",
             analysis=FITNESS_FLUX_ANALYSES,
         ),
-        "viz/fitness-flux/meta.json",
-        "viz/frequency-panels/meta.json"
+        "viz/time-vs-fitness/meta.json",
+        "viz/time-vs-frequency/meta.json"

@@ -158,8 +158,8 @@
         <script type="module">
             import * as Plot from "./lib/plot.js";
             import { fetchTSV, fetchJSON } from "./lib/data.js";
-            import { render as renderFitnessFlux } from "./fitness-flux/fitness-flux.js";
-            import { render as renderFrequencyPanels } from "./frequency-panels/frequency-panels.js";
+            import { render as renderFitnessFlux } from "./time-vs-fitness/time-vs-fitness.js";
+            import { render as renderFrequencyPanels } from "./time-vs-frequency/time-vs-frequency.js";
 
             const RESULTS = "../fitness-flux-analysis/results";
 
@@ -355,8 +355,8 @@
                 try {
                     const [fluxData, panelsData, mutFit, flux, summary] =
                         await Promise.all([
-                            fetchJSON(`./fitness-flux/data/${dataset}.json`),
-                            fetchJSON(`./frequency-panels/data/${dataset}.json`),
+                            fetchJSON(`./time-vs-fitness/data/${dataset}.json`),
+                            fetchJSON(`./time-vs-frequency/data/${dataset}.json`),
                             fetchTSV(`${RESULTS}/${dataset}_mutation_fitness.tsv`),
                             fetchTSV(`${RESULTS}/${dataset}_flux_timeseries.tsv`),
                             fetchJSON(`${RESULTS}/${dataset}_flux_summary.json`),
@@ -379,7 +379,7 @@
             // Build the dataset selector from the component manifest (both
             // components carry the same dataset list).
             const select = document.getElementById("dataset-select");
-            const meta = await fetchJSON("./fitness-flux/meta.json");
+            const meta = await fetchJSON("./time-vs-fitness/meta.json");
             for (const { id, label } of meta.datasets) {
                 const option = document.createElement("option");
                 option.value = id;
