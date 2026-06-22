@@ -40,6 +40,9 @@ embeddings_3B_fine_tuned.tsv
 # Compiled manuscript files
 fitness_flux.pdf
 
+# press build output
+manuscript/dist/
+
 # Errors from tests
 *.err
 

@@ -1,0 +1,6 @@
+entry: fitness-flux.md      # manuscript entry file
+figures_dir: ../viz         # portable component library (components at ../viz/<component>/)
+bib: fitness_flux.bib        # BibTeX source
+theme: ./theme               # dir containing tokens.css (+ vendored fonts)
+out_dir: dist
+csl: numeric                 # citation style; numeric [1] default
