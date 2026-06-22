@@ -17,7 +17,7 @@
 
 import * as Plot from "../lib/plot.js";
 import * as d3 from "../lib/d3.js";
-import { colorScale, buildLegend } from "../lib/colors.js";
+import { colorScale, buildLegend, linkLegendHighlight } from "../lib/colors.js";
 
 const COL_GAP = 10; // px between panel columns
 const YEAR_MS = 365.25 * 24 * 3600 * 1000;
@@ -238,6 +238,7 @@ export function render(container, data, opts = {}) {
     }
 
     draw(measure());
+    const unlink = linkLegendHighlight(root, scale);
 
     return {
         element: root,
@@ -245,6 +246,7 @@ export function render(container, data, opts = {}) {
             draw(width ? Math.max(panelW, Math.floor(width)) : measure());
         },
         destroy() {
+            unlink();
             root.remove();
         },
     };

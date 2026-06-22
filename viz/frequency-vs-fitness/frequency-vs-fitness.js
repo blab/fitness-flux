@@ -21,7 +21,7 @@
 
 import * as Plot from "../lib/plot.js";
 import * as d3 from "../lib/d3.js";
-import { colorScale, buildLegend } from "../lib/colors.js";
+import { colorScale, buildLegend, linkLegendHighlight } from "../lib/colors.js";
 
 const GAP = 16; // px between plot and legend
 const MIN_PLOT = 360; // px below which the legend folds under
@@ -167,6 +167,7 @@ export function render(container, data, opts = {}) {
     }
 
     draw(measureWidth());
+    const unlink = linkLegendHighlight(root, scale);
 
     return {
         element: root,
@@ -175,6 +176,7 @@ export function render(container, data, opts = {}) {
             draw(width ? Math.max(MIN_PLOT, Math.floor(width)) : measureWidth());
         },
         destroy() {
+            unlink();
             root.remove();
         },
     };

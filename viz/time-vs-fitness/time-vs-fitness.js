@@ -20,7 +20,7 @@
 
 import * as Plot from "../lib/plot.js";
 import * as d3 from "../lib/d3.js";
-import { colorScale, buildLegend } from "../lib/colors.js";
+import { colorScale, buildLegend, linkLegendHighlight } from "../lib/colors.js";
 
 // Blob half-height as a fraction of the y-axis span, so the visual thickness is
 // uniform across datasets and across both modes. Calibrated so the reference
@@ -292,6 +292,7 @@ export function render(container, data, opts = {}) {
     }
 
     draw(measureWidth());
+    const unlink = linkLegendHighlight(root, scale, { darker: darkerByVariant });
 
     return {
         element: root,
@@ -300,6 +301,7 @@ export function render(container, data, opts = {}) {
             draw(width ? Math.max(MIN_PLOT, Math.floor(width)) : measureWidth());
         },
         destroy() {
+            unlink();
             root.remove();
         },
     };
