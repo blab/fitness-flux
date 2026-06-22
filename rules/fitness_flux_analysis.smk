@@ -184,14 +184,17 @@ rule fitness_flux_seasonal_frequencies:
 
 
 rule viz_fitness_flux_data:
-    """Build the time-vs-fitness component's data.json (per dataset): the
-    frequency/fitness join plus the embedded variant color table."""
+    """Build the data.json (per dataset) for the time-vs-fitness AND
+    frequency-vs-fitness components: the frequency/fitness join plus the embedded
+    variant color table. The two components consume identical data (one plots it
+    against time, the other against frequency), so build once and copy."""
     input:
         frequencies = "fitness-flux-analysis/results/{analysis}_frequencies.tsv",
         scaffolded = "fitness-flux-analysis/results/{analysis}_scaffolded_fitness.tsv",
         colors = "fitness-flux-analysis/results/{analysis}_colors.tsv"
     output:
-        "viz/time-vs-fitness/data/{analysis}.json"
+        fitness = "viz/time-vs-fitness/data/{analysis}.json",
+        freq_vs_fitness = "viz/frequency-vs-fitness/data/{analysis}.json"
     log:
         "logs/fitness_flux/{analysis}_viz_fitness_flux.txt"
     shell:
@@ -200,7 +203,8 @@ rule viz_fitness_flux_data:
             --frequencies {input.frequencies} \
             --scaffolded {input.scaffolded} \
             --colors {input.colors} \
-            --output {output} 2>&1 | tee {log}
+            --output {output.fitness} 2>&1 | tee {log}
+        cp {output.fitness} {output.freq_vs_fitness}
         """
 
 
@@ -228,13 +232,15 @@ rule viz_meta:
     for the dashboard selector and dev harness. Content is shared, so write both."""
     output:
         fitness_flux = "viz/time-vs-fitness/meta.json",
-        frequency_panels = "viz/time-vs-frequency/meta.json"
+        frequency_panels = "viz/time-vs-frequency/meta.json",
+        frequency_vs_fitness = "viz/frequency-vs-fitness/meta.json"
     log:
         "logs/fitness_flux/viz_meta.txt"
     shell:
         """
         python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.fitness_flux} 2>&1 | tee {log}
         python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.frequency_panels} 2>&1 | tee -a {log}
+        python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.frequency_vs_fitness} 2>&1 | tee -a {log}
         """
 
 
@@ -253,5 +259,10 @@ rule all_fitness_flux:
             "viz/time-vs-frequency/data/{analysis}.json",
             analysis=FITNESS_FLUX_ANALYSES,
         ),
+        expand(
+            "viz/frequency-vs-fitness/data/{analysis}.json",
+            analysis=FITNESS_FLUX_ANALYSES,
+        ),
         "viz/time-vs-fitness/meta.json",
-        "viz/time-vs-frequency/meta.json"
+        "viz/time-vs-frequency/meta.json",
+        "viz/frequency-vs-fitness/meta.json"

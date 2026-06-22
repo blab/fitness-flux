@@ -7,7 +7,7 @@
 </style>
 <div id="fig"></div>
 <script type="module">
-    import { render } from "./frequency-panels.js";
+    import { render } from "./time-vs-frequency.js";
     const slot = document.getElementById("fig");
     const meta = await fetch("./meta.json").then((r) => r.json()).catch(() => null);
     const id =

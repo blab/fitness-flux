@@ -123,6 +123,16 @@
             </p>
             <div id="plot-fitness-flux"></div>
 
+            <h2>Relative fitness vs frequency</h2>
+            <p class="note">
+                The same data as a phase portrait: each variant is one trajectory
+                through empirical frequency (x, logit) and fitness relative to the
+                daily population mean (y). Variants emerge at low frequency / high
+                relative fitness, arc right and down to ~0 near their peak, then
+                fall back down and left as they are outcompeted.
+            </p>
+            <div id="plot-frequency-vs-fitness"></div>
+
             <h2>Mutations and fitness</h2>
             <p class="note">
                 Receptor-binding-protein amino-acid substitution count versus
@@ -160,6 +170,7 @@
             import { fetchTSV, fetchJSON } from "./lib/data.js";
             import { render as renderFitnessFlux } from "./time-vs-fitness/time-vs-fitness.js";
             import { render as renderFrequencyPanels } from "./time-vs-frequency/time-vs-frequency.js";
+            import { render as renderFreqVsFitness } from "./frequency-vs-fitness/frequency-vs-fitness.js";
 
             const RESULTS = "../fitness-flux-analysis/results";
 
@@ -174,10 +185,13 @@
             // dashboard) owns data loading, the dataset selector, and resize.
             let fluxFigure = null;
             let freqFigure = null;
+            let freqVsFitFigure = null;
             const fluxSlot = document.getElementById("plot-fitness-flux");
             const freqSlot = document.getElementById("plot-frequency-panels");
+            const freqVsFitSlot = document.getElementById("plot-frequency-vs-fitness");
             let fluxWidth = 0;
             let freqWidth = 0;
+            let freqVsFitWidth = 0;
             new ResizeObserver(() => {
                 if (fluxFigure && fluxSlot.clientWidth && fluxSlot.clientWidth !== fluxWidth) {
                     fluxWidth = fluxSlot.clientWidth;
@@ -190,6 +204,12 @@
                     freqFigure.resize();
                 }
             }).observe(freqSlot);
+            new ResizeObserver(() => {
+                if (freqVsFitFigure && freqVsFitSlot.clientWidth && freqVsFitSlot.clientWidth !== freqVsFitWidth) {
+                    freqVsFitWidth = freqVsFitSlot.clientWidth;
+                    freqVsFitFigure.resize();
+                }
+            }).observe(freqVsFitSlot);
 
             function renderMutations(rows) {
                 const data = rows.filter((d) => typeof d.mut_count === "number");
@@ -363,10 +383,14 @@
                         ]);
                     fluxFigure?.destroy();
                     freqFigure?.destroy();
+                    freqVsFitFigure?.destroy();
                     freqFigure = renderFrequencyPanels(freqSlot, panelsData, { mode: "dashboard" });
                     fluxFigure = renderFitnessFlux(fluxSlot, fluxData, { mode: "dashboard" });
+                    // frequency-vs-fitness consumes the identical fluxData, plotted differently.
+                    freqVsFitFigure = renderFreqVsFitness(freqVsFitSlot, fluxData, { mode: "dashboard" });
                     fluxWidth = fluxSlot.clientWidth;
                     freqWidth = freqSlot.clientWidth;
+                    freqVsFitWidth = freqVsFitSlot.clientWidth;
                     renderMutations(mutFit);
                     renderFlux(flux, summary);
                     status.textContent = "";
