@@ -152,11 +152,8 @@
                 theorem. The variance-vs-velocity slope is reported below.
             </p>
             <div id="flux-stats"></div>
-            <div class="split">
-                <div id="plot-flux-location" class="plot"></div>
-                <div id="plot-flux-variance" class="plot"></div>
-            </div>
-            <div id="plot-flux-fisher" class="plot"></div>
+            <div id="plot-flux-location" class="plot"></div>
+            <div id="plot-variance-vs-flux"></div>
 
             <p class="note" style="margin-top:40px">
                 Data files are fetched at runtime from
@@ -171,6 +168,7 @@
             import { render as renderFitnessFlux } from "./time-vs-fitness/time-vs-fitness.js";
             import { render as renderFrequencyPanels } from "./time-vs-frequency/time-vs-frequency.js";
             import { render as renderFreqVsFitness } from "./frequency-vs-fitness/frequency-vs-fitness.js";
+            import { render as renderVarianceFlux } from "./variance-vs-flux/variance-vs-flux.js";
 
             const RESULTS = "../fitness-flux-analysis/results";
 
@@ -186,12 +184,15 @@
             let fluxFigure = null;
             let freqFigure = null;
             let freqVsFitFigure = null;
+            let varFluxFigure = null;
             const fluxSlot = document.getElementById("plot-fitness-flux");
             const freqSlot = document.getElementById("plot-frequency-panels");
             const freqVsFitSlot = document.getElementById("plot-frequency-vs-fitness");
+            const varFluxSlot = document.getElementById("plot-variance-vs-flux");
             let fluxWidth = 0;
             let freqWidth = 0;
             let freqVsFitWidth = 0;
+            let varFluxWidth = 0;
             new ResizeObserver(() => {
                 if (fluxFigure && fluxSlot.clientWidth && fluxSlot.clientWidth !== fluxWidth) {
                     fluxWidth = fluxSlot.clientWidth;
@@ -210,6 +211,12 @@
                     freqVsFitFigure.resize();
                 }
             }).observe(freqVsFitSlot);
+            new ResizeObserver(() => {
+                if (varFluxFigure && varFluxSlot.clientWidth && varFluxSlot.clientWidth !== varFluxWidth) {
+                    varFluxWidth = varFluxSlot.clientWidth;
+                    varFluxFigure.resize();
+                }
+            }).observe(varFluxSlot);
 
             function renderMutations(rows) {
                 const data = rows.filter((d) => typeof d.mut_count === "number");
@@ -304,59 +311,22 @@
                         ],
                     }),
                 );
-                draw(
-                    "plot-flux-variance",
-                    Plot.plot({ style: { fontSize: "14px" },
-                        width: 500,
-                        height: 320,
-                        marginLeft: 60,
-                        marginBottom: 40,
-                        x: { label: null, type: "utc" },
-                        y: { label: "Fitness variance", labelAnchor: "center", labelArrow: "none" },
-                        marks: [
-                            Plot.frame({ anchor: "left", stroke: "#333" }),
-                            Plot.frame({ anchor: "bottom", stroke: "#333" }),
-                            Plot.dot(data, {
-                                x: "date",
-                                y: "variance",
-                                fill: "#842029",
-                                r: 1.5,
-                                fillOpacity: 0.5,
-                            }),
-                        ],
-                    }),
+                // The variance timeseries, variance-vs-flux scatter, flux
+                // timeseries, and yearly means are the four-panel component.
+                varFluxFigure?.destroy();
+                varFluxFigure = renderVarianceFlux(
+                    varFluxSlot,
+                    {
+                        points: series.map((d) => ({
+                            date: d.date,
+                            variance: d.variance,
+                            velocity: typeof d.velocity === "number" ? d.velocity : null,
+                        })),
+                        fit: summary.variance_vs_velocity || {},
+                    },
+                    { mode: "dashboard" },
                 );
-
-                const fisher = data.filter(
-                    (d) => typeof d.velocity === "number" && typeof d.variance === "number",
-                );
-                draw(
-                    "plot-flux-fisher",
-                    Plot.plot({ style: { fontSize: "14px" },
-                        width: 1000,
-                        height: 340,
-                        marginLeft: 64,
-                        marginBottom: 48,
-                        x: { label: "Fitness variance" },
-                        y: { label: "Fitness flux (velocity, per generation)", labelAnchor: "center", labelArrow: "none" },
-                        marks: [
-                            Plot.frame({ anchor: "left", stroke: "#333" }),
-                            Plot.frame({ anchor: "bottom", stroke: "#333" }),
-                            Plot.dot(fisher, {
-                                x: "variance",
-                                y: "velocity",
-                                fill: "#0969da",
-                                fillOpacity: 0.4,
-                                r: 2,
-                            }),
-                            Plot.linearRegressionY(fisher, {
-                                x: "variance",
-                                y: "velocity",
-                                stroke: "#842029",
-                            }),
-                        ],
-                    }),
-                );
+                varFluxWidth = varFluxSlot.clientWidth;
             }
 
             const status = document.getElementById("status");
@@ -365,8 +335,6 @@
                 "plot-mut-time",
                 "flux-stats",
                 "plot-flux-location",
-                "plot-flux-variance",
-                "plot-flux-fisher",
             ];
 
             async function load(dataset) {

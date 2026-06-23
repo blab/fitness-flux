@@ -86,19 +86,13 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
-The same frequencies and fitnesses can be viewed as a phase portrait, plotting each clade's empirical frequency against its fitness relative to the daily population average ([@fig:frequency-vs-fitness-sarscov2]; [@fig:frequency-vs-fitness-h3n2]).
+The same frequencies and fitnesses can be viewed as a phase portrait, plotting each clade's empirical frequency against its fitness relative to the daily population average ([@fig:frequency-vs-fitness-sarscov2]).
 A clade emerges at low frequency and high relative fitness, sweeps up in frequency as its relative fitness declines toward the population average, peaks near a relative fitness of zero, and then falls back to low frequency as it is outcompeted.
+Clades that start out with a greater advantage over the population average tend to sweep to higher maximum frequency than clades that start with less of an advantage.
 
 :::figure{#fig:frequency-vs-fitness-sarscov2 component=frequency-vs-fitness dataset=sarscov2_clades}
-**SARS-CoV-2 clades in frequency–fitness space.**
+**Frequency vs fitness phase diagram for SARS-CoV-2 clades.**
 Each line traces a SARS-CoV-2 Nextstrain clade's trajectory over time through empirical frequency (x-axis, logit scale) and fitness relative to the daily population average (y-axis), estimated from Multinomial Logistic Regression (MLR).
-All data is taken from the USA.
-The MLR analysis assumes that the fitness of each clade is constant through time.
-:::
-
-:::figure{#fig:frequency-vs-fitness-h3n2 component=frequency-vs-fitness dataset=h3n2_clades}
-**H3N2 clades in frequency–fitness space.**
-Each line traces an H3N2 Nextstrain clade's trajectory over time through empirical frequency (x-axis, logit scale) and fitness relative to the daily population average (y-axis), estimated from Multinomial Logistic Regression (MLR).
 All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
@@ -106,12 +100,12 @@ The MLR analysis assumes that the fitness of each clade is constant through time
 Fisher's fundamental theorem and the expected relationship of fitness variance and fitness flux.
 Empirical investigation of this relationship in SARS-CoV-2 and H3N2.
 
-:::figure{#fig:sarscov2-variance-flux src=figures/sarscov2_clades_fitness_variance_vs_flux.png}
+:::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in SARS-CoV-2.**
 Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
 :::
 
-:::figure{#fig:h3n2-variance-flux src=figures/h3n2_clades_fitness_variance_vs_flux.png}
+:::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades static=figures/h3n2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in H3N2.**
 Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
 :::

@@ -227,13 +227,34 @@ rule viz_frequency_panels_data:
         """
 
 
+rule viz_variance_flux_data:
+    """Build the variance-vs-flux component's data.json (per dataset): the daily
+    fitness-wave timeseries (variance + velocity) plus the variance-vs-velocity
+    regression, for the four-panel fitness-wave figure."""
+    input:
+        timeseries = "fitness-flux-analysis/results/{analysis}_flux_timeseries.tsv",
+        summary = "fitness-flux-analysis/results/{analysis}_flux_summary.json"
+    output:
+        "viz/variance-vs-flux/data/{analysis}.json"
+    log:
+        "logs/fitness_flux/{analysis}_viz_variance_flux.txt"
+    shell:
+        """
+        python -u fitness-flux-analysis/scripts/viz_variance_flux_data.py \
+            --timeseries {input.timeseries} \
+            --summary {input.summary} \
+            --output {output} 2>&1 | tee {log}
+        """
+
+
 rule viz_meta:
     """Emit each component's meta.json manifest (dataset ids + labels + default)
     for the dashboard selector and dev harness. Content is shared, so write both."""
     output:
         fitness_flux = "viz/time-vs-fitness/meta.json",
         frequency_panels = "viz/time-vs-frequency/meta.json",
-        frequency_vs_fitness = "viz/frequency-vs-fitness/meta.json"
+        frequency_vs_fitness = "viz/frequency-vs-fitness/meta.json",
+        variance_vs_flux = "viz/variance-vs-flux/meta.json"
     log:
         "logs/fitness_flux/viz_meta.txt"
     shell:
@@ -241,6 +262,7 @@ rule viz_meta:
         python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.fitness_flux} 2>&1 | tee {log}
         python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.frequency_panels} 2>&1 | tee -a {log}
         python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.frequency_vs_fitness} 2>&1 | tee -a {log}
+        python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.variance_vs_flux} 2>&1 | tee -a {log}
         """
 
 
@@ -263,6 +285,11 @@ rule all_fitness_flux:
             "viz/frequency-vs-fitness/data/{analysis}.json",
             analysis=FITNESS_FLUX_ANALYSES,
         ),
+        expand(
+            "viz/variance-vs-flux/data/{analysis}.json",
+            analysis=FITNESS_FLUX_ANALYSES,
+        ),
         "viz/time-vs-fitness/meta.json",
         "viz/time-vs-frequency/meta.json",
-        "viz/frequency-vs-fitness/meta.json"
+        "viz/frequency-vs-fitness/meta.json",
+        "viz/variance-vs-flux/meta.json"

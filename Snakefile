@@ -33,7 +33,8 @@ rule clean:
                lineage-deltas-analysis/results \
                viz/time-vs-fitness/data viz/time-vs-fitness/meta.json \
                viz/time-vs-frequency/data viz/time-vs-frequency/meta.json \
-               viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json
+               viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json \
+               viz/variance-vs-flux/data viz/variance-vs-flux/meta.json
         """
 
 rule clean_analysis:
@@ -51,5 +52,6 @@ rule clean_analysis:
                logs/lineage_deltas \
                viz/time-vs-fitness/data viz/time-vs-fitness/meta.json \
                viz/time-vs-frequency/data viz/time-vs-frequency/meta.json \
-               viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json
+               viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json \
+               viz/variance-vs-flux/data viz/variance-vs-flux/meta.json
         """

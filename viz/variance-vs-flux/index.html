@@ -1,0 +1,20 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Fitness variance and flux</title>
+<style>
+    html, body { margin: 0; }
+    #fig { width: 100vw; height: 100vh; }
+</style>
+<div id="fig"></div>
+<script type="module">
+    import { render } from "./variance-vs-flux.js";
+    const slot = document.getElementById("fig");
+    const meta = await fetch("./meta.json").then((r) => r.json()).catch(() => null);
+    const id =
+        new URLSearchParams(location.search).get("dataset") ??
+        meta?.default ??
+        "sarscov2_clades";
+    const data = await fetch(`./data/${id}.json`).then((r) => r.json());
+    const fig = render(slot, data, { mode: "slide" });
+    new ResizeObserver(() => fig.resize()).observe(slot);
+</script>
