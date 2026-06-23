@@ -48,6 +48,9 @@ export function render(container, data, opts = {}) {
         velocity: typeof p.velocity === "number" ? p.velocity * 1000 : null,
     }));
     const velPts = pts.filter((p) => p.velocity != null);
+    // Shared x-domain for the two timeseries panels so their axes align (velocity
+    // starts later than variance, after the velocity window).
+    const dateExtent = d3.extent(pts, (p) => p.date);
 
     // Square, shared domain for the scatter so the variance↔flux relationship
     // reads against the diagonal.
@@ -109,7 +112,7 @@ export function render(container, data, opts = {}) {
     function timeseriesPanel(panelW, panelH, points, accessor, label, what) {
         return Plot.plot({
             ...base(panelW, panelH, { label }),
-            x: { type: "utc", label: null },
+            x: { type: "utc", domain: dateExtent, label: null },
             marks: [
                 Plot.frame({ anchor: "left", stroke: "#333" }),
                 Plot.frame({ anchor: "bottom", stroke: "#333" }),

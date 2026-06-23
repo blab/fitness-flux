@@ -130,8 +130,9 @@ export function render(container, data, opts = {}) {
                     domain: [toLogit(FREQ_MIN), toLogit(FREQ_MAX)],
                     ticks: LOGIT_TICK_FREQS.map(toLogit),
                     tickFormat: (t) => pct(fromLogit(t)),
-                    label: "Empirical frequency",
+                    label: "Clade frequency",
                     labelAnchor: "center",
+                    labelArrow: "none",
                 },
                 y: {
                     label: "Relative fitness to population average",
