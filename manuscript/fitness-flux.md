@@ -23,25 +23,20 @@ TBD
 
 ### Frequency dynamics
 
-We follow population genetics first principles to compute the frequency through time of a haploid allele under selection ([@fig:pop-gen-trajectories]).
+We follow population genetics first principles to compute the frequency through time of a haploid allele under selection.
 If an allele is at frequency $x$, then after a single generation with selective advantage $s$ the expected allele frequency will be 
 $$x' = \frac{x \, (1+s)}{x \, (1+s) + (1-x)}.$$
-Compounded over $t$ generations, the expectation from initial frequency $x_0$ follows
-$$x(t) = \frac{x_0 \, (1+s)^t}{x_0 \, (1+s)^t + (1-x_0)}.$$
-Here, we can see that trajectories are linear once logit transformed via $\mathrm{log}(x / (1 - x))$.
+Compounded over $t$ generations, the expectation from initial frequency $p$ follows
+$$x(t) = \frac{p \, (1+s)^t}{p \, (1+s)^t + (1-p)}.$$
+Generalizing this two-type model to $n$ co-circulating variants, each with initial frequency $p_i$ and selective advantage $s_i$, variant $i$'s frequency is its relative size normalized by the sum across all variants,
+$$x_i(t) = \frac{p_i \, (1+s_i)^t}{\sum_j p_j \, (1+s_j)^t},$$
+where the two-type model above is recovered by a single focal allele competing against a reference type with $s=0$.
+Moving from discrete generations to continuous time, $(1+s_i)^t = \mathrm{exp}(t \, \mathrm{log}(1+s_i))$, so writing the growth rate $f_i = \mathrm{log}(1+s_i)$ gives the probability that a virus sampled at time $t$ is labeled as variant $i$
+$$\mathrm{Pr}(X = i) = x_i(t) = \frac{p_i \, \mathrm{exp}(f_i \, t)}{\sum_j p_j \, \mathrm{exp}(f_j \, t) }.$$
 
-:::figure{#fig:pop-gen-trajectories src=figures/pop_gen_logit_trajectories.png}
-**Expected trajectories of a selected allele in a haploid population genetics model.**
-The left hand panel shows with variant frequency $x$ in normal-space, while the right-hand panel shows logit-transformed variant frequency.
-Selective advantage $s$ of 1%, 2% and 5% per generation are shown.
-:::
-
-We follow this population genetics logic in implementing multinomial logistic regression (MLR), which has seen significant previous use for modeling SARS-CoV-2 variant frequencies [@abousamra2024fitness].
-MLR across $n$ variants models the probability of a virus sampled at time $t$ to be labeled as variant $i$ as equal to its frequency $x_i(t)$
-$$\mathrm{Pr}(X = i) = x_i(t) = \frac{p_i \, \mathrm{exp}(f_i \, t)}{\sum_j p_j \, \mathrm{exp}(f_j \, t) },$$
-where the denominator serves to normalize exponential growth/decay of individual variants and keep overall frequency summing to 1.
-MLR has $2n$ parameters, so that for each variant $i$, we estimate its initial frequency $p_i$ as well as its fixed growth rate $f_i$.
-Because growth rates are necessarily relative, we define an arbitrary "pivot" variant to compare to, which has fixed growth rate $f_i=1$.
+This is the multinomial logistic regression (MLR) model, which has seen significant previous use for modeling SARS-CoV-2 variant frequencies [@abousamra2024fitness].
+The denominator normalizes the exponential growth/decay of individual variants so that overall frequency sums to 1, and the model has $2n$ parameters, with each variant $i$ having an initial frequency $p_i$ and a fixed growth rate $f_i$.
+Because growth rates are necessarily relative, we fix an arbitrary "pivot" variant as a reference with growth rate $f=0$.
 
 We estimate frequencies and fitnesses of SARS-CoV-2 clades in 1-year sliding windows between Jan 2020 and Jan 2026 ([@fig:time-vs-frequency-sarscov2]).
 In each window we collect sequence counts for SARS-CoV-2 clades from sequences from the USA and estimate per-variant frequencies and fitnesses.
