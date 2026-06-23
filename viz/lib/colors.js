@@ -25,7 +25,9 @@ export function colorScale(colors) {
 
 // Build a self-styled legend of the major variants (no external CSS, so it
 // survives a freeze). Orientation "vertical" stacks; "horizontal" wraps inline.
-export function buildLegend(scale, { orientation = "vertical", fontSize = "14px", swatch = 13 } = {}) {
+// `extra` appends additional variant keys (e.g. "other") after the major ones,
+// styled identically so legend-hover highlighting still wires them.
+export function buildLegend(scale, { orientation = "vertical", fontSize = "14px", swatch = 13, extra = [] } = {}) {
     const vertical = orientation === "vertical";
     const div = document.createElement("div");
     Object.assign(div.style, {
@@ -37,7 +39,7 @@ export function buildLegend(scale, { orientation = "vertical", fontSize = "14px"
         fontSize,
         lineHeight: "1.3",
     });
-    for (const v of scale.majorVariants) {
+    for (const v of [...scale.majorVariants, ...extra]) {
         const item = document.createElement("span");
         item.dataset.variant = v;
         Object.assign(item.style, {

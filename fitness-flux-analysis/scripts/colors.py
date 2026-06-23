@@ -189,8 +189,12 @@ def main():
                 "true" if v in major_set else "false",
                 rank,
             ])
+        # Aggregated "other" category: middle gray, never major (kept out of the
+        # color ramp and every component legend), ordered last. Consumed only by
+        # the time-vs-frequency panels; the fitness path has no "other".
+        writer.writerow(["other", color["other"], "Other", "false", len(ordered)])
     ff_io.log(
-        f"Wrote {len(ordered)} color rows to {args.output} "
+        f"Wrote {len(ordered) + 1} color rows to {args.output} "
         f"({len(major)} major: {', '.join(major)})"
     )
 

@@ -8,7 +8,8 @@ raw per-season data, distinct from the cross-season gathered frequencies in
 gather_frequencies.py.
 
 Output {dataset}_seasonal_frequencies.tsv: timepoint, date, variant, empirical,
-modeled (one row per variant-date where either series is present; "other" dropped).
+modeled (one row per variant-date where either series is present; the aggregated
+"other" category is always retained, individual clades only above --min-peak).
 """
 
 import argparse
@@ -41,11 +42,11 @@ def main():
         empirical = ff_io.variant_weekly_frequencies(mlr)
         modeled = ff_io.variant_modeled_frequencies(mlr)
         for variant in sorted(set(empirical) | set(modeled)):
-            if variant == "other":
-                continue
             emp, mod = empirical.get(variant, {}), modeled.get(variant, {})
             peak = max([v for v in list(emp.values()) + list(mod.values())], default=0.0)
-            if peak < args.min_peak:
+            # Always retain the aggregated "other" category; apply the peak
+            # threshold only to the individually-tracked clades.
+            if variant != "other" and peak < args.min_peak:
                 continue
             for date in sorted(set(emp) | set(mod)):
                 rows.append((timepoint, date, variant, emp.get(date), mod.get(date)))

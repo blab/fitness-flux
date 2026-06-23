@@ -77,7 +77,7 @@ export function render(container, data, opts = {}) {
         gap: "16px",
         margin: "8px 0 4px",
     });
-    const legend = buildLegend(scale, { orientation: "horizontal", fontSize: legendFont });
+    const legend = buildLegend(scale, { orientation: "horizontal", fontSize: legendFont, extra: ["other"] });
     Object.assign(legend.style, { flex: "1 1 auto", minWidth: "0", margin: "0" });
     header.append(legend, buildLogitSwitch());
     root.appendChild(header);
