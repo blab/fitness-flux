@@ -1,36 +1,24 @@
 # Comparing fitness dynamics across SARS-CoV-2, influenza H3 and influenza H1
 
-## Provision metadata locally
-
-```
-mkdir data
-cd data
-```
-
-For SARS-CoV-2
-```
-aws s3 cp s3://nextstrain-data/files/ncov/open/metadata.tsv.zst sarscov2_metadata.tsv.zst
-zstd -c -d sarscov2_metadata.tsv.zst \
-   | tsv-select -H -f strain,date,country,clade_nextstrain,Nextclade_pango,QC_overall_status \
-   | zstd -c > data/sarscov2_subset_metadata.tsv.zst
-```
-This results in `data/sarscov2_subset_metadata.tsv.zst`
-
-For H3N2
-```
-aws s3 cp s3://nextstrain-data-private/files/workflows/seasonal-flu/h3n2/metadata.tsv.xz h3n2_metadata.tsv.xz
-xz -c -d h3n2_metadata.tsv.xz \
-   | tsv-select -H -f strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha \
-   | zstd -c > data/h3n2_subset_metadata.tsv.zst
-```
-This results in `data/h3n2_subset_metadata.tsv.zst`
-
 ## Workflow
 
 Once metadata is provisioned locally, run the entire workflow with
 ```
-nextstrain build . all_mlr_estimates
+nextstrain build . 
 ```
+
+### Provision metadata
+
+Input metadata is provisioned by the workflow itself (rule `provision_metadata`): it streams the per-virus Nextstrain metadata from S3, subsets to the columns the analysis uses, and writes `data/{virus}_subset_metadata.tsv.zst` (the `local_metadata` every dataset consumes). Provision both viruses with
+```
+nextstrain build . all_provision_metadata
+```
+or just run the full build (below) — provisioning runs automatically as an upstream dependency whenever the metadata files are missing. The source URLs and column sets live under `provision:` in `defaults/config.yaml`.
+
+Notes:
+- Requires `aws`, `zstd`, `xz`, and `tsv-select` on `PATH`.
+- H3N2 reads a private bucket (`nextstrain-data-private`), so AWS credentials are required; SARS-CoV-2 uses the public `nextstrain-data` bucket.
+- The files are provisioned once and not re-downloaded automatically; refresh with `nextstrain build . --forcerun provision_metadata all_provision_metadata` or by deleting `data/*_subset_metadata.tsv.zst`.
 
 ### Sequence counts
 

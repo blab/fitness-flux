@@ -16,20 +16,6 @@ rule all_variant_relationships:
             virus=config["datasets"]
         )
 
-# rule subset_metadata:
-#     input:
-#         metadata = lambda w: config[w.dataset]["local_metadata"]
-#     output:
-#         subset_metadata = "sequence-counts/{dataset}/subset_metadata.tsv.zst"
-#     params:
-#         subset_columns = lambda w: ",".join(config[w.dataset]["subset_columns"]),
-#     shell:
-#         """
-#         zstd -c -d {input.metadata} \
-#             | tsv-select -H -f {params.subset_columns:q} \
-#             | zstd -c > {output.subset_metadata}
-#         """
-
 rule summarize_clade_sequence_counts:
     input:
         subset_metadata = lambda w: config[w.dataset]["local_metadata"]

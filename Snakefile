@@ -1,5 +1,6 @@
 configfile: "defaults/config.yaml"
 
+include: "rules/provision_metadata.smk"
 include: "rules/sequence_counts.smk"
 include: "rules/mlr_estimates.smk"
 include: "rules/fitness_flux_analysis.smk"

@@ -33,6 +33,20 @@ datasets:
   - h3n2_clades_2024-25
   - h3n2_clades_2025-26
 
+# Per-virus metadata provisioning (the provision_metadata rule): stream the
+# Nextstrain metadata from S3, subset to these columns, and recompress to the
+# data/{virus}_subset_metadata.tsv.zst that every dataset block's local_metadata
+# points at. H3N2 is a private bucket (needs AWS credentials); SARS-CoV-2 is public.
+provision:
+  sarscov2:
+    metadata_url: "s3://nextstrain-data/files/ncov/open/metadata.tsv.zst"
+    decompress: "zstd -dc"
+    columns: "strain,date,country,clade_nextstrain,Nextclade_pango,QC_overall_status"
+  h3n2:
+    metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/h3n2/metadata.tsv.xz"
+    decompress: "xz -dc"
+    columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
+
 # H3N2 uses a 2-year analysis window and slides 1-year forward, and a 2-week
 # (14-day) empirical-frequency smoothing window (raw_freq_window) since it is
 # sparser than SARS-CoV-2, which stays at the 1-week default.
