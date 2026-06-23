@@ -9,22 +9,21 @@ cd data
 
 For SARS-CoV-2
 ```
-curl https://data.nextstrain.org/files/ncov/open/metadata.tsv.zst > sarscov2_metadata.tsv.zst
+aws s3 cp s3://nextstrain-data/files/ncov/open/metadata.tsv.zst sarscov2_metadata.tsv.zst
 zstd -c -d sarscov2_metadata.tsv.zst \
    | tsv-select -H -f strain,date,country,clade_nextstrain,Nextclade_pango,QC_overall_status \
-   | zstd -c > sarscov2_subset_metadata.tsv.zst
+   | zstd -c > data/sarscov2_subset_metadata.tsv.zst
 ```
-and move to `data/`.
+This results in `data/sarscov2_subset_metadata.tsv.zst`
 
-For H3N2, clone https://github.com/nextstrain/forecasts-flu and then run
+For H3N2
 ```
-nextstrain build --docker --image=ghcr.io/blab/flu-geo-fitness:latest . data/gisaid/h3n2/metadata_with_nextclade.tsv
-sed -i -e 's/\tUsa\t/\tUSA\t/g' metadata_with_nextclade.tsv
-tsv-select -H -f strain,date,region,country,subclade,proposedSubclade,qc.overallStatus metadata_with_nextclade.tsv > metadata_selected.tsv
-tsv-filter -H --str-ne subclade:unassigned --str-gt date:2000-01-01 metadata_selected.tsv > metadata_filtered.tsv
-zstd -c metadata_filtered.tsv > h3n2_subset_metadata.tsv.zst
+aws s3 cp s3://nextstrain-data-private/files/workflows/seasonal-flu/h3n2/metadata.tsv.xz h3n2_metadata.tsv.xz
+xz -c -d h3n2_metadata.tsv.xz \
+   | tsv-select -H -f strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha \
+   | zstd -c > data/h3n2_subset_metadata.tsv.zst
 ```
-and move to `data/`.
+This results in `data/h3n2_subset_metadata.tsv.zst`
 
 ## Workflow
 

@@ -31,6 +31,7 @@ datasets:
   - h3n2_clades_2022-23
   - h3n2_clades_2023-24
   - h3n2_clades_2024-25
+  - h3n2_clades_2025-26
 
 # H3N2 uses a 2-year analysis window and slides 1-year forward, and a 2-week
 # (14-day) empirical-frequency smoothing window (raw_freq_window) since it is
@@ -39,7 +40,7 @@ datasets:
 h3n2_clades_2016-17:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -53,7 +54,7 @@ h3n2_clades_2016-17:
 h3n2_clades_2017-18:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -67,7 +68,7 @@ h3n2_clades_2017-18:
 h3n2_clades_2018-19:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -81,7 +82,7 @@ h3n2_clades_2018-19:
 h3n2_clades_2019-20:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -95,7 +96,7 @@ h3n2_clades_2019-20:
 h3n2_clades_2020-21:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -109,7 +110,7 @@ h3n2_clades_2020-21:
 h3n2_clades_2021-22:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -123,7 +124,7 @@ h3n2_clades_2021-22:
 h3n2_clades_2022-23:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -137,7 +138,7 @@ h3n2_clades_2022-23:
 h3n2_clades_2023-24:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
@@ -151,12 +152,26 @@ h3n2_clades_2023-24:
 h3n2_clades_2024-25:
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column subclade
+    --clade-column subclade_nextclade_ha
     --filter-columns country
     --filter-query "country == 'USA'"
     --location-column country
   min_date: "2024-01-01"
   max_date: "2025-12-31"
+  clade_min_seq: 100
+  pivot: "J.2"
+  generation_time: 3.2
+  raw_freq_window: 14
+
+h3n2_clades_2025-26:
+  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2025-01-01"
+  max_date: "2026-12-31"
   clade_min_seq: 100
   pivot: "J.2"
   generation_time: 3.2
