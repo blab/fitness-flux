@@ -61,10 +61,19 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
+### Fitness flux
+
 With variant frequency $x_i(t)$ and constant variant fitness $f_i$, we can describe the mean population fitness as a standard weighted sum $\bar{f}(t) = \sum_i x_i(t) \, f_i$.
 The fitness flux [@mustonen2010fitness] of the population is then the rate of change of population fitness at a given time $\phi(t) = \Delta \bar{f}(t) / \Delta t$.
+Integrating this rate gives the cumulative fitness flux
+$$\Phi(t) = \int_{t_0}^{t} \phi(t') \, dt' = \bar{f}(t) - \bar{f}(t_0),$$
+the total adaptive change accumulated along the population's trajectory.
+Because variant fitnesses are estimated only relative to a pivot, an individual variant's scaffolded fitness is meaningful as a difference from a baseline rather than as an absolute value.
+Chaining these locally-measured advantages across overlapping windows places variant $i$ at a cumulative fitness flux $\Phi_i = f_i - f_0$ relative to the founding variant, and the population sits at the frequency-weighted average $\Phi(t) = \sum_i x_i(t) \, \Phi_i$.
 
-
+We see SARS-CoV-2 accumulates fitness flux rapidly, over the course of 2020 through 2025, doubling in fitness every 1.4 years ([@fig:time-vs-fitness-sarscov2]).
+We see an initial lull, followed by rapid growth in fitness in 2021 and 2022, and then a slower, more steady pace since 2024.
+There is a mix of large jumps in fitness (to Delta, to JN.1) and smaller, more gradual step change.
 
 :::figure{#fig:time-vs-fitness-sarscov2 component=time-vs-fitness dataset=sarscov2_clades static=figures/sarscov2_clades_time_vs_fitness.png}
 **Cumulative SARS-CoV-2 fitness flux.**
@@ -73,6 +82,9 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
+Seasonal influenza H3N2 shows a fundamentally similar pattern of emergence of new clades and replacement of existing diversity, however, it plays out on a slower timescale ([@fig:time-vs-fitness-h3n2]).
+Rather than doubling in fitness every 1.4 years, H3N2 has a doubling period of 10.0 years.
+More coexistence of multiple co-circulating clades is also apparent relative to SARS-CoV-2.
 
 :::figure{#fig:time-vs-fitness-h3n2 component=time-vs-fitness dataset=h3n2_clades static=figures/h3n2_clades_time_vs_fitness.png}
 **Cumulative H3N2 fitness flux.**
@@ -81,7 +93,7 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
-The same frequencies and fitnesses can be viewed as a phase portrait, plotting each clade's empirical frequency against its fitness relative to the daily population average ([@fig:frequency-vs-fitness-sarscov2]).
+SARS-CoV-2 frequencies and fitnesses can be viewed as a phase portrait, plotting each clade's empirical frequency against its fitness relative to the daily population average ([@fig:frequency-vs-fitness-sarscov2]).
 A clade emerges at low frequency and high relative fitness, sweeps up in frequency as its relative fitness declines toward the population average, peaks near a relative fitness of zero, and then falls back to low frequency as it is outcompeted.
 Clades that start out with a greater advantage over the population average tend to sweep to higher maximum frequency than clades that start with less of an advantage.
 
@@ -92,8 +104,17 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
-Fisher's fundamental theorem and the expected relationship of fitness variance and fitness flux.
-Empirical investigation of this relationship in SARS-CoV-2 and H3N2.
+### Fisher's fundamental theorem
+
+Multistrain models that allow for antigenic evolution produce traveling waves in antigenic space [@bedford2012canalization].
+More broadly, many mutations of small fitness effect create traveling fitness waves where the the rate of translation to higher fitness is proportional to the variance in fitness [@neher2013genealogies].
+This is a consequence of Fisher's fundamental theorem of natural selection
+$$\frac{d\bar{f}}{dt} = \mathrm{Var}(f),$$
+or "the rate of increase in fitness of any organism at any time is equal to its genetic variance in fitness at that time" [@fisher1930genetical].
+
+If we investigate this relationship directly in SARS-CoV-2 ([@fig:sarscov2-variance-flux]), we find that timepoints with larger variance in fitness $\mathrm{Var}[f(t)] = \sum_i x_i(t) \, (f_i - \bar{f}(t))^2$ correlate well with timepoints with larger change in mean population fitness $\Delta \bar{f}(t) / \Delta t$.
+In fact we find that the relationship is near the 1:1 expectation from Fisher's theorem.
+Looking in detail at rate of fitness flux through time, we see reduction to per gen average of $1.2-1.7 \times 10^{-3}$ in 2024 and 2025, down from $8.8 \times 10^{-3}$ in 2021.
 
 :::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in SARS-CoV-2.**
