@@ -42,6 +42,9 @@ provision:
     metadata_url: "s3://nextstrain-data/files/ncov/open/metadata.tsv.zst"
     decompress: "zstd -dc"
     columns: "strain,date,country,clade_nextstrain,Nextclade_pango,QC_overall_status"
+    merge_clades:
+      clade_nextstrain:
+        WT: ["19A", "19B"]
   h3n2:
     metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/h3n2/metadata.tsv.xz"
     decompress: "xz -dc"
@@ -192,19 +195,7 @@ h3n2_clades_2025-26:
   raw_freq_window: 14
 
 sarscov2_clades_2020:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
-  min_date: "2020-01-01"
-  max_date: "2020-12-31"
-  clade_min_seq: 3000
-  pivot: "19B"
-  generation_time: 3.2
-
-sarscov2_clades_2020:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -216,7 +207,7 @@ sarscov2_clades_2020:
   generation_time: 3.2
 
 sarscov2_clades_2020-21:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -228,7 +219,7 @@ sarscov2_clades_2020-21:
   generation_time: 3.2
 
 sarscov2_clades_2021:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -240,7 +231,7 @@ sarscov2_clades_2021:
   generation_time: 3.2
 
 sarscov2_clades_2021-22:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -252,7 +243,7 @@ sarscov2_clades_2021-22:
   generation_time: 3.2
 
 sarscov2_clades_2022:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -264,7 +255,7 @@ sarscov2_clades_2022:
   generation_time: 3.2
 
 sarscov2_clades_2022-23:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -276,7 +267,7 @@ sarscov2_clades_2022-23:
   generation_time: 3.2
 
 sarscov2_clades_2023:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -288,7 +279,7 @@ sarscov2_clades_2023:
   generation_time: 3.2
 
 sarscov2_clades_2023-24:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -300,7 +291,7 @@ sarscov2_clades_2023-24:
   generation_time: 3.2
 
 sarscov2_clades_2024:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -312,7 +303,7 @@ sarscov2_clades_2024:
   generation_time: 3.2
 
 sarscov2_clades_2024-25:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -324,7 +315,7 @@ sarscov2_clades_2024-25:
   generation_time: 3.2
 
 sarscov2_clades_2025:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -336,7 +327,7 @@ sarscov2_clades_2025:
   generation_time: 3.2
 
 sarscov2_clades_2025-26:
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
@@ -349,7 +340,7 @@ sarscov2_clades_2025-26:
 
 sarscov2_lineages_2020:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -362,7 +353,7 @@ sarscov2_lineages_2020:
 
 sarscov2_lineages_2020-21:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -375,7 +366,7 @@ sarscov2_lineages_2020-21:
 
 sarscov2_lineages_2021:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -388,7 +379,7 @@ sarscov2_lineages_2021:
 
 sarscov2_lineages_2021-22:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -401,7 +392,7 @@ sarscov2_lineages_2021-22:
 
 sarscov2_lineages_2022:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -414,7 +405,7 @@ sarscov2_lineages_2022:
 
 sarscov2_lineages_2022-23:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -427,7 +418,7 @@ sarscov2_lineages_2022-23:
 
 sarscov2_lineages_2023:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -440,7 +431,7 @@ sarscov2_lineages_2023:
 
 sarscov2_lineages_2023-24:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -453,7 +444,7 @@ sarscov2_lineages_2023-24:
 
 sarscov2_lineages_2024:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -466,7 +457,7 @@ sarscov2_lineages_2024:
 
 sarscov2_lineages_2024-25:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country
@@ -479,7 +470,7 @@ sarscov2_lineages_2024-25:
 
 sarscov2_lineages_2025:
   variant_classification: "pango_lineages"
-  local_metadata: "data/sarscov2_subset_metadata.tsv.zst"
+  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
     --filter-columns QC_overall_status country

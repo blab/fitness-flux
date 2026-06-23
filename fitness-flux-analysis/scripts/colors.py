@@ -65,13 +65,14 @@ NEXTSTRAIN_COLORS = [
 ]
 
 # sarscov2_clades early/basal clades get a grayscale ramp (GrayLevel 0.25..0.75).
-EARLY_GRAYS = ["19A", "19B", "20A", "20B", "20C", "20D", "20E", "20F", "20G", "21F"]
+EARLY_GRAYS = ["WT", "20A", "20B", "20C", "20D", "20E", "20F", "20G", "21F"]
 
 SARSCOV2_LABELS = {
-    "19B": "WT", "20A": "D614G", "20I": "Alpha", "21J": "Delta",
+    "WT": "WT", "20A": "D614G", "20I": "Alpha", "21J": "Delta",
     "21K": "Omicron BA.1", "21L": "BA.2", "22B": "BA.5", "22E": "BQ.1",
     "23A": "XBB.1.5", "23F": "EG.5.1", "24A": "JN.1", "24E": "KP.3.1.1",
-    "24F": "XEC", "25A": "LP.8.1", "25C": "XFG",
+    "24F": "XEC", "25A": "LP.8.1", "25B": "NB.1.8.1", "25C": "XFG",
+    "25I": "BA.2.3"
 }
 
 # Variants excluded from the legend even if they rank in the top frequencies.
