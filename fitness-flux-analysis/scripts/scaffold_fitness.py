@@ -1,24 +1,32 @@
 #!/usr/bin/env python3
-"""Stitch per-season variant fitnesses into one scaffolded fitness scale.
+"""Stitch per-window variant fitnesses into one scaffolded fitness scale.
 
-Port of the "Update fitnesses" section of ``fitness-flux.nb``. Seasonal MLR
-growth advantages (``ga``) are only defined relative to each season's pivot, so
-overlapping variants are used to rescale successive seasons onto a common
-scale. Working on the linear ``ga`` scale:
+Each sliding-window MLR fit estimates a variant's fitness ``f = log(ga)`` only
+relative to that window's pivot, so every window carries its own arbitrary
+additive zero. Scaffolding recovers a single fitness per variant by treating
+this as a weighted two-way additive model: each per-window estimate is
 
-  scaffold = fold over seasons, starting from season 1's ga map; for each later
-  season, divide its values by the (abundance-weighted) mean ratio
-  (newSeason[v] / accumulated[v]) over shared variants (excluding ``other``),
-  then merge into the accumulator by an abundance-weighted average of any
-  variant present in both.
+    f_{i,w} ~= f_i - c_w,
 
-Each season's contribution to a variant is weighted by how much that variant
-circulated in the season — the area under its modeled-frequency curve (AUC) — so
-seasons where a variant is a near-extinct relic (an unconstrained MLR estimate)
-carry negligible weight. The scaffolded fitness is ``log(ga)`` for each variant
-(``other`` dropped), then shifted so the founding clade — the least-fit baseline,
-i.e. the minimum — sits at 0; each value is thus the cumulative fitness flux
-relative to the founding variant (``f_i - f_0 >= 0``). Rounded to 4 decimals.
+a variant effect ``f_i`` (its global fitness) minus a window effect ``c_w``
+(window w's offset). We choose the ``f_i`` and ``c_w`` that jointly minimize the
+abundance-weighted squared error over every window,
+
+    minimize  sum_{i,w} a_{i,w} (f_{i,w} - f_i + c_w)^2,
+
+weighting each estimate by ``a_{i,w}``, the area under variant i's modeled-
+frequency curve in window w (AUC) — so a window where a variant is a near-
+extinct relic, its MLR estimate poorly constrained, contributes negligibly.
+
+The optimum is two interleaved abundance-weighted means: each variant's fitness
+is the weighted mean of its offset-corrected estimates over the windows it
+appears in, and each window's offset is the weighted-mean gap between the global
+scale and that window's estimates. We solve by alternating the two to
+convergence (the overlap between windows ties them into one connected scale, so
+the relative fitnesses are determined up to a single global constant). Finally
+the scale is shifted so the founding clade — the least-fit, our baseline — sits
+at 0, leaving each variant's value as its cumulative fitness flux relative to it
+(``f_i - f_0 >= 0``). Rounded to 4 decimals.
 """
 
 import argparse
@@ -63,35 +71,65 @@ def window_weights(mlr):
     return weights
 
 
-def update_fitnesses(comparison, to_update, weights):
-    """Rescale ``to_update`` onto ``comparison`` via the abundance-weighted mean
-    shared-variant ratio (abundant shared variants anchor the rescale; falls back
-    to the plain mean if no shared variant carries weight)."""
-    shared = [v for v in (set(comparison) & set(to_update)) if v != "other"]
-    ratios = [to_update[v] / comparison[v] for v in shared]
-    ws = [weights.get(v, 0.0) for v in shared]
-    total = sum(ws)
-    mean_ratio = sum(r * w for r, w in zip(ratios, ws)) / total if total > 0 else mean(ratios)
-    return {v: value / mean_ratio for v, value in to_update.items()}
+def window_fitnesses(mlr):
+    """variant -> fitness ``f = log(ga)`` for the window (relative to its pivot),
+    excluding the pooled ``other`` category, whose aggregate fitness is not a
+    meaningful per-variant quantity and must not anchor a window's offset."""
+    return {
+        variant: math.log(ga)
+        for variant, ga in ff_io.variant_growth_advantages(mlr).items()
+        if variant != "other"
+    }
 
 
-def combine_fitnesses(acc_ga, acc_w, new_ga, new_w):
-    """Merge a new (rescaled) season into the accumulator, averaging each shared
-    variant's ga weighted by its per-season frequency-area and tracking the
-    accumulated weight."""
-    combined_ga, combined_w = {}, {}
-    for variant in set(acc_ga) | set(new_ga):
-        ag, aw = acc_ga.get(variant), acc_w.get(variant, 0.0)
-        ng, nw = new_ga.get(variant), new_w.get(variant, 0.0)
-        if variant in acc_ga and variant in new_ga:
-            total = aw + nw
-            combined_ga[variant] = (ag * aw + ng * nw) / total if total > 0 else (ag + ng) / 2
-            combined_w[variant] = total
-        elif variant in acc_ga:
-            combined_ga[variant], combined_w[variant] = ag, aw
-        else:
-            combined_ga[variant], combined_w[variant] = ng, nw
-    return combined_ga, combined_w
+def _weighted_mean(pairs):
+    """Mean of ``(value, weight)`` pairs; falls back to the unweighted mean when
+    no entry carries weight (e.g. a variant present only in relic windows)."""
+    total = sum(w for _, w in pairs)
+    if total > 0:
+        return sum(value * w for value, w in pairs) / total
+    return mean([value for value, _ in pairs])
+
+
+def two_way_fit(windows, max_iter=10000, tol=1e-12):
+    """Jointly fit a global fitness ``f_i`` per variant and an offset ``c_w`` per
+    window to all per-window estimates by abundance-weighted least squares,
+    minimizing ``sum_{i,w} a_{i,w} (f_{i,w} - f_i + c_w)^2``.
+
+    ``windows`` is a list of ``(fitness, weight)`` dicts, one per window, mapping
+    variant -> ``f_{i,w}`` and variant -> ``a_{i,w}`` (AUC). The optimum is the
+    fixed point of two interleaved weighted means, reached by alternating them:
+    each window offset is the weighted-mean gap to the current global scale, and
+    each variant fitness is the weighted mean of its offset-corrected estimates.
+    The absolute level is gauge-free (anchored later); iteration stops once no
+    fitness moves by more than ``tol``.
+    """
+    # variant -> list of (window index, f_{i,w}, a_{i,w}); and the per-window dual
+    by_variant = {}
+    for w, (fitness_w, weight_w) in enumerate(windows):
+        for variant, f in fitness_w.items():
+            by_variant.setdefault(variant, []).append((w, f, weight_w.get(variant, 0.0)))
+    by_window = [
+        [(variant, f, weight_w.get(variant, 0.0)) for variant, f in fitness_w.items()]
+        for fitness_w, weight_w in windows
+    ]
+
+    offsets = [0.0] * len(windows)
+    fitness = {
+        variant: _weighted_mean([(f, a) for _, f, a in entries])
+        for variant, entries in by_variant.items()
+    }
+    for _ in range(max_iter):
+        for w, entries in enumerate(by_window):
+            offsets[w] = _weighted_mean([(fitness[v] - f, a) for v, f, a in entries])
+        max_delta = 0.0
+        for variant, entries in by_variant.items():
+            updated = _weighted_mean([(f + offsets[w], a) for w, f, a in entries])
+            max_delta = max(max_delta, abs(updated - fitness[variant]))
+            fitness[variant] = updated
+        if max_delta < tol:
+            break
+    return fitness
 
 
 def scaffold(mlr_dir, dataset):
@@ -99,26 +137,16 @@ def scaffold(mlr_dir, dataset):
     if not timepoints:
         raise SystemExit(f"No seasonal MLR estimates found for {dataset}")
 
-    first = ff_io.load_mlr(mlr_dir, dataset, timepoints[0])
-    accumulated = ff_io.variant_growth_advantages(first)
-    seed_w = window_weights(first)
-    weight = {variant: seed_w.get(variant, 0.0) for variant in accumulated}
-    for timepoint in timepoints[1:]:
+    windows = []
+    for timepoint in timepoints:
         mlr = ff_io.load_mlr(mlr_dir, dataset, timepoint)
-        new_ga = ff_io.variant_growth_advantages(mlr)
-        new_w = window_weights(mlr)
-        rescaled = update_fitnesses(accumulated, new_ga, new_w)
-        accumulated, weight = combine_fitnesses(accumulated, weight, rescaled, new_w)
+        windows.append((window_fitnesses(mlr), window_weights(mlr)))
 
-    scaffolded = {
-        variant: math.log(ga)
-        for variant, ga in accumulated.items()
-        if variant != "other"
-    }
+    fitness = two_way_fit(windows)
     # Anchor the founding clade (the least-fit baseline) to 0, so each value is the
     # cumulative fitness flux relative to it (f_i - f_0 >= 0).
-    floor = min(scaffolded.values())
-    return {variant: value - floor for variant, value in scaffolded.items()}
+    floor = min(fitness.values())
+    return {variant: value - floor for variant, value in fitness.items()}
 
 
 def read_reference(path):

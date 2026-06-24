@@ -61,6 +61,9 @@ All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
 :::
 
+We "scaffold" MLR fitness estimates across windows to arrive at a single fitness estimate per variant.
+Here, each window only measures fitness differences, with its own arbitrary zero; we solve for the single set of clade fitnesses and per-window offsets that best fit every window at once, weighting by abundance (see Methods).
+
 ### Fitness flux
 
 With variant frequency $x_i(t)$ and constant variant fitness $f_i$, we can describe the mean population fitness as a standard weighted sum $\bar{f}(t) = \sum_i x_i(t) \, f_i$.
@@ -71,9 +74,9 @@ the total adaptive change accumulated along the population's trajectory.
 Because variant fitnesses are estimated only relative to a pivot, an individual variant's scaffolded fitness is meaningful as a difference from a baseline rather than as an absolute value.
 Chaining these locally-measured advantages across overlapping windows places variant $i$ at a cumulative fitness flux $\Phi_i = f_i - f_0$ relative to the founding variant, and the population sits at the frequency-weighted average $\Phi(t) = \sum_i x_i(t) \, \Phi_i$.
 
-We see SARS-CoV-2 accumulates fitness flux rapidly, over the course of 2020 through 2025, doubling in fitness every 1.4 years ([@fig:time-vs-fitness-sarscov2]).
+We see SARS-CoV-2 accumulates fitness flux rapidly, over the course of 2020 through 2025, doubling in fitness every 1.5 years ([@fig:time-vs-fitness-sarscov2]).
 We see an initial lull, followed by rapid growth in fitness in 2021 and 2022, and then a slower, more steady pace since 2024.
-There is a mix of large jumps in fitness (to Delta, to JN.1) and smaller, more gradual step change.
+There is a mix of large jumps in fitness (in particular to BA.1, but also more recently to JN.1) and smaller, more gradual step change.
 
 :::figure{#fig:time-vs-fitness-sarscov2 component=time-vs-fitness dataset=sarscov2_clades static=figures/sarscov2_clades_time_vs_fitness.png}
 **Cumulative SARS-CoV-2 fitness flux.**
@@ -83,7 +86,7 @@ The MLR analysis assumes that the fitness of each clade is constant through time
 :::
 
 Seasonal influenza H3N2 shows a fundamentally similar pattern of emergence of new clades and replacement of existing diversity, however, it plays out on a slower timescale ([@fig:time-vs-fitness-h3n2]).
-Rather than doubling in fitness every 1.4 years, H3N2 has a doubling period of 10.0 years.
+Rather than doubling in fitness every 1.5 years, H3N2 has a doubling period of 9.6 years.
 More coexistence of multiple co-circulating clades is also apparent relative to SARS-CoV-2.
 
 :::figure{#fig:time-vs-fitness-h3n2 component=time-vs-fitness dataset=h3n2_clades static=figures/h3n2_clades_time_vs_fitness.png}
@@ -114,7 +117,7 @@ or "the rate of increase in fitness of any organism at any time is equal to its 
 
 If we investigate this relationship directly in SARS-CoV-2 ([@fig:sarscov2-variance-flux]), we find that timepoints with larger variance in fitness $\mathrm{Var}[f(t)] = \sum_i x_i(t) \, (f_i - \bar{f}(t))^2$ correlate well with timepoints with larger change in mean population fitness $\Delta \bar{f}(t) / \Delta t$.
 In fact we find that the relationship is near the 1:1 expectation from Fisher's theorem.
-Looking in detail at rate of fitness flux through time, we see reduction to per gen average of $1.2-1.7 \times 10^{-3}$ in 2024 and 2025, down from $8.8 \times 10^{-3}$ in 2021.
+Looking in detail at rate of fitness flux through time, we see reduction to per gen average of $1.6-1.7 \times 10^{-3}$ in 2024 and 2025, down from $8.5 \times 10^{-3}$ in 2021.
 
 :::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40 static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in SARS-CoV-2.**
@@ -148,7 +151,17 @@ TBD
 
 ## Methods
 
-TBD
+### Scaffolding across timepoints
+
+Within each sliding window the MLR model estimates each variant's fitness only relative to that window's pivot, so every window carries its own arbitrary additive zero and the per-window estimates $f_{i,w}$ are not directly comparable.
+We recover a single fitness per variant by treating scaffolding as a weighted two-way additive model: each estimate is a variant effect minus a window effect, $f_{i,w} \approx f_i - c_w$, where $f_i$ is variant $i$'s global fitness and $c_w$ is window $w$'s offset.
+We choose the $f_i$ and $c_w$ that jointly minimize the abundance-weighted squared error across every window,
+$$\min_{\{f_i\},\,\{c_w\}} \; \sum_{i,w} a_{i,w} \, (f_{i,w} - f_i + c_w)^2,$$
+weighting each estimate by $a_{i,w}$, the area under variant $i$'s modeled-frequency curve in window $w$, so a window in which a variant is rare with poorly constrained MLR estimate will contribute negligibly.
+The optimum is a pair of interleaved abundance-weighted means,
+$$f_i = \frac{\sum_w a_{i,w} \, (f_{i,w} + c_w)}{\sum_w a_{i,w}}, \qquad c_w = \frac{\sum_i a_{i,w} \, (f_i - f_{i,w})}{\sum_i a_{i,w}},$$
+each variant's fitness being the weighted mean of its offset-corrected estimates over its windows, and each window's offset the weighted-mean gap between the global scale and that window's estimates; we solve by alternating the two to convergence.
+The overlap of variants between windows ties them into one connected scale, leaving a single global constant free, which we fix by shifting all values so that the founding variant, our least-fit baseline, sits at zero, leaving each variant's scaffolded value as its cumulative fitness flux $\Phi_i = f_i - f_0$.
 
 ## Acknowledgments
 
