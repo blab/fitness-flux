@@ -116,7 +116,7 @@ If we investigate this relationship directly in SARS-CoV-2 ([@fig:sarscov2-varia
 In fact we find that the relationship is near the 1:1 expectation from Fisher's theorem.
 Looking in detail at rate of fitness flux through time, we see reduction to per gen average of $1.2-1.7 \times 10^{-3}$ in 2024 and 2025, down from $8.8 \times 10^{-3}$ in 2021.
 
-:::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
+:::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40 static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in SARS-CoV-2.**
 Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
 :::

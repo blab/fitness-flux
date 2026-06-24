@@ -38,6 +38,9 @@ function jitter(dateStr) {
 export function render(container, data, opts = {}) {
     const mode = opts.mode ?? "inline";
     const axisFont = mode === "slide" ? "14px" : "12px";
+    // Optional cap on the shared log-fitness value scale (variance + flux, ×10⁻³),
+    // applied to every value axis; passed via the figure directive as `scalemax=N`.
+    const yMax = typeof opts.scalemax === "number" ? opts.scalemax : null;
 
     const fit = data.fit ?? {};
     const pts = data.points.map((p) => ({
@@ -51,13 +54,16 @@ export function render(container, data, opts = {}) {
     // Shared x-domain for the two timeseries panels so their axes align (velocity
     // starts later than variance, after the velocity window).
     const dateExtent = d3.extent(pts, (p) => p.date);
+    // Capped value domains (top bounded by scalemax; bottom kept from the data).
+    const varDom = yMax == null ? null : [Math.min(0, d3.min(pts, (p) => p.variance) ?? 0), yMax];
+    const fluxDom = yMax == null ? null : [Math.min(0, d3.min(velPts, (p) => p.velocity) ?? 0), yMax];
 
     // Square, shared domain for the scatter so the variance↔flux relationship
     // reads against the diagonal.
     const hi =
         Math.max(d3.max(velPts, (p) => p.variance), d3.max(velPts, (p) => p.velocity)) * 1.03;
     const lo = Math.min(0, d3.min(velPts, (p) => p.velocity));
-    const sq = [lo, hi];
+    const sq = [lo, yMax == null ? hi : yMax];
     // Best-fit line across the domain: y = slope·x + 1000·intercept (in ×10⁻³ units).
     const fitLine = [
         { x: sq[0], y: fit.slope * sq[0] + (fit.intercept ?? 0) * 1000 },
@@ -106,12 +112,13 @@ export function render(container, data, opts = {}) {
         // Uniform across all four panels so their data regions are the same size
         // and axes line up; sized for the scatter's x-axis label below its ticks.
         marginBottom: 46,
+        clip: yMax != null,
         y: { labelAnchor: "center", labelArrow: "none", ...y },
     });
 
-    function timeseriesPanel(panelW, panelH, points, accessor, label, what) {
+    function timeseriesPanel(panelW, panelH, points, accessor, label, what, yDom) {
         return Plot.plot({
-            ...base(panelW, panelH, { label }),
+            ...base(panelW, panelH, yDom ? { label, domain: yDom } : { label }),
             x: { type: "utc", domain: dateExtent, label: null },
             marks: [
                 Plot.frame({ anchor: "left", stroke: "#333" }),
@@ -167,7 +174,7 @@ export function render(container, data, opts = {}) {
 
     function yearlyPanel(panelW, panelH) {
         return Plot.plot({
-            ...base(panelW, panelH, { label: FLUX_LABEL }),
+            ...base(panelW, panelH, fluxDom ? { label: FLUX_LABEL, domain: fluxDom } : { label: FLUX_LABEL }),
             x: {
                 domain: [years[0] - 0.5, years[years.length - 1] + 0.5],
                 ticks: years,
@@ -198,9 +205,9 @@ export function render(container, data, opts = {}) {
         const panelH = Math.round(Math.min(240, Math.max(160, panelW * 0.6)));
         grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
         grid.replaceChildren(
-            timeseriesPanel(panelW, panelH, pts, (d) => d.variance, VAR_LABEL, "variance"),
+            timeseriesPanel(panelW, panelH, pts, (d) => d.variance, VAR_LABEL, "variance", varDom),
             scatterPanel(panelW, panelH),
-            timeseriesPanel(panelW, panelH, velPts, (d) => d.velocity, FLUX_LABEL, "flux"),
+            timeseriesPanel(panelW, panelH, velPts, (d) => d.velocity, FLUX_LABEL, "flux", fluxDom),
             yearlyPanel(panelW, panelH),
         );
     }
