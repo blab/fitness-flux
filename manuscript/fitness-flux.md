@@ -17,7 +17,18 @@ TBD
 
 ## Introduction
 
-TBD
+Similar to intro from [@kistler2023atlas].
+Start with a brief outline of causes of viral adaptation emphasizing host adaptation after spillover and ongoing adaptive evolution.
+Then reference methods to detect adaptation by looking at nonsynonymous mutations that range generally from plan dN/dS to McDonald-Kreitman-style weighting of successful mutations (fixed trunk) vs unsuccessful side branch (lost side branch) [@wolf2006long].
+Reference this in the context of analyzing adaptive evolution in SARS-CoV-2 [@kistler2022rapid] and human viruses broadly [@kistler2023atlas].
+
+Recent innovations with multinomial logistic regression (MLR) have resulted in approaches that estimate relative fitness of labeled variants based on changes in variant frequency through time [@obermeyer2022analysis, @abousamra2024fitness].
+These approaches directly output fitness as differences in growth rate between variants, matching the underlying population genetic concept.
+At heart, MLR estimates of fitness correspond to differences in time-varying fundamental reproduction number between variants [@figgins2025frequency].
+
+In this paper we analyze changes in SARS-CoV-2 fitness from the early pandemic period in 2020 to today capturing the transition from host adaptation to ongoing evolution for antigenic novelty.
+We compare rate of fitness change in SARS-CoV-2 to known baseline of a fast adapting virus with seasonal influenza A/H3N2. 
+We also compare observed changes in MLR fitness to predictors such as spike mutations to arrive at molecular drivers of fitness change.
 
 ## Results and discussion
 
@@ -154,6 +165,10 @@ The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (
 TBD
 
 ## Methods
+
+### Sequence data
+
+For SARS-CoV-2 we use curated "open" data from Nextstrain [@hadfield2018nextstrain] that draws from NCBI GenBank.
 
 ### Scaffolding across timepoints
 
