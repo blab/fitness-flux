@@ -150,10 +150,19 @@ We compare the change in fitness along each parent-to-child lineage branch again
 Spike substitutions, and those in the receptor-binding domain (RBD) in particular, carry the strongest positive association with fitness gain, while accessory-gene substitutions carry almost none.
 Splitting branches into early and late periods shows that the fitness value of a given substitution is largest early and erodes over time as the population approaches the limits of antigenic escape.
 
-:::figure{#fig:delta-genome component=lineage-deltas dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory xmin=-3 xmax=12 ymin=-0.3 ymax=0.6}
+:::figure{#fig:delta-genome component=lineage-deltas dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory xmin=-3 xmax=30 ymin=-0.3 ymax=0.9}
 **Lineage-specific amino acid change versus lineage-specific fitness change across regions of the SARS-CoV-2 genome.**
 Each point is one parent-to-child Pango lineage branch in one season: the change in the number of substitutions in a genome region (x) against the change in log fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
 The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
+:::
+
+We can track this relationship through time by fitting the regression separately within each season ([@fig:delta-trends]).
+The fitness value of spike and RBD substitutions is largest early and erodes toward zero as the readily accessible routes to antigenic escape are exhausted, while other regions stay near zero throughout.
+
+:::figure{#fig:delta-trends component=lineage-delta-trends dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory xmin=-3 xmax=30 ymin=-0.3 ymax=0.9}
+**Strength of the mutation–fitness relationship through time.**
+For each season the parent-to-child branches are summarized into one statistic relating change in regional substitutions to change in log fitness, with one line per genome region.
+Toggle between the regression slope, Pearson *r*, and Spearman *ρ*; computed over the same branches as [@fig:delta-genome].
 :::
 
 :::figure{#fig:delta-evescape src=figures/sarscov2_lineage_delta_fitness_vs_evescape.png}

@@ -133,7 +133,8 @@ rule viz_lineage_deltas_data:
         predictor_deltas = "lineage-deltas-analysis/results/predictor_deltas.tsv",
         esm_deltas = "lineage-deltas-analysis/results/esm_deltas.tsv"
     output:
-        "viz/lineage-deltas/data/sarscov2_lineages.json"
+        deltas = "viz/lineage-deltas/data/sarscov2_lineages.json",
+        trends = "viz/lineage-delta-trends/data/sarscov2_lineages.json"
     log:
         "logs/lineage_deltas/viz_lineage_deltas_data.txt"
     shell:
@@ -142,7 +143,8 @@ rule viz_lineage_deltas_data:
             --branch-deltas {input.branch_deltas} \
             --predictor-deltas {input.predictor_deltas} \
             --esm-deltas {input.esm_deltas} \
-            --output {output} 2>&1 | tee {log}
+            --output {output.deltas} 2>&1 | tee {log}
+        cp {output.deltas} {output.trends}
         """
 
 
@@ -154,4 +156,5 @@ rule all_lineage_deltas:
         "lineage-deltas-analysis/results/linear_model_coefficients.tsv",
         "lineage-deltas-analysis/results/slope_through_time.tsv",
         "lineage-deltas-analysis/results/predictor_correlations.tsv",
-        "viz/lineage-deltas/data/sarscov2_lineages.json"
+        "viz/lineage-deltas/data/sarscov2_lineages.json",
+        "viz/lineage-delta-trends/data/sarscov2_lineages.json"
