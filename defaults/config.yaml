@@ -202,7 +202,7 @@ sarscov2_clades_2020:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2020-01-01"
   max_date: "2020-12-31"
-  clade_min_seq: 3000
+  clade_min_seq: 1000
   pivot: "19B"
   generation_time: 3.2
 
@@ -214,7 +214,7 @@ sarscov2_clades_2020-21:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2020-07-01"
   max_date: "2021-06-30"
-  clade_min_seq: 3000
+  clade_min_seq: 1000
   pivot: "20G"
   generation_time: 3.2
 
@@ -226,7 +226,7 @@ sarscov2_clades_2021:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2021-01-01"
   max_date: "2021-12-31"
-  clade_min_seq: 3000
+  clade_min_seq: 1000
   pivot: "21J"
   generation_time: 3.2
 
@@ -238,7 +238,7 @@ sarscov2_clades_2021-22:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2021-07-01"
   max_date: "2022-06-30"
-  clade_min_seq: 3000
+  clade_min_seq: 1000
   pivot: "21K"
   generation_time: 3.2
 
@@ -250,7 +250,7 @@ sarscov2_clades_2022:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2022-01-01"
   max_date: "2022-12-31"
-  clade_min_seq: 3000
+  clade_min_seq: 1000
   pivot: "22B"
   generation_time: 3.2
 
@@ -262,7 +262,7 @@ sarscov2_clades_2022-23:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2022-07-01"
   max_date: "2023-06-30"
-  clade_min_seq: 3000
+  clade_min_seq: 500
   pivot: "22E"
   generation_time: 3.2
 
@@ -274,7 +274,7 @@ sarscov2_clades_2023:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2023-01-01"
   max_date: "2023-12-31"
-  clade_min_seq: 3000
+  clade_min_seq: 500
   pivot: "23B"
   generation_time: 3.2
 
@@ -286,7 +286,7 @@ sarscov2_clades_2023-24:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2023-07-01"
   max_date: "2024-06-30"
-  clade_min_seq: 3000
+  clade_min_seq: 500
   pivot: "24A"
   generation_time: 3.2
 
@@ -298,7 +298,7 @@ sarscov2_clades_2024:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2024-01-01"
   max_date: "2024-12-31"
-  clade_min_seq: 3000
+  clade_min_seq: 500
   pivot: "24A"
   generation_time: 3.2
 
@@ -334,7 +334,7 @@ sarscov2_clades_2025-26:
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
   min_date: "2025-07-01"
   max_date: "2026-06-30"
-  clade_min_seq: 200
+  clade_min_seq: 150
   pivot: "25A"
   generation_time: 3.2
 
