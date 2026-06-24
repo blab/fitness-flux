@@ -129,16 +129,20 @@ Log fitness variance is compared to log fitness flux, where each dot represents 
 Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
 :::
 
+### Mutational fitness effects
+
 We shouldn't do a simple correlation of mutations against cumulative fitness flux due to phylogenetic non-independence.
 Instead can rely on phylogenetic contrasts of parent and daughter lineages.
 Pango lineages provide a convenient granular and hierarchical nomenclature well suited to this.
 
-:::figure{#fig:delta-genome src=figures/sarscov2_lineage_delta_fitness_across_genome.png}
-**Correlation of lineage-specific amino acid change to lineage-specific fitness change across regions of the SARS-CoV-2 genome.**
-:::
+We compare the change in fitness along each parent-to-child lineage branch against the substitutions it acquired in different regions of the SARS-CoV-2 genome ([@fig:delta-genome]).
+Spike substitutions, and those in the receptor-binding domain (RBD) in particular, carry the strongest positive association with fitness gain, while accessory-gene substitutions carry almost none.
+Splitting branches into early and late periods shows that the fitness value of a given substitution is largest early and erodes over time as the population approaches the limits of antigenic escape.
 
-:::figure{#fig:delta-time src=figures/sarscov2_lineage_delta_fitness_across_time.png}
-**Correlation of lineage-specific amino acid change to lineage-specific fitness change over time.**
+:::figure{#fig:delta-genome component=lineage-deltas dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory xmin=-3 xmax=12 ymin=-0.3 ymax=0.6}
+**Lineage-specific amino acid change versus lineage-specific fitness change across regions of the SARS-CoV-2 genome.**
+Each point is one parent-to-child Pango lineage branch in one season: the change in the number of substitutions in a genome region (x) against the change in log fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
+The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
 :::
 
 :::figure{#fig:delta-evescape src=figures/sarscov2_lineage_delta_fitness_vs_evescape.png}
