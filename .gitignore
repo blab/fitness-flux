@@ -6,6 +6,7 @@ benchmarks/
 sequence-counts/
 mlr-estimates/
 covfit/CoVFit_CLI/
+inclusion-thresholds/scratch
 
 # ...but the analysis result tables/JSONs are small and are committed so the
 # static viz/ dashboards can fetch them on GitHub Pages.

@@ -1,0 +1,28 @@
+# MAP (point-estimate) MLR config for the clade_min_seq threshold sweep.
+# Single-location, non-hierarchical MAP fits: fast and self-consistent across
+# thresholds (the production config uses hierarchical NUTS; the recommended
+# threshold can be re-validated there). data / model.pivot / model.generation_time
+# are overridden per run on the run-mlr-model.py command line.
+data:
+  name: "sweep"
+  case_path: "data/test/prepared_cases.tsv"
+  seq_path: "data/test/prepared_seq_counts.tsv"
+
+settings:
+  fit: true
+  save: false
+  load: false
+  export_json: true
+  ps: [0.5, 0.8, 0.95]
+
+model:
+  generation_time: 3.2
+  pivot: "20A"
+  hierarchical: false
+
+inference:
+  method: "MAP"
+  iters: 50000
+  lr: 4e-4
+  num_warmup: 0
+  num_samples: 0

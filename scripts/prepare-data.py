@@ -32,6 +32,17 @@ def positive_int(value):
     return int_value
 
 
+def unit_frequency(value):
+    """
+    Custom argparse type function to verify a frequency strictly between 0 and 1.
+    """
+    float_value = float(value)
+    if not (0.0 < float_value < 1.0):
+        print(f"ERROR: {float_value} is not a frequency in the open interval (0, 1).", file=sys.stderr)
+        sys.exit(1)
+    return float_value
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__,
         formatter_class=argparse.RawTextHelpFormatter)
@@ -54,11 +65,17 @@ if __name__ == '__main__':
              "If not provided, will count sequences from all dates included in analysis date range.")
     parser.add_argument("--excluded-locations",
         help="File with a list locations to exclude from analysis.")
-    parser.add_argument("--clade-min-seq", type=positive_int,
-        help="The minimum number of sequences a clades must have to be included as it's own variant.\n"
-             "All clades with less than the minimum will be collapsed as 'other'.")
-    parser.add_argument("--clade-min-seq-days", type=positive_int,
-        help="The number fo days (counting back from the cutoff date) to use as the date range "
+    parser.add_argument("--clade-min-count", type=positive_int,
+        help="The minimum number of sequences a clade must have to be included as its own variant.\n"
+             "All clades with fewer than the minimum will be collapsed as 'other'.")
+    parser.add_argument("--clade-min-freq", type=unit_frequency,
+        help="The minimum mean frequency (clade sequence count / window total, in the open\n"
+             "interval (0, 1)) a clade must have to be included as its own variant.\n"
+             "All clades below the minimum will be collapsed as 'other'. This is the\n"
+             "frequency-based analogue of --clade-min-count that auto-scales with window size;\n"
+             "if both are given a clade must satisfy both thresholds.")
+    parser.add_argument("--clade-min-count-days", type=positive_int,
+        help="The number of days (counting back from the cutoff date) to use as the date range "
              "for counting the number of sequences per clade to determine if a clade is included as its own variant.\n"
              "If not provided, will count sequences from all dates included in analysis date range.")
     parser.add_argument("--force-include-clades", nargs="*",
@@ -154,24 +171,18 @@ if __name__ == '__main__':
 
         print(f"Force excluding the following variants: {args.force_exclude_clades}")
 
-    # Collapse small clades into "other" if clades-min-seq is provided
-    if args.clade_min_seq:
+    # Collapse small clades into "other" if a count and/or frequency threshold is provided
+    if args.clade_min_count or args.clade_min_freq:
         # Set the min_date as the default min date for counting sequences per clade
         # to count sequences per clade over the entire analysis date range
         min_clades_seq_date = min_date
-        if args.clade_min_seq_days is not None:
-            print(
-                f"Collapsing clades that have less than {args.clade_min_seq} sequence(s)",
-                f"in the last {args.clade_min_seq_days} days of the analysis date range into a single 'other' variant."
-            )
-            # Calculate the minimum date for sequences per clade as *clade_min_seq_days* before the max date
+        if args.clade_min_count_days is not None:
+            window_description = f"in the last {args.clade_min_count_days} days of the analysis date range"
+            # Calculate the minimum date for sequences per clade as *clade_min_count_days* before the max date
             # Subtract 1 from days in calculation since we are including the max date
-            min_clades_seq_date = max_date - timedelta(days=(args.clade_min_seq_days - 1))
+            min_clades_seq_date = max_date - timedelta(days=(args.clade_min_count_days - 1))
         else:
-            print(
-                f"Collapsing clades that have less than {args.clade_min_seq} sequence(s)",
-                "in the analysis date range (inclusive) into a single 'other' variant."
-            )
+            window_description = "in the analysis date range (inclusive)"
 
         # Subset to clades and sequences within the date range from min_clades_seq_date to max_date
         # and group by clade to get the total number of sequences per clade in this date range
@@ -181,14 +192,29 @@ if __name__ == '__main__':
             ['clade', 'sequences']
         ]
         seqs_per_clade = clades_and_seqs.groupby(['clade'], as_index=False).sum()
+        total_seqs = seqs_per_clade['sequences'].sum()
 
-        # Get a set of clades that meet the clade_min_seq requirement
-        clades_with_min_seq = set(seqs_per_clade.loc[seqs_per_clade['sequences'] >= args.clade_min_seq, 'clade'])
+        # A clade is kept only if it satisfies every provided threshold
+        clades_to_keep = set(seqs_per_clade['clade'])
+        if args.clade_min_count:
+            print(
+                f"Collapsing clades that have less than {args.clade_min_count} sequence(s)",
+                f"{window_description} into a single 'other' variant."
+            )
+            clades_to_keep &= set(seqs_per_clade.loc[seqs_per_clade['sequences'] >= args.clade_min_count, 'clade'])
+        if args.clade_min_freq:
+            # Mean frequency over the window; the equivalent count auto-scales with window size
+            min_freq_seqs = args.clade_min_freq * total_seqs
+            print(
+                f"Collapsing clades with a mean frequency below {args.clade_min_freq}",
+                f"(fewer than {min_freq_seqs:.1f} of {total_seqs} sequences) {window_description} into a single 'other' variant."
+            )
+            clades_to_keep &= set(seqs_per_clade.loc[seqs_per_clade['sequences'] >= min_freq_seqs, 'clade'])
 
-        # Remove force excluded clades from this list
-        clades_to_keep = clades_with_min_seq - force_excluded_clades
+        # Remove force excluded clades from the keep list
+        clades_to_keep -= force_excluded_clades
 
-        # Replace variant with 'other' if they are not force included and do not meet the clade_min_seq requirement
+        # Replace variant with 'other' if they are not force included and do not meet the threshold(s)
         seq_counts.loc[~seq_counts['clade'].isin(force_included_clades | clades_to_keep), 'variant'] = 'other'
 
     # Replace 'recombinant' clade with 'other'
@@ -224,7 +250,7 @@ if __name__ == '__main__':
     print(f"Variants that will be included: {sorted(included_variants)}.")
 
     assert len(included_variants) > 0, \
-        "All variants have been excluded. Try again with different options, e.g. lowering the `--clade-min-seq` cutoff."
+        "All variants have been excluded. Try again with different options, e.g. lowering the `--clade-min-count` cutoff."
 
     # Sort variants subset and print to output file
     seq_counts.sort_values(['location', 'variant', 'date']) \
