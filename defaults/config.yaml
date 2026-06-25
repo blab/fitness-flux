@@ -50,6 +50,12 @@ provision:
     decompress: "xz -dc"
     columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
 
+# Nextclade SARS-CoV-2 reference tree used to count per-Pango-lineage amino-acid
+# mutations (the mutation_counts rules, feeding the lineage-deltas analysis).
+# Re-fetch with `--forcerun fetch_nextclade_pango` to pick up newly defined lineages.
+mutation_counts:
+  nextclade_url: "https://nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs"
+
 # H3N2 uses a 2-year analysis window and slides 1-year forward, and a 2-week
 # (14-day) empirical-frequency smoothing window (raw_freq_window) since it is
 # sparser than SARS-CoV-2, which stays at the 1-week default.

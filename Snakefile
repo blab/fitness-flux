@@ -4,6 +4,7 @@ include: "rules/provision_metadata.smk"
 include: "rules/sequence_counts.smk"
 include: "rules/mlr_estimates.smk"
 include: "rules/fitness_flux_analysis.smk"
+include: "rules/mutation_counts.smk"
 include: "rules/lineage_deltas_analysis.smk"
 
 # Default target: the full workflow, including the analysis results/ tables.

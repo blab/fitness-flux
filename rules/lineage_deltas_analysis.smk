@@ -33,7 +33,7 @@ def _lineage_deltas_branch_inputs(wildcards):
 rule lineage_deltas_branches:
     input:
         unpack(_lineage_deltas_branch_inputs),
-        mut_counts = f"{LINEAGE_DELTAS_SOURCE}/sarscov2_lineages_mut_counts.tsv"
+        mut_counts = "mutation-counts/results/sarscov2_lineages_mut_counts.tsv"
     output:
         "lineage-deltas-analysis/results/branch_deltas.tsv"
     log:
