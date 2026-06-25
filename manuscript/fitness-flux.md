@@ -165,8 +165,12 @@ For each season the parent-to-child branches are summarized into one statistic r
 Toggle between the regression slope, Pearson *r*, and Spearman *ρ*; computed over the same branches as [@fig:delta-genome].
 :::
 
-:::figure{#fig:delta-evescape src=figures/sarscov2_lineage_delta_fitness_vs_evescape.png}
-**Correlation of lineage-specific change in EvEscape score to lineage-specific fitness change.**
+### Predicting fitness effects
+
+:::figure{#fig:delta-predictors component=lineage-deltas dataset=sarscov2_lineages predictors=s1,evescape,esm_650M_pretrained,esm_650M_fine_tuned}
+**Lineage-specific predictors versus lineage-specific fitness change.**
+Each point is one parent-to-child Pango lineage branch in one season: change in predictor value (x) against the change in log fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
+The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
 :::
 
 ## Conclusions
