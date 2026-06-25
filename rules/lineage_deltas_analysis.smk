@@ -134,7 +134,8 @@ rule viz_lineage_deltas_data:
         esm_deltas = "lineage-deltas-analysis/results/esm_deltas.tsv"
     output:
         deltas = "viz/lineage-deltas/data/sarscov2_lineages.json",
-        trends = "viz/lineage-delta-trends/data/sarscov2_lineages.json"
+        trends = "viz/lineage-delta-trends/data/sarscov2_lineages.json",
+        histograms = "viz/lineage-delta-histograms/data/sarscov2_lineages.json"
     log:
         "logs/lineage_deltas/viz_lineage_deltas_data.txt"
     shell:
@@ -145,6 +146,7 @@ rule viz_lineage_deltas_data:
             --esm-deltas {input.esm_deltas} \
             --output {output.deltas} 2>&1 | tee {log}
         cp {output.deltas} {output.trends}
+        cp {output.deltas} {output.histograms}
         """
 
 

@@ -146,6 +146,14 @@ We shouldn't do a simple correlation of mutations against cumulative fitness flu
 Instead can rely on phylogenetic contrasts of parent and daughter lineages.
 Pango lineages provide a convenient granular and hierarchical nomenclature well suited to this.
 
+Each parent-to-child branch contributes a change in mutation count and a change in fitness; across all branches these are modest, with most branches adding only a handful of substitutions and shifting fitness by a small amount ([@fig:delta-hist]).
+
+:::figure{#fig:delta-hist component=lineage-delta-histograms dataset=sarscov2_lineages predictors=spike,nonspike}
+**Distributions of mutation and fitness change across SARS-CoV-2 lineage branches.**
+Across all parent-to-child Pango lineage branches, the change in the number of spike substitutions, the change in non-spike substitutions, and the change in log fitness.
+Each bar is the fraction of branches in that bin; rare large founder jumps fall beyond the plotted range.
+:::
+
 We compare the change in fitness along each parent-to-child lineage branch against the substitutions it acquired in different regions of the SARS-CoV-2 genome ([@fig:delta-genome]).
 Spike substitutions, and those in the receptor-binding domain (RBD) in particular, carry the strongest positive association with fitness gain, while accessory-gene substitutions carry almost none.
 Splitting branches into early and late periods shows that the fitness value of a given substitution is largest early and erodes over time as the population approaches the limits of antigenic escape.
