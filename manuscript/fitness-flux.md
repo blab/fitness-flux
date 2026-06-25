@@ -217,15 +217,30 @@ The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (
 
 ## Conclusions
 
-TBD
+Highlight that this method lets us look directly at evolution of fitness rather than all the normal proxies for adaptation like dN/dS, etc... [TODO]
+
+General applicability of this method depends largely on convenient nomenclatures to bin genetic diversity into discrete variants or alternatively on automated methods to identify lineages (autolin [@mcbroome2024framework], Phylowave [@lefrancq2025learning]).
+
+Power of simple spike mutations and this deltas analysis as baseline for forecasting models.
 
 ## Methods
 
 ### Sequence data
 
-For SARS-CoV-2 we use curated "open" data from Nextstrain [@hadfield2018nextstrain] that draws from NCBI GenBank.
+For SARS-CoV-2, we use curated "open" data from Nextstrain [@hadfield2018nextstrain] that draws from NCBI GenBank.
+For influenza H3N2, we use data from GISAID [@shu2017gisaid].
+In each case, the raw sequences are processed with Nextclade [@aksamentov2021nextclade] to assign Nextstrain clade and Pango lineage [@rambaut2020dynamic] to SARS-CoV-2 sequences and to assign subclade [@neher2026nomenclature] to influenza H3N2 sequences.
+We filter out sequences with Nextclade overall QC status of "bad".
+We additionally filter to sequences collected from the USA.
+This leaves [TODO] total sequences for SARS-CoV-2 sampled between 2020 and 2026 and [TODO] total sequences for H3N2 sampled between 2016 and 2026.
 
-For both SARS-CoV-2 and H3N2, within each analysis window, clades observed at a mean frequency below 0.1% were collapsed into a single 'other' category prior to MLR fitting; this frequency threshold keeps the set of independently-modeled clades comparable across windows spanning ~10³-10⁶ sequences and was chosen to...
+We conducted multinomial logistic regression (MLR) using the evofr package ([github.com/blab/evofr](https://github.com/blab/evofr)) on 1-year sliding windows for SARS-CoV-2 (12 windows total) and 2-year sliding windows for H3N2 (10 windows total).
+For each window we need treat each clade as a distinct variant except for overly rare clades that are collapsed together into an "other" variant category.
+For both SARS-CoV-2 and H3N2, within each analysis window, clades observed at a mean frequency below 0.1% were collapsed into a single 'other' category prior to MLR fitting; this frequency threshold keeps the set of independently-modeled clades comparable across windows spanning ~10³-10⁶ sequences and was chosen to... [TODO]
+This leaves [TODO] clades for SARS-CoV-2 and [TODO] clades for influenza H3N2.
+
+We conduct a similar MLR analysis of SARS-CoV-2 lineages.
+Here, we collapse lineages according to the following logic... [TODO].
 
 ### Scaffolding across timepoints
 
@@ -241,4 +256,12 @@ The overlap of variants between windows ties them into one connected scale, leav
 
 ## Acknowledgments
 
+SARS-CoV-2 analyses are based on open data in GenBank.
+We gratefully acknowledge the researchers and data contributors who collected the specimens, generated and deposited the raw sequence data and metadata into NCBI GenBank.
+Influenza analyses are based on GISAID data.
+We gratefully acknowledge all data contributors, i.e., the Authors and their Originating laboratories
+responsible for obtaining the specimens, and their Submitting laboratories for generating the
+genetic sequence and metadata and sharing via the GISAID Initiative, on which this research is
+based. 
+TB was funded as a Howard Hughes Medical Institute Investigator.
 This research was supported in part by grant NSF PHY-2309135, the Gordon and Betty Moore Foundation grant no. 2919.02, and the Chan Zuckerberg Initiative DAF grant to the Kavli Institute for Theoretical Physics (KITP).
