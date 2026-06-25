@@ -17,18 +17,21 @@ TBD
 
 ## Introduction
 
-Similar to intro from [@kistler2023atlas].
-Start with a brief outline of causes of viral adaptation emphasizing host adaptation after spillover and ongoing adaptive evolution.
-Then reference methods to detect adaptation by looking at nonsynonymous mutations that range generally from plan dN/dS to McDonald-Kreitman-style weighting of successful mutations (fixed trunk) vs unsuccessful side branch (lost side branch) [@wolf2006long].
-Reference this in the context of analyzing adaptive evolution in SARS-CoV-2 [@kistler2022rapid] and human viruses broadly [@kistler2023atlas].
+RNA viruses evolve rapidly, and the selective pressures they face shift over the course of emergence to endemicity.
+A virus newly established in humans initially adapts to its new host by refining its capacity for replication and transmission.
+Once a virus becomes endemic, adaptation in some viruses is instead dominated by continual escape from accumulating population immunity, driving ongoing antigenic change.
+Adaptation of either kind leaves a signature in nonsynonymous vs synonymous substitutions, with methods ranging from simple comparisons of nonsynonymous to synonymous substitution rates (dN/dS) to McDonald–Kreitman-style approaches that weigh mutations fixed along a virus's successful trunk lineage against those lost on unsuccessful side branches [@wolf2006long].
+Such approaches have revealed rapid, parallel adaptation in the SARS-CoV-2 spike S1 subunit [@kistler2022rapid] and continuous adaptive evolution across endemic human viruses more broadly [@kistler2023atlas].
 
-Recent innovations with multinomial logistic regression (MLR) have resulted in approaches that estimate relative fitness of labeled variants based on changes in variant frequency through time [@obermeyer2022analysis, @abousamra2024fitness].
-These approaches directly output fitness as differences in growth rate between variants, matching the underlying population genetic concept.
-At heart, MLR estimates of fitness correspond to differences in time-varying fundamental reproduction number between variants [@figgins2025frequency].
+A complementary class of methods estimates fitness directly from the dynamics of variant frequencies rather than from the composition of mutations.
+Multinomial logistic regression (MLR) models the frequencies of co-circulating variants through time and infers a relative growth rate, or fitness, for each [@obermeyer2022analysis; @abousamra2024fitness].
+Because it expresses fitness as a difference in growth rate between variants, this measure maps directly onto the population-genetic notion of selective advantage.
+These growth-rate differences correspond to differences in the time-varying effective reproduction number between co-circulating variants [@figgins2025frequency].
+Aggregating these per-variant fitnesses into the rate of change of mean population fitness yields the population's fitness flux [@mustonen2010fitness], a direct, frequency-based alternative to dN/dS for quantifying the tempo of adaptation.
 
-In this paper we analyze changes in SARS-CoV-2 fitness from the early pandemic period in 2020 to today capturing the transition from host adaptation to ongoing evolution for antigenic novelty.
-We compare rate of fitness change in SARS-CoV-2 to known baseline of a fast adapting virus with seasonal influenza A/H3N2. 
-We also compare observed changes in MLR fitness to predictors such as spike mutations to arrive at molecular drivers of fitness change.
+Here we use this frequency-based view of fitness to trace how SARS-CoV-2 has adapted from the early pandemic in 2020 through to the present, spanning the transition from initial host adaptation to sustained evolution for antigenic novelty.
+We place the rate of SARS-CoV-2 fitness change in context by comparing it against seasonal influenza A/H3N2, a canonical rapidly and continuously adapting human virus.
+Finally, we relate the inferred changes in fitness to molecular predictors, most directly the accumulation of spike mutations, to identify the substitutions that drive fitness gain.
 
 ## Results and discussion
 
@@ -129,16 +132,23 @@ or "the rate of increase in fitness of any organism at any time is equal to its 
 If we investigate this relationship directly in SARS-CoV-2 ([@fig:sarscov2-variance-flux]), we find that timepoints with larger variance in fitness $\mathrm{Var}[f(t)] = \sum_i x_i(t) \, (f_i - \bar{f}(t))^2$ correlate well with timepoints with larger change in mean population fitness $\Delta \bar{f}(t) / \Delta t$.
 In fact we find that the relationship is near the 1:1 expectation from Fisher's theorem.
 Looking in detail at rate of fitness flux through time, we see reduction to per gen average of $1.6-1.7 \times 10^{-3}$ in 2024 and 2025, down from $8.5 \times 10^{-3}$ in 2021.
+This shows that the rate of adaptation of SARS-CoV-2 has been slowing as low hanging fruit of host adaptation is exhausted, leaving only red-queen antigenic evolution to drive adaptation.
 
 :::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40 static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in SARS-CoV-2.**
 Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
 :::
 
+Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ from 2016 to 2026 ([@fig:h3n2-variance-flux]).
+This is roughly 3 times lower than recent years of SARS-CoV-2 fitness flux, but it's possible that SARS-CoV-2 slows further.
+
 :::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades static=figures/h3n2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in H3N2.**
 Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
 :::
+
+For both SARS-CoV-2 and influenza H3N2, the connection between fitness flux and fitness variance is clear.
+This suggests from first principles that interventions that decrease variance in fitness across the virus population would be expected to slow adaptation, while interventions that increase variance would be expected to speed adaptation.
 
 ### Mutational fitness effects
 
@@ -165,7 +175,8 @@ The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (
 :::
 
 We can track this relationship through time by fitting the regression separately within each season ([@fig:delta-trends]).
-The fitness value of spike and RBD substitutions is largest early and erodes toward zero as the readily accessible routes to antigenic escape are exhausted, while other regions stay near zero throughout.
+The fitness value of spike and RBD substitutions is largest early and erodes toward zero as the readily accessible routes to host adaptation are exhausted, while other regions stay near zero throughout.
+However, note that across accessory proteins and in ORF1ab there is moderate correlation from 2020 to 2022 of mutations to changes in fitness suggesting some lesser, but likely non-zero, involvement in adaptation compared to spike.
 
 :::figure{#fig:delta-trends component=lineage-delta-trends dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
 **Strength of the mutation–fitness relationship through time.**
