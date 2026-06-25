@@ -52,7 +52,10 @@ The denominator normalizes the exponential growth/decay of individual variants s
 The model has $2n$ parameters, with each variant $i$ having an initial frequency $p_i$ and a fixed growth rate $f_i$.
 Because growth rates are necessarily relative, we fix an arbitrary "pivot" variant as a reference with growth rate $f=0$.
 MLR growth rates are directly estimated in terms of calendar time with per-day or per-year values of $f$.
-We transform these values to a per-generation estimate by following... [TODO].
+To express fitness in per-generation units we multiply each per-day rate by the generation time $\tau$ measured in days, giving $f_i = \tau \, f_i^{\mathrm{day}}$, the change in log frequency accrued over a single generation.
+We assume $\tau = 3.2$ days for both SARS-CoV-2 and influenza H3N2.
+Throughout, we refer to this per-generation growth rate $f_i = \mathrm{log}(1+s_i)$ as the fitness of variant $i$.
+Because $f_i$ is defined on a log scale, mean fitness, fitness variance, fitness flux and changes in fitness between lineages are all likewise computed on this log scale.
 
 We estimate frequencies and fitnesses of SARS-CoV-2 clades in 1-year sliding windows between Jan 2020 and Jan 2026 ([@fig:time-vs-frequency-sarscov2]).
 In each window we collect clade sequence counts for viruses sampled from the USA and estimate per-variant frequencies and fitnesses.
@@ -143,7 +146,7 @@ This shows that the rate of adaptation of SARS-CoV-2 has been slowing as low han
 
 :::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40 static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in SARS-CoV-2.**
-Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
+Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
 :::
 
 Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ per-gen from 2016 to 2026 ([@fig:h3n2-variance-flux]).
@@ -152,7 +155,7 @@ However, it remains possible that SARS-CoV-2 slows further in the coming years.
 
 :::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades static=figures/h3n2_clades_fitness_variance_vs_flux.png}
 **Fitness variance and fitness flux in H3N2.**
-Log fitness variance is compared to log fitness flux, where each dot represents a daily timepoint.
+Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
 :::
 
 For both SARS-CoV-2 and influenza H3N2, the connection between fitness flux and fitness variance is clear.
@@ -164,12 +167,12 @@ A simple correlation of cumulative mutations against cumulative fitness flux wil
 Pango lineages [@rambaut2020dynamic] provide a convenient granular and hierarchical nomenclature well suited to this.
 
 We define Pango parent-to-child branches by finding mutations that accumulate between hierarchical Pango lineages.
-Given estimates of per-lineage fitness, we also calculate the change in log fitness between parent/child pairs.
+Given estimates of per-lineage fitness, we also calculate the change in fitness between parent/child pairs.
 As expected, we observe that Pango lineages are granular with parent-to-child changes in spike mutations, non-spike mutations and fitness being modest, with most branches adding only a handful of substitutions and shifting fitness by a small amount ([@fig:delta-hist]).
 
 :::figure{#fig:delta-hist component=lineage-delta-histograms dataset=sarscov2_lineages predictors=spike,nonspike}
 **Distributions of mutation and fitness change across SARS-CoV-2 lineage branches.**
-Across all parent-to-child Pango lineage branches, the change in the number of spike substitutions, the change in non-spike substitutions, and the change in log fitness.
+Across all parent-to-child Pango lineage branches, the change in the number of spike substitutions, the change in non-spike substitutions, and the change in fitness.
 Each bar is the fraction of branches in that bin; rare large founder jumps fall beyond the plotted range.
 :::
 
@@ -179,7 +182,7 @@ Splitting branches into early and late periods shows that the fitness value of a
 
 :::figure{#fig:delta-genome component=lineage-deltas dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
 **Lineage-specific amino acid change versus lineage-specific fitness change across regions of the SARS-CoV-2 genome.**
-Each point is one parent-to-child Pango lineage branch in one season: the change in the number of substitutions in a genome region (x) against the change in log fitness (y), colored by time from blue (2020) to red (2026), with a least-squares fit per panel.
+Each point is one parent-to-child Pango lineage branch in one season: the change in the number of substitutions in a genome region (x) against the change in fitness (y), colored by time from blue (2020) to red (2026), with a least-squares fit per panel.
 The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
 :::
 
@@ -190,7 +193,7 @@ Although per-substitution effect (ie regression slope) of RBD decays from 2020, 
 
 :::figure{#fig:delta-trends component=lineage-delta-trends dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
 **Strength of the mutation–fitness relationship through time.**
-For each season the parent-to-child branches are summarized into one statistic relating change in regional substitutions to change in log fitness, with one line per genome region.
+For each season the parent-to-child branches are summarized into one statistic relating change in regional substitutions to change in fitness, with one line per genome region.
 Toggle between the regression slope, Pearson *r*, and Spearman *ρ*; computed over the same branches as [@fig:delta-genome].
 :::
 
@@ -208,7 +211,7 @@ We find that both EvEscape score as well as fine-tuned ESM-2 semanticity perform
 
 :::figure{#fig:delta-predictors component=lineage-deltas dataset=sarscov2_lineages predictors=s1,evescape,esm_650M_pretrained,esm_650M_fine_tuned}
 **Lineage-specific predictors versus lineage-specific fitness change.**
-Each point is one parent-to-child Pango lineage branch in one season: change in predictor value (x) against the change in log fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
+Each point is one parent-to-child Pango lineage branch in one season: change in predictor value (x) against the change in fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
 The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
 :::
 
