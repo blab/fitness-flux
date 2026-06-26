@@ -314,6 +314,7 @@ The semanticity of a branch is the Euclidean distance between its child and pare
 
 ## Acknowledgments
 
+We thank Jumpei Ito, Michael Lässig, Erick Matsen, Richard Neher, Cécile Viboud and members of the Bedford Lab for helpful feedback.
 SARS-CoV-2 analyses are based on open data in GenBank.
 We gratefully acknowledge the researchers and data contributors who collected the specimens, generated and deposited the raw sequence data and metadata into NCBI GenBank.
 Influenza analyses are based on GISAID data.
