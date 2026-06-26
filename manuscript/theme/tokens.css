@@ -13,7 +13,7 @@
 
 :root {
   --serif: museo, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --mono: museo, "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   /* Achromatic chrome ramp — data owns the chromatic axis. */
   --ink: #555555;
