@@ -1,0 +1,355 @@
+/*
+ * press.css — the structural layer.
+ * Direct-perception structure: open forms, hairline rules, a single readable
+ * measure, mono for labels and numerics. References ONLY the token interface
+ * (var(--…)); carries no brand values. Swap tokens.css to re-skin.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 18px;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1.6;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.press-paper {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem;
+}
+
+/* ---------- Front matter ---------- */
+.press-frontmatter {
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.press-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 1.25rem;
+  letter-spacing: 0.0em;
+}
+
+.press-authors {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.press-author sup {
+  font-family: var(--serif);
+  font-size: 0.62em;
+  color: var(--ink-muted);
+  padding-left: 0.1em;
+}
+
+.press-corresponding {
+  color: var(--ink-muted);
+}
+
+.press-affiliations {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.press-affiliation {
+  margin: 0.1rem 0;
+}
+
+.press-affiliation sup {
+  font-family: var(--serif);
+  padding-right: 0.15em;
+}
+
+.press-correspondence,
+.press-date {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  font-family: var(--serif);
+}
+
+.press-links {
+  margin-top: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.press-link {
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.press-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.press-link-sep {
+  color: var(--line);
+  padding: 0 0.15rem;
+}
+
+/* ---------- Headings ---------- */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 2.5rem 0 0.75rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--line);
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+h4 {
+  font-size: 1.02rem;
+  color: var(--ink-fill);
+}
+
+/* ---------- Prose ---------- */
+p {
+  margin: 1rem 0;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--ink-muted);
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--ink);
+}
+
+strong,
+b {
+  font-weight: 600;
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+ul,
+ol {
+  margin: 1rem 0;
+  padding-left: 1.6rem;
+}
+
+li {
+  margin: 0.3rem 0;
+}
+
+blockquote {
+  margin: 1.25rem 0;
+  padding: 0 0 0 1.2rem;
+  border-left: 2px solid var(--line);
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 2.5rem 0;
+}
+
+/* ---------- Code ---------- */
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--wash);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+pre {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* ---------- Tables ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.92rem;
+}
+
+th {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  text-align: left;
+}
+
+th,
+td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+td.num,
+th.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---------- Figures ---------- */
+.press-figure {
+  margin: 2.5rem 0;
+}
+
+.press-mount {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+}
+
+.press-figure-img,
+.press-static-fallback {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+figcaption {
+  margin-top: 0.85rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+/* Match the bold caption lead-in: same serif, weight, and ink. */
+.press-figure-label {
+  font-weight: 600;
+  color: var(--ink-fill);
+}
+
+figcaption strong {
+  color: var(--ink-fill);
+}
+
+/* ---------- References ---------- */
+.press-references {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.press-references h2 {
+  border: none;
+  font-size: 1.25rem;
+}
+
+.press-reference-list {
+  padding-left: 1.8rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.press-reference {
+  margin: 0.5rem 0;
+}
+
+.press-reference::marker {
+  font-family: var(--mono);
+  color: var(--ink-muted);
+}
+
+/* ---------- Acknowledgments ---------- */
+.press-acknowledgments {
+  font-size: 0.85rem;
+}
+
+.press-acknowledgments h2 {
+  font-size: 1.1rem;
+}
+
+/* ---------- Math ---------- */
+.katex {
+  font-size: 1.05em;
+}
+
+.math-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+
+/* ---------- Print ---------- */
+@media print {
+  html {
+    font-size: 11pt;
+  }
+  body {
+    background: var(--paper);
+  }
+  .press-paper {
+    max-width: none;
+    padding: 0;
+  }
+  a {
+    text-decoration: none;
+    color: var(--ink);
+  }
+  /* Prefer an author-provided static image over the live mount when present. */
+  .press-static-fallback {
+    display: block !important;
+  }
+  .press-figure {
+    break-inside: avoid;
+  }
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+}

@@ -1,0 +1,27 @@
+/*
+ * fitness-flux theme — the blotter brand layer.
+ * Defines the full press token interface with blotter values (the Bedford-lab
+ * site look): Museo via the Adobe Fonts (Typekit) kit and warm grayscale chrome.
+ * Color belongs to data; chrome is paper and ink.
+ */
+
+/* Museo, from the Adobe Fonts web project (kit xeu8jut). Adobe Fonts web
+   projects are not domain-restricted, so this embed works on any domain; it is
+   an external (CDN) fetch at render time and falls back to the system sans
+   stack only if the network/CDN is unavailable. */
+@import url("https://use.typekit.net/xeu8jut.css");
+
+:root {
+  --serif: museo, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: museo, "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Achromatic chrome ramp — data owns the chromatic axis. */
+  --ink: #555555;
+  --paper: #ffffff;
+  --ink-muted: #777777;
+  --ink-fill: #333333;
+  --line: #e7e7e7;
+  --wash: #f8f8f8;
+  --ink-press: #444444;
+  --disabled: #9a9a9a;
+}
