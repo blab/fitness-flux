@@ -13,7 +13,14 @@ date: 2026-06-21
 
 ## Abstract
 
-TBD
+The tempo of viral adaptation is usually read indirectly from the composition of mutations, through measures such as dN/dS.
+Here we measure it directly from the dynamics of variant frequencies, where we use multinomial logistic regression to estimate a fitness for each co-circulating variant.
+We aggregate these estimates to derive the rate of change of mean population fitness, referred to as fitness flux.
+Tracing SARS-CoV-2 from 2020 to 2026 and comparing against seasonal influenza A/H3N2, we find that SARS-CoV-2 adapted rapidly with a 6.7-fold increase in fitness from 2020 to 2023, but then slowing with a 2.2-fold increase in fitness from 2023 to 2026.
+Influenza H3N2 sustains a slower, steadier pace roughly threefold below recent SARS-CoV-2.
+In both, the rate of fitness gain closely tracks the variance in fitness, matching the 1:1 expectation of Fisher's fundamental theorem.
+Phylogenetic contrasts between parent and child lineages localize most fitness gain to spike, and within spike to the receptor-binding domain, where a simple count of spike S1 substitutions predicts lineage fitness about as well as deep-learning escape and protein-language-model scores.
+Measuring fitness directly thus offers a transparent, frequency-based alternative to mutational proxies for tracking and anticipating viral adaptation.
 
 ## Introduction
 
@@ -30,7 +37,7 @@ These growth-rate differences correspond to differences in the time-varying effe
 Aggregating these per-variant fitnesses into the rate of change of mean population fitness yields the population's fitness flux [@mustonen2010fitness], a direct, frequency-based alternative to dN/dS for quantifying the tempo of adaptation.
 
 Here we use this frequency-based view of fitness to trace how SARS-CoV-2 has adapted from the early pandemic in 2020 through to 2026, spanning the transition from initial host adaptation to sustained evolution for antigenic novelty.
-We place the rate of SARS-CoV-2 fitness change in context by comparing it against seasonal influenza A/H3N2 which exhibits canonically rapid and continuous adaptation.
+We place the rate of SARS-CoV-2 fitness change in context by comparing it against seasonal influenza A/H3N2 which exhibits canonically rapid and continuous adaptation [@bedford2014integrating].
 Finally, we relate the inferred changes in fitness to molecular predictors, most directly the accumulation of spike mutations, to identify the substitutions that drive fitness gain.
 
 ## Results and discussion
@@ -53,7 +60,7 @@ The model has $2n$ parameters, with each variant $i$ having an initial frequency
 Because growth rates are necessarily relative, we fix an arbitrary "pivot" variant as a reference with growth rate $f=0$.
 MLR growth rates are directly estimated in terms of calendar time with per-day or per-year values of $f$.
 To express fitness in per-generation units we multiply each per-day rate by the generation time $\tau$ measured in days, giving $f_i = \tau \, f_i^{\mathrm{day}}$, the change in log frequency accrued over a single generation.
-We assume $\tau = 3.2$ days for both SARS-CoV-2 and influenza H3N2.
+We assume $\tau = 3.2$ days for both SARS-CoV-2 and influenza H3N2 [@song2022serial].
 Throughout, we refer to this per-generation growth rate $f_i = \mathrm{log}(1+s_i)$ as the fitness of variant $i$.
 Because $f_i$ is defined on a log scale, mean fitness, fitness variance, fitness flux and changes in fitness between lineages are all likewise computed on this log scale.
 
@@ -221,7 +228,7 @@ This predictor vs growth rate formulation [@kistler2022rapid] should be robust t
 We come our simple non-parameterized fitness predictor of relative spike S1 substitution count to recent proposals to predict evolutionary successful substitutions via deep learning ([@fig:delta-predictors]).
 EvEscape [@thadani2023learning] uses a variational autoencoder alongside accessibility and biochemical dissimilarity to score SARS-CoV-2 spike mutations. 
 Semanticity measures Euclidean distance of protein language model embeddings [@hie2021learning].
-Here, we use pre-computed per-lineage EvEscape score alongside a reimplemention of semanticity using ESM-2 protein language model embeddings [@rives2021biological].
+Here, we use pre-computed per-lineage EvEscape score alongside a reimplemention of semanticity using ESM-2 protein language model embeddings [@lin2023evolutionary].
 We analyze both the pre-trained 650M parameter ESM-2 model as well as model fine-tuned to 16k SARS-CoV-2 spike sequences with collection dates from 2020 through 2022.
 We find that both EvEscape score as well as fine-tuned ESM-2 semanticity perform similarly to simple count of spike S1 substitutions to disambiguate fitness of circulating SARS-CoV-2 lineages.
 
@@ -286,13 +293,24 @@ The overlap of variants between windows ties them into one connected scale, leav
 To relate change in fitness to change in genotype, we count amino-acid substitutions per Pango lineage and compare each lineage against its parent.
 Per-lineage substitution counts are read from the Nextclade SARS-CoV-2 reference tree at [nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs](https://nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs), in which each tip corresponds to a Pango lineage.
 For each lineage we count substitutions relative to the Wuhan-Hu-1 reference.
-We tally these genome-wide and by region: whole spike, the spike S1 and S2 subunits, the N-terminal domain (NTD, spike positions 14–305) and receptor-binding domain (RBD, 319–541) within S1, ORF1ab and the accessory and structural genes (ORF3a, E, M, ORF6, ORF7a, ORF7b, ORF8, N).
+We tally these by region separating: spike S1 subunit, the receptor-binding domain (RBD, 319–541) within S1, ORF1ab and the accessory and structural genes (ORF3a, E, M, ORF6, ORF7a, ORF7b, ORF8, N).
 
 We then form parent-to-child branches between hierarchically nested Pango lineages.
 Within each window a lineage's parent is its closest retained ancestor, where the retained set is fixed by the collapsing described above, so lineages that were rolled up into a parent or folded into "other" do not themselves appear as branch endpoints.
 For every branch whose parent and child both carry an MLR fitness estimate in that window, we record the change in substitution count in each genome region and the change in fitness, taken as the difference in their per-window MLR fitness; because both endpoints are estimated against the same window's pivot, this contrast is well defined without scaffolding.
 A branch is recorded once per window in which it appears, so a lineage pair that co-circulates across several windows contributes several observations.
 These per-branch deltas in mutation count and fitness are the unit of the mutational-fitness analyses.
+
+### Mutational fitness predictors
+
+We compare the per-branch substitution counts above against two externally proposed predictors of mutational fitness, each reduced to a per-lineage value and contrasted across the same parent-to-child branches. EvEscape [@thadani2023learning] combines a variational-autoencoder fitness model with residue accessibility and biochemical dissimilarity to score spike mutations.
+We use the precomputed all-strain EvEscape scores released at [evescape.org/data](https://evescape.org/data) and take each Pango lineage's score as the mean EvEscape across the sequences assigned to that lineage.
+
+Semanticity follows the semantic-change measure of Hie et al. [@hie2021learning], reimplemented with ESM-2 [@lin2023evolutionary].
+Each Pango lineage's spike amino-acid sequence is embedded with the 650M-parameter ESM-2 model (`esm2_t33_650M_UR50D`), taking the CLS-token representation of the final (33rd) layer as a 1280-dimensional sequence embedding.
+We embed lineages with both the released pretrained weights and weights fine-tuned under a masked-language-model objective (15% of residues masked) for one epoch (AdamW, learning rate $5 \times 10^{-5}$) on roughly 16,000 SARS-CoV-2 spike sequences collected from 2020 through 2022.
+Fine-tuning and embedding code is available at [github.com/blab/embedded-pathways](https://github.com/blab/embedded-pathways).
+The semanticity of a branch is the Euclidean distance between its child and parent lineage embeddings.
 
 ## Acknowledgments
 
