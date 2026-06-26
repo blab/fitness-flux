@@ -194,7 +194,23 @@ Although per-substitution effect (ie regression slope) of RBD decays from 2020, 
 :::figure{#fig:delta-trends component=lineage-delta-trends dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
 **Strength of the mutation–fitness relationship through time.**
 For each season the parent-to-child branches are summarized into one statistic relating change in regional substitutions to change in fitness, with one line per genome region.
-Toggle between the regression slope, Pearson *r*, and Spearman *ρ*; computed over the same branches as [@fig:delta-genome].
+Toggle between the regression slope, Pearson *r*, and Spearman *ρ*.
+:::
+
+The marginal relationships in [@fig:delta-genome] cannot on their own establish which substitutions drive fitness.
+A more evolved lineage more accumulates substitutions across the whole genome, so a region can correlate with fitness merely by co-varying with a genuinely causal region.
+The moderate marginal association of ORF1ab substitutions is a case in point.
+To isolate each region's independent contribution we fit a multiple linear regression of the change in substitution count across four non-overlapping genome regions to per-branch change in fitness ([@fig:delta-multiple]).
+Once spike is controlled for, essentially all of the positive signal sits in the RBD ($\beta$ = 0.055 per substitution) with a smaller contribution from the remainder of S1 ($\beta$ = 0.016), while the ORF1ab coefficient collapses to near zero and is no longer distinguishable from no effect ($\beta$ = 0.002, $p$ = 0.24), as is the accessory-protein coefficient ($\beta$ = –0.001, $p$ = 0.48).
+The apparent marginal association of ORF1ab is therefore a confound of its co-occurrence with spike change rather than evidence that ORF1ab substitutions themselves raise fitness.
+The four-region model explains a majority of the variance in per-branch fitness change ($R^2$ = 0.59), with predicted and observed changes falling along the 1:1 line.
+
+:::figure{#fig:delta-multiple component=lineage-deltas-model dataset=sarscov2_lineages}
+**Multiple regression of fitness change on non-overlapping genome regions.**
+A pooled ordinary-least-squares fit of the per-branch change in fitness on the change in substitution count in four non-overlapping regions of the SARS-CoV-2 genome (spike RBD, spike S1 outside the RBD, ORF1ab, accessory).
+The table gives each region's partial estimate.
+The scatter plots each parent-to-child Pango lineage branch's model-predicted change in fitness (x) against its observed change in fitness (y), colored by time from blue (2020) to red (2026) and with dashed 1:1 calibration line.
+The All / Early / Late toggle refits the model over all branches or the early (Jan 2020–Jun 2022) and late (Jul 2022 onward) subsets, updating both the table and the scatter.
 :::
 
 ### Predicting fitness effects
@@ -274,7 +290,7 @@ We tally these genome-wide and by region: whole spike, the spike S1 and S2 subun
 
 We then form parent-to-child branches between hierarchically nested Pango lineages.
 Within each window a lineage's parent is its closest retained ancestor, where the retained set is fixed by the collapsing described above, so lineages that were rolled up into a parent or folded into "other" do not themselves appear as branch endpoints.
-For every branch whose parent and child both carry an MLR fitness estimate in that window, we record the change in substitution count in each genome region (child minus parent) and the change in fitness, taken as the difference in their per-window MLR fitness; because both endpoints are estimated against the same window's pivot, this contrast is well defined without scaffolding.
+For every branch whose parent and child both carry an MLR fitness estimate in that window, we record the change in substitution count in each genome region and the change in fitness, taken as the difference in their per-window MLR fitness; because both endpoints are estimated against the same window's pivot, this contrast is well defined without scaffolding.
 A branch is recorded once per window in which it appears, so a lineage pair that co-circulates across several windows contributes several observations.
 These per-branch deltas in mutation count and fitness are the unit of the mutational-fitness analyses.
 

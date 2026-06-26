@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Lineage-deltas multiple regression</title>
+<style>
+    html, body { margin: 0; font-family: system-ui, sans-serif; }
+    #fig { width: 100vw; min-height: 100vh; padding: 12px; box-sizing: border-box; }
+    table.ldm-table { border-collapse: collapse; font-size: 0.92rem; width: 100%; }
+    table.ldm-table th,
+    table.ldm-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #ddd; }
+    table.ldm-table th { font-weight: 500; font-size: 0.82rem; color: #666; text-align: left; }
+    table.ldm-table td.num,
+    table.ldm-table th.num { font-variant-numeric: tabular-nums; text-align: right; }
+</style>
+<div id="fig"></div>
+<script type="module">
+    import { render } from "./lineage-deltas-model.js";
+    const slot = document.getElementById("fig");
+    const meta = await fetch("./meta.json").then((r) => r.json()).catch(() => null);
+    const id =
+        new URLSearchParams(location.search).get("dataset") ??
+        meta?.default ??
+        "sarscov2_lineages";
+    const data = await fetch(`./data/${id}.json`).then((r) => r.json());
+    const fig = render(slot, data, { mode: "slide" });
+    new ResizeObserver(() => fig.resize()).observe(slot);
+</script>

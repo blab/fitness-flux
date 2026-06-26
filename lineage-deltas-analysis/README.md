@@ -48,7 +48,7 @@ The rules run these scripts:
 | `build_branch_deltas.py` | `branch_deltas.tsv` | per-branch change in per-region mutation counts and log fitness |
 | `compute_predictor_deltas.py` | `predictor_deltas.tsv` | per-branch change in CoVFit / EvEscape / DMS predictors (long format) |
 | `compute_esm_deltas.py` | `esm_deltas.tsv` | Euclidean distance between parent and child ESM embeddings |
-| `linear_models.py` | `linear_model_coefficients.tsv`, `slope_through_time.tsv` | multiple regression of fitness change on mutation regions; per-season slopes |
+| `linear_models.py` | `linear_model_coefficients.tsv`, `linear_model_predictions.tsv`, `slope_through_time.tsv` | multiple regression of fitness change on non-overlapping regions (RBD, S1-excl-RBD, ORF1ab, accessory) with estimate/SE/t/p; per-branch fitted values; per-season slopes |
 | `predictor_correlations.py` | `predictor_correlations.tsv` | Pearson / Spearman / R² of each predictor delta vs. fitness change |
 
 ## Visualization

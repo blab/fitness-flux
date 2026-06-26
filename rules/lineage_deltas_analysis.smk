@@ -96,6 +96,7 @@ rule lineage_deltas_linear_models:
         branch_deltas = "lineage-deltas-analysis/results/branch_deltas.tsv"
     output:
         coefficients = "lineage-deltas-analysis/results/linear_model_coefficients.tsv",
+        predictions = "lineage-deltas-analysis/results/linear_model_predictions.tsv",
         slope = "lineage-deltas-analysis/results/slope_through_time.tsv"
     log:
         "logs/lineage_deltas/linear_models.txt"
@@ -104,6 +105,7 @@ rule lineage_deltas_linear_models:
         python -u lineage-deltas-analysis/scripts/linear_models.py \
             --branch-deltas {input.branch_deltas} \
             --coefficients-output {output.coefficients} \
+            --predictions-output {output.predictions} \
             --slope-output {output.slope} 2>&1 | tee {log}
         """
 
@@ -131,11 +133,14 @@ rule viz_lineage_deltas_data:
     input:
         branch_deltas = "lineage-deltas-analysis/results/branch_deltas.tsv",
         predictor_deltas = "lineage-deltas-analysis/results/predictor_deltas.tsv",
-        esm_deltas = "lineage-deltas-analysis/results/esm_deltas.tsv"
+        esm_deltas = "lineage-deltas-analysis/results/esm_deltas.tsv",
+        coefficients = "lineage-deltas-analysis/results/linear_model_coefficients.tsv",
+        predictions = "lineage-deltas-analysis/results/linear_model_predictions.tsv"
     output:
         deltas = "viz/lineage-deltas/data/sarscov2_lineages.json",
         trends = "viz/lineage-delta-trends/data/sarscov2_lineages.json",
-        histograms = "viz/lineage-delta-histograms/data/sarscov2_lineages.json"
+        histograms = "viz/lineage-delta-histograms/data/sarscov2_lineages.json",
+        model = "viz/lineage-deltas-model/data/sarscov2_lineages.json"
     log:
         "logs/lineage_deltas/viz_lineage_deltas_data.txt"
     shell:
@@ -144,9 +149,12 @@ rule viz_lineage_deltas_data:
             --branch-deltas {input.branch_deltas} \
             --predictor-deltas {input.predictor_deltas} \
             --esm-deltas {input.esm_deltas} \
+            --coefficients {input.coefficients} \
+            --predictions {input.predictions} \
             --output {output.deltas} 2>&1 | tee {log}
         cp {output.deltas} {output.trends}
         cp {output.deltas} {output.histograms}
+        cp {output.deltas} {output.model}
         """
 
 
@@ -156,7 +164,9 @@ rule all_lineage_deltas:
         "lineage-deltas-analysis/results/predictor_deltas.tsv",
         "lineage-deltas-analysis/results/esm_deltas.tsv",
         "lineage-deltas-analysis/results/linear_model_coefficients.tsv",
+        "lineage-deltas-analysis/results/linear_model_predictions.tsv",
         "lineage-deltas-analysis/results/slope_through_time.tsv",
         "lineage-deltas-analysis/results/predictor_correlations.tsv",
         "viz/lineage-deltas/data/sarscov2_lineages.json",
-        "viz/lineage-delta-trends/data/sarscov2_lineages.json"
+        "viz/lineage-delta-trends/data/sarscov2_lineages.json",
+        "viz/lineage-deltas-model/data/sarscov2_lineages.json"

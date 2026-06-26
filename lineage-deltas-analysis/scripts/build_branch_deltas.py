@@ -59,7 +59,10 @@ def main():
     mut_counts = read_mut_counts(args.mut_counts)
     branches = ld_io.branches(args.mlr_dir, args.seqcounts_dir)
 
-    out_columns = [f"delta_{name}" for name in GENE_COLUMNS] + ["delta_nonspike_muts"]
+    out_columns = (
+        [f"delta_{name}" for name in GENE_COLUMNS]
+        + ["delta_nonspike_muts", "delta_s1_nonrbd_muts"]
+    )
     rows = []
     for branch in branches:
         child, parent = branch["child"], branch["parent"]
@@ -77,6 +80,10 @@ def main():
             continue
         deltas["delta_nonspike_muts"] = (
             deltas["delta_nuc_muts"] - deltas["delta_spike_muts"]
+        )
+        # RBD (319-541) is nested within S1 (14-685), so S1-outside-RBD is exact.
+        deltas["delta_s1_nonrbd_muts"] = (
+            deltas["delta_s1_muts"] - deltas["delta_rbd_muts"]
         )
         rows.append({**branch, **deltas})
 
