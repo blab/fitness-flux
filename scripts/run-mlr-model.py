@@ -253,11 +253,50 @@ def make_raw_freq_tidy(data, location, window=7):
     return {"metadata": metadata, "data": entries}
 
 
+def make_modeled_freq_tidy(data, samples, location):
+    """Export the MLR-modeled frequency as the posterior MEDIAN only.
+
+    The posterior ``freq`` site has shape (n_samples, T, n_variants). Only its
+    median is consumed downstream (``ff_io.variant_modeled_frequencies`` reads
+    site ``freq`` at ps ``median``); the mean and HDI bounds that
+    ``get_sites_variants_tidy`` adds for every (variant, date) are never read.
+    For a wide lineage fit (~170 variants x ~365 dates) those unused entries are
+    ~8x the data and require 5 reductions over the big posterior array — the bulk
+    of the JSON export's memory and file size. We compute one median instead.
+    """
+    variants = data.var_names
+    date_map = data.date_to_index
+    median_freq = np.asarray(np.median(samples["freq"], axis=0))  # (T, n_variants)
+
+    metadata = {
+        "dates": data.dates,
+        "variants": variants,
+        "sites": ["freq"],
+        "location": [location],
+        "ps": ["median"],
+    }
+    entries = []
+    n_variants = median_freq.shape[1]
+    for v, variant in enumerate(variants):
+        if v >= n_variants:
+            continue
+        for day, d in date_map.items():
+            value = median_freq[d, v]
+            entries.append({
+                "location": location,
+                "site": "freq",
+                "variant": variant,
+                "date": day.strftime("%Y-%m-%d"),
+                "ps": "median",
+                "value": None if np.isnan(value) else float(np.around(value, decimals=3)),
+            })
+    return {"metadata": metadata, "data": entries}
+
+
 def export_results(multi_posterior, ps, path, data_name, hier, raw_freq_window=7):
+    # `freq` and `ga` samples are split per group for hierarchical export; `ga`
+    # keeps full HDI, `freq` is exported median-only (see make_modeled_freq_tidy).
     EXPORT_SITES = ["freq", "ga"]
-    EXPORT_DATED = [True, False, True]
-    EXPORT_FORECASTS = [False, False, True]
-    EXPORT_ATTRS = ["pivot"]
 
     # Make directories
     make_model_directories(path)
@@ -307,16 +346,21 @@ def export_results(multi_posterior, ps, path, data_name, hier, raw_freq_window=7
                 )
             )
         else:
+            # growth advantages (small, per-variant) keep full HDI ...
             results.append(
                 ef.posterior.get_sites_variants_tidy(
                     posterior.samples,
                     posterior.data,
-                    EXPORT_SITES,
-                    EXPORT_DATED,
-                    EXPORT_FORECASTS,
+                    ["ga"],
+                    [False],
+                    [False],
                     ps,
                     location,
                 )
+            )
+            # ... modeled frequency is exported as the posterior median only
+            results.append(
+                make_modeled_freq_tidy(posterior.data, posterior.samples, location)
             )
 
     # Add raw frequencies
