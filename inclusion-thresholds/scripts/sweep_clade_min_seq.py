@@ -23,19 +23,30 @@ REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 ANALYSIS = os.path.join(REPO, "inclusion-thresholds")
 SCRATCH = os.path.join(ANALYSIS, "scratch")
 MAP_CONFIG = os.path.join(ANALYSIS, "scripts", "mlr-config-map.yaml")
+LINEAGE_MAP_CONFIG = os.path.join(ANALYSIS, "scripts", "mlr-config-lineage-map.yaml")
+ALIAS_FILE = os.path.join(SCRATCH, "alias_key.json")
 
 # Representative windows spanning sequence volume. `current` is the production
-# clade_min_seq (for reference markers). All are Nextstrain-clade datasets that
-# collapse into "other"; lineage (collapse_threshold) datasets are a follow-up.
+# threshold (clade_min_seq for clades, collapse_threshold for lineages), used for
+# reference markers. Clade datasets collapse rare clades into "other" (MAP fits);
+# lineage datasets roll rare Pango lineages up into their PARENT via
+# collapse-lineage-counts.py and use fast MAP fits (pivot auto-selected, =None) for
+# growth advantages + frequencies; the noise metric is computed analytically from
+# the counts (see score_lineage_sweep.py), so a point estimate suffices.
 DATASETS = {
-    "sarscov2_clades_2020":    dict(kind="clade", min_date="2020-01-01", max_date="2020-12-31", pivot="19B", gen=3.2, rfw=7,  current=1000),
-    "sarscov2_clades_2021-22": dict(kind="clade", min_date="2021-07-01", max_date="2022-06-30", pivot="21K", gen=3.2, rfw=7,  current=1000),
-    "sarscov2_clades_2024":    dict(kind="clade", min_date="2024-01-01", max_date="2024-12-31", pivot="24A", gen=3.2, rfw=7,  current=500),
-    "h3n2_clades_2023-24":     dict(kind="clade", min_date="2023-01-01", max_date="2024-12-31", pivot="J.2", gen=3.2, rfw=14, current=100),
+    "sarscov2_clades_2020":      dict(kind="clade",   min_date="2020-01-01", max_date="2020-12-31", pivot="19B", gen=3.2, rfw=7,  current=1000),
+    "sarscov2_clades_2021-22":   dict(kind="clade",   min_date="2021-07-01", max_date="2022-06-30", pivot="21K", gen=3.2, rfw=7,  current=1000),
+    "sarscov2_clades_2024":      dict(kind="clade",   min_date="2024-01-01", max_date="2024-12-31", pivot="24A", gen=3.2, rfw=7,  current=500),
+    "h3n2_clades_2023-24":       dict(kind="clade",   min_date="2023-01-01", max_date="2024-12-31", pivot="J.2", gen=3.2, rfw=14, current=100),
+    "sarscov2_lineages_2020-21": dict(kind="lineage", min_date="2020-07-01", max_date="2021-06-30", pivot=None, gen=3.2, rfw=7,  current=1000),
+    "sarscov2_lineages_2021-22": dict(kind="lineage", min_date="2021-07-01", max_date="2022-06-30", pivot=None, gen=3.2, rfw=7,  current=1000),
+    "sarscov2_lineages_2023":    dict(kind="lineage", min_date="2023-01-01", max_date="2023-12-31", pivot=None, gen=3.2, rfw=7,  current=1000),
+    "sarscov2_lineages_2025":    dict(kind="lineage", min_date="2025-01-01", max_date="2025-12-31", pivot=None, gen=3.2, rfw=7,  current=1000),
 }
 
 COUNT_GRID = [50, 100, 200, 500, 1000, 2000, 5000]
-FREQ_PCTS = [0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
+FREQ_PCTS = dict(clade=[0.05, 0.1, 0.2, 0.5, 1.0, 2.0],
+                 lineage=[0.02, 0.05, 0.1, 0.2, 0.5, 1.0])
 
 
 def windowed_N(name):
@@ -44,9 +55,9 @@ def windowed_N(name):
     return int(pd.read_csv(f, sep="\t")["sequences"].sum())
 
 
-def thetas_for(name, N, current):
+def thetas_for(kind, N, current):
     grid = {t for t in COUNT_GRID if t <= 0.5 * N}
-    grid |= {max(1, round(p / 100 * N)) for p in FREQ_PCTS}
+    grid |= {max(1, round(p / 100 * N)) for p in FREQ_PCTS[kind]}
     grid.add(current)
     return sorted(grid)
 
@@ -82,15 +93,18 @@ def sweep_one(ds, theta):
         collapsed = os.path.join(outdir, "collapsed_seq_counts.tsv")
         run(["python", "scripts/collapse-lineage-counts.py",
              "--seq-counts", prepared, "--collapse-threshold", str(theta),
-             "--output-seq-counts", collapsed],
+             "--aliasing", ALIAS_FILE, "--output-seq-counts", collapsed],
             os.path.join(outdir, "collapse.log"))
         mlr_input = collapsed
 
-    run(["python", "scripts/run-mlr-model.py", "--config", MAP_CONFIG,
-         "--seq-path", mlr_input, "--export-path", outdir,
-         "--pivot", ds["pivot"], "--generation-time", str(ds["gen"]),
-         "--raw-freq-window", str(ds["rfw"]), "--data-name", "mlr"],
-        os.path.join(outdir, "mlr.log"))
+    config = LINEAGE_MAP_CONFIG if ds["kind"] == "lineage" else MAP_CONFIG
+    cmd = ["python", "scripts/run-mlr-model.py", "--config", config,
+           "--seq-path", mlr_input, "--export-path", outdir,
+           "--generation-time", str(ds["gen"]),
+           "--raw-freq-window", str(ds["rfw"]), "--data-name", "mlr"]
+    if ds["pivot"]:  # clades pin a pivot; lineages auto-select (pivot=None)
+        cmd += ["--pivot", ds["pivot"]]
+    run(cmd, os.path.join(outdir, "mlr.log"))
 
 
 def main():
@@ -103,7 +117,7 @@ def main():
     for name in names:
         ds = {**DATASETS[name], "name": name}
         N = windowed_N(name)
-        thetas = [args.theta] if args.theta else thetas_for(name, N, ds["current"])
+        thetas = [args.theta] if args.theta else thetas_for(ds["kind"], N, ds["current"])
         print(f"=== {name}: N={N:,}, thetas={thetas} ===", flush=True)
         for theta in thetas:
             sweep_one(ds, theta)

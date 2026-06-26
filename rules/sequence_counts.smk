@@ -95,11 +95,13 @@ rule collapse_sequence_counts:
         "logs/{dataset}/collapse_sequence_counts.txt"
     params:
         collapse_threshold = lambda wildcards: _get_prepare_data_option(wildcards, 'collapse_threshold'),
+        min_core_count = lambda wildcards: _get_prepare_data_option(wildcards, 'min_core_count'),
     shell:
         """
         python ./scripts/collapse-lineage-counts.py \
             --seq-counts {input.sequence_counts} \
             {params.collapse_threshold} \
+            {params.min_core_count} \
             --output-seq-counts {output.sequence_counts} 2>&1 | tee {log}
         """
 

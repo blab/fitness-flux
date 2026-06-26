@@ -108,6 +108,27 @@ def collapse_lineages(seq_counts, collapse_threshold, aliasor: Aliasor):
 
     return seq_counts
 
+def apply_core_offramp(seq_counts, core, min_core_count):
+    """Relabel residual "relic" lineages to 'other' after roll-up.
+
+    A retained lineage can reach the collapse threshold purely by aggregating
+    scattered descendants while being near-extinct in its own right (e.g. a
+    "B.1" residual with only a handful of actual B.1 sequences). Such a category
+    is an 'other'-like mixture wearing a real lineage's name: it gets a
+    misspecified MLR fitness and acts as a distant, unreliable parent in the
+    branch-delta analysis. Keep a lineage as its own variant only if its own
+    exact-label count (`core`, computed before any roll-up) is at least
+    `min_core_count`; otherwise fold it -- and the orphans rolled into it -- into
+    'other'. Descendants then reroute to their nearest *retained* (real) ancestor.
+    """
+    retained = set(seq_counts["variant"].unique())
+    dissolved = {v for v in retained if v != "other" and core.get(v, 0) < min_core_count}
+    if dissolved:
+        print(f"Off-ramp: folding {len(dissolved)} residual lineages (core <"
+              f" {min_core_count}) into 'other': {sorted(dissolved)}")
+        seq_counts.loc[seq_counts["variant"].isin(dissolved), "variant"] = "other"
+    return seq_counts
+
 def aggregate_counts(seq_counts):
     return seq_counts.groupby(["location", "variant", "date"], as_index=False)["sequences"].sum()
 
@@ -123,16 +144,25 @@ def main():
         based on supplied threshold and output a new sequence counts file")
     parser.add_argument("--seq-counts", type=str, required=True, help="input TSV of sequence counts")
     parser.add_argument("--collapse-threshold", type=int, default=1, help="threshold count to collapse lineage into parental lineage")
+    parser.add_argument("--min-core-count", type=int, default=None, help="minimum exact-label ('core') count for a lineage to be retained as its own variant; lineages below this are folded into 'other' after roll-up (they are residual mixtures that only reach the threshold by aggregating distant descendants). If omitted, no core off-ramp is applied.")
+    parser.add_argument("--aliasing", type=str, default=None, help="optional path to a local Pango alias_key.json; if omitted the file is downloaded from GitHub (needs internet)")
     parser.add_argument("--output-seq-counts", type=str, required=True, help="output TSV of collapsed sequence counts")
     args = parser.parse_args()
 
     seq_counts = pd.read_csv(args.seq_counts, sep="\t")
 
-    # Automatically downloads aliasing file from github, needs internet connection
-    # File is sourced from https://github.com/cov-lineages/pango-designation/blob/master/pango_designation/alias_key.json
-    aliasor: Aliasor = Aliasor()
+    # Exact per-lineage counts BEFORE any roll-up: a lineage's "own" presence,
+    # used by the core off-ramp to tell real lineages from residual mixtures.
+    core = seq_counts.groupby("variant")["sequences"].sum().to_dict()
+
+    # With --aliasing, reads a local alias_key.json (offline/repeatable). Otherwise
+    # Aliasor() downloads the file from github (needs internet connection). File is
+    # https://github.com/cov-lineages/pango-designation/blob/master/pango_designation/alias_key.json
+    aliasor: Aliasor = Aliasor(args.aliasing)
 
     seq_counts = collapse_lineages(seq_counts, args.collapse_threshold, aliasor)
+    if args.min_core_count:
+        seq_counts = apply_core_offramp(seq_counts, core, args.min_core_count)
     seq_counts = aggregate_counts(seq_counts)
     seq_counts = sort_output(seq_counts)
 

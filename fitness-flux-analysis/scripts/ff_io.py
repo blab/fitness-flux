@@ -78,6 +78,32 @@ def variant_growth_advantages(mlr):
     return {variant: ga.get(variant, 1.0) for variant in variants}
 
 
+def variant_growth_advantage_intervals(mlr, level=95):
+    """variant -> (lower, upper) HDI bounds of the growth advantage ``ga``.
+
+    Reads the ``HDI_{level}_lower`` / ``HDI_{level}_upper`` records of the ``ga``
+    site for the primary location. The interval WIDTH (upper - lower) is a
+    per-variant growth-rate uncertainty, available from posterior fits (NUTS,
+    FullRank) but degenerate under a MAP point estimate. Variants without a ``ga``
+    record (e.g. the pivot) are omitted.
+    """
+    location = primary_location(mlr)
+    lo_key, hi_key = f"HDI_{level}_lower", f"HDI_{level}_upper"
+    bounds = {}
+    for record in mlr["data"]:
+        if (
+            record.get("value") is None
+            or record.get("site") != "ga"
+            or record.get("location") != location
+        ):
+            continue
+        if record.get("ps") == lo_key:
+            bounds.setdefault(record["variant"], {})["lo"] = record["value"]
+        elif record.get("ps") == hi_key:
+            bounds.setdefault(record["variant"], {})["hi"] = record["value"]
+    return {v: (b["lo"], b["hi"]) for v, b in bounds.items() if "lo" in b and "hi" in b}
+
+
 def variant_weekly_frequencies(mlr):
     """variant -> {date: weekly_raw_freq} for the primary-location series."""
     return _variant_date_series(mlr, site="weekly_raw_freq")

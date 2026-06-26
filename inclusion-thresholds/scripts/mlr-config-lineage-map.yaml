@@ -1,0 +1,31 @@
+# MAP (point-estimate) MLR config for the lineage collapse_threshold sweep.
+# Fast, like the clade sweep: supplies per-lineage growth advantages and modeled
+# frequencies for the over-collapse and cross-entropy metrics. The NOISE metric is
+# computed analytically from the counts (Fisher-information SE ~ 1/sqrt(count)), not
+# from these fits, so a point estimate suffices here; the recommended threshold is
+# re-validated under NUTS. pivot is empty so evofr auto-selects, matching the
+# production lineage fits (which store pivot: None). data / generation_time are
+# overridden per run on the run-mlr-model.py command line.
+data:
+  name: "sweep"
+  case_path: "data/test/prepared_cases.tsv"
+  seq_path: "data/test/prepared_seq_counts.tsv"
+
+settings:
+  fit: true
+  save: false
+  load: false
+  export_json: true
+  ps: [0.5, 0.8, 0.95]
+
+model:
+  generation_time: 3.2
+  pivot: ""
+  hierarchical: false
+
+inference:
+  method: "MAP"
+  iters: 50000
+  lr: 4e-4
+  num_warmup: 0
+  num_samples: 0

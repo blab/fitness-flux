@@ -1,0 +1,28 @@
+# NUTS MLR config to re-validate the recommended lineage collapse_threshold.
+# Matches the production inference (NUTS, 200 warmup / 200 samples) so the
+# exported `ga` HDI bounds are gold-standard per-lineage growth-rate uncertainty,
+# used to confirm the analytic SE proxy (which drove the sweep) and the precision
+# at the recommended threshold. pivot empty -> evofr auto-selects (= production).
+data:
+  name: "sweep"
+  case_path: "data/test/prepared_cases.tsv"
+  seq_path: "data/test/prepared_seq_counts.tsv"
+
+settings:
+  fit: true
+  save: false
+  load: false
+  export_json: true
+  ps: [0.5, 0.8, 0.95]
+
+model:
+  generation_time: 3.2
+  pivot: ""
+  hierarchical: false
+
+inference:
+  method: "NUTS"
+  iters: 50000
+  lr: 4e-4
+  num_warmup: 200
+  num_samples: 200
