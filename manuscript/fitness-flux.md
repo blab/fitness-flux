@@ -16,7 +16,7 @@ date: 2026-06-21
 The tempo of viral adaptation is usually read indirectly from the composition of mutations, through measures such as dN/dS.
 Here we measure it directly from the dynamics of variant frequencies, where we use multinomial logistic regression to estimate a fitness for each co-circulating variant.
 We aggregate these estimates to derive the rate of change of mean population fitness, referred to as fitness flux.
-Tracing SARS-CoV-2 from 2020 to 2026 and comparing against seasonal influenza A/H3N2, we find that SARS-CoV-2 adapted rapidly with a 6.7-fold increase in fitness from 2020 to 2023, before slowing to a 2.2-fold increase from 2023 to 2026.
+Tracing SARS-CoV-2 from 2020 to 2025 and comparing against seasonal influenza A/H3N2, we find that SARS-CoV-2 adapted rapidly with a 6.8-fold increase in fitness from 2020 to 2023, before slowing to a 2.2-fold increase from 2023 to 2025.
 Influenza H3N2 sustains a slower, steadier pace roughly threefold below recent SARS-CoV-2.
 In both, the rate of fitness gain closely tracks the variance in fitness, matching the 1:1 expectation of Fisher's fundamental theorem.
 Phylogenetic contrasts between parent and child lineages localize most fitness gain to spike, and within spike to the receptor-binding domain, where a simple count of spike S1 substitutions predicts lineage fitness about as well as deep-learning escape and protein-language-model scores.
@@ -104,7 +104,7 @@ the total adaptive change accumulated along the population's trajectory.
 Because variant fitnesses are estimated only relative to a pivot, an individual variant's scaffolded fitness is meaningful as a difference from a baseline rather than as an absolute value.
 Chaining these locally-measured advantages across overlapping windows places variant $i$ at a cumulative fitness flux $\Phi_i = f_i - f_0$ relative to the founding variant, and the population sits at the frequency-weighted average $\Phi(t) = \sum_i x_i(t) \, \Phi_i$.
 
-We find that SARS-CoV-2 accumulates fitness flux rapidly, over the course of 2020 through 2025, doubling in fitness every 1.5 years on average ([@fig:time-vs-fitness-sarscov2]).
+We find that SARS-CoV-2 accumulates fitness flux rapidly, over the course of 2020 through 2025, doubling in fitness every 1.4 years on average ([@fig:time-vs-fitness-sarscov2]).
 After initial spread of D614G [@korber2020tracking] in 2020, we observe a lull, followed by rapid growth in fitness in 2021 and 2022 with initial VOCs, Omicron and initial Omicron sub-lineages [@roemer2023sars], and then a slower, more steady pace since 2024.
 There is a mix of large jumps in fitness (in particular to BA.1, but also more recently to JN.1) and smaller, more gradual step change.
 
@@ -117,7 +117,7 @@ The MLR analysis assumes that the fitness of each clade is constant through time
 
 Seasonal influenza H3N2 shows a fundamentally similar pattern of emergence of new clades and their replacement of existing diversity.
 However, H3N2 dynamics play out on a slower timescale ([@fig:time-vs-fitness-h3n2]).
-Rather than doubling in fitness every 1.5 years, H3N2 shows a doubling period of 9.7 years.
+Rather than doubling in fitness every 1.4 years, H3N2 shows a doubling period of 9.7 years.
 Greater coexistence of multiple co-circulating clades is also apparent relative to SARS-CoV-2.
 
 :::figure{#fig:time-vs-fitness-h3n2 component=time-vs-fitness dataset=h3n2_clades static=figures/h3n2_clades_time_vs_fitness.png}
@@ -148,7 +148,7 @@ where "the rate of increase in fitness of any organism at any time is equal to i
 
 We can investigate this relationship directly in SARS-CoV-2 ([@fig:sarscov2-variance-flux]), where we find that timepoints with larger variance in fitness $\mathrm{Var}[f(t)] = \sum_i x_i(t) \, (f_i - \bar{f}(t))^2$ correlate well with timepoints with larger change in mean population fitness $\Delta \bar{f}(t) / \Delta t$.
 In fact we find that the relationship is near the 1:1 expectation from Fisher's theorem (slope = 1.20, Pearson $r$ = 0.96).
-Looking in detail at rate of fitness flux through time, we find a peak fitness flux of $8.5 \times 10^{-3}$ per-gen in 2021 followed by a reduction to $1.6-1.7 \times 10^{-3}$ per-gen in 2024 and 2025.
+Looking in detail at rate of fitness flux through time, we find a peak fitness flux of $8.5 \times 10^{-3}$ per-gen in 2021 followed by a reduction to $1.7-1.8 \times 10^{-3}$ per-gen in 2024 and 2025.
 This shows that the rate of adaptation of SARS-CoV-2 has been slowing as low hanging fruit of host adaptation is exhausted, leaving only red-queen antigenic evolution to drive adaptation.
 
 :::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40 static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
@@ -156,7 +156,7 @@ This shows that the rate of adaptation of SARS-CoV-2 has been slowing as low han
 Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
 :::
 
-Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ per-gen from 2016 to 2026 ([@fig:h3n2-variance-flux]).
+Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ per-gen from 2016 to 2025 ([@fig:h3n2-variance-flux]).
 This is roughly 3 times lower than recent years of SARS-CoV-2 fitness flux.
 However, it remains possible that SARS-CoV-2 slows further in the coming years.
 
@@ -196,7 +196,7 @@ The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (
 We can track this relationship through time by fitting the regression separately within each season ([@fig:delta-trends]).
 The per-substitution effect on fitness of spike and RBD changes is largest early and erodes toward zero as the readily accessible routes to host adaptation are exhausted, while other regions stay near zero throughout.
 However, across accessory proteins and in ORF1ab there is moderate marginal correlation from 2020 to 2022 between substitutions and fitness change; the multiple regression below shows this to be a confound of co-occurrence with spike rather than an independent effect.
-Although per-substitution effect (ie regression slope) of RBD decays from 2020, the predictive ability of spike S1 and RBD substitutions as measured by Pearson and Spearman correlations stays high through the period with average correlation coefficients of $r$ = 0.73 and $\rho$ = 0.56 for spike S1 and $r$ = 0.68 and $\rho$ = 0.51 for spike RBD.
+Although per-substitution effect (ie regression slope) of RBD decays from 2020, the predictive ability of spike S1 and RBD substitutions as measured by Pearson and Spearman correlations stays high through the period with average correlation coefficients of $r$ = 0.74 and $\rho$ = 0.55 for spike S1 and $r$ = 0.72 and $\rho$ = 0.54 for spike RBD.
 
 :::figure{#fig:delta-trends component=lineage-delta-trends dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
 **Strength of the mutation–fitness relationship through time.**
@@ -208,7 +208,7 @@ The marginal relationships in [@fig:delta-genome] cannot on their own establish 
 A more evolved lineage accumulates more substitutions across the whole genome, so a region can correlate with fitness merely by co-varying with a genuinely causal region.
 The moderate marginal association of ORF1ab substitutions is a case in point.
 To isolate each region's independent contribution we fit a multiple linear regression of the change in substitution count across four non-overlapping genome regions to per-branch change in fitness ([@fig:delta-multiple]).
-Once spike is controlled for, essentially all of the positive signal sits in the RBD ($\beta$ = 0.055 per substitution) with a smaller contribution from the remainder of S1 ($\beta$ = 0.016), while the ORF1ab coefficient collapses to near zero and is no longer distinguishable from no effect ($\beta$ = 0.002, $p$ = 0.24), as is the accessory-protein coefficient ($\beta$ = –0.001, $p$ = 0.48).
+Once spike is controlled for, essentially all of the positive signal sits in the RBD ($\beta$ = 0.055 per substitution) with a smaller contribution from the remainder of S1 ($\beta$ = 0.015), while the ORF1ab coefficient collapses to near zero and is no longer distinguishable from no effect ($\beta$ = 0.002, $p$ = 0.24), as is the accessory-protein coefficient ($\beta$ = –0.001, $p$ = 0.47).
 The apparent marginal association of ORF1ab is therefore a confound of its co-occurrence with spike change rather than evidence that ORF1ab substitutions themselves raise fitness.
 The four-region model explains a majority of the variance in per-branch fitness change ($R^2$ = 0.59), with predicted and observed changes falling along the 1:1 line.
 
@@ -241,7 +241,7 @@ The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (
 Most measures of viral adaptation are indirect, diagnosing the presence of selection based on mutation patterns.
 Here we instead read adaptation directly off the dynamics of variant frequencies, aggregating per-variant growth rates into the population's fitness flux.
 This turns the tempo of adaptation into a single quantity that can be followed through time, placed on a common per-generation scale across pathogens and connected to first principles.
-On this scale SARS-CoV-2 adapts rapidly, doubling in fitness roughly every 1.5 years, but decelerating from a peak flux in 2021 towards a baseline flux in 2024, while seasonal H3N2 sustains a slower, steadier flux.
+On this scale SARS-CoV-2 adapts rapidly, doubling in fitness roughly every 1.4 years, but decelerating from a peak flux in 2021 towards a baseline flux in 2024, while seasonal H3N2 sustains a slower, steadier flux.
 Importantly, these numbers carry an absolute scale and connect back to epidemiological impact [@figgins2025frequency].
 
 The generality of the approach rests on a single requirement: a way to bin genetic diversity into discrete, comparable variants.
@@ -261,9 +261,9 @@ For influenza H3N2, we use data from GISAID [@shu2017gisaid].
 In each case, the raw sequences are processed with Nextclade [@aksamentov2021nextclade] to assign Nextstrain clade and Pango lineage [@rambaut2020dynamic] to SARS-CoV-2 sequences and to assign subclade [@neher2026nomenclature] to influenza H3N2 sequences.
 We filter out sequences with Nextclade overall QC status of "bad".
 We additionally filter to sequences collected from the USA.
-This leaves 3,594,555 total sequences for SARS-CoV-2 sampled between 2020 and 2026 and 49,623 total sequences for H3N2 sampled between 2016 and 2026.
+This leaves 3,588,802 total sequences for SARS-CoV-2 sampled between 2020 and 2025 and 44,456 total sequences for H3N2 sampled between 2016 and 2025.
 
-We conducted multinomial logistic regression (MLR) using the evofr package ([github.com/blab/evofr](https://github.com/blab/evofr)) on 1-year sliding windows for SARS-CoV-2 (12 windows total) and 2-year sliding windows for H3N2 (10 windows total).
+We conducted multinomial logistic regression (MLR) using the evofr package ([github.com/blab/evofr](https://github.com/blab/evofr)) on 1-year sliding windows for SARS-CoV-2 (11 windows total) and 2-year sliding windows for H3N2 (9 windows total).
 For each window we treat each clade as a distinct variant, collapsing rare clades together into a single "other" category before fitting.
 For both SARS-CoV-2 and H3N2, a clade is modeled separately only if it reaches at least 50 sequences and a mean frequency of at least 0.1% within the window, while clades below either threshold are merged into "other".
 This leaves between 7 and 18 clades per window (median 15) for SARS-CoV-2 and between 5 and 13 (median 9) for influenza H3N2.
@@ -271,7 +271,7 @@ This leaves between 7 and 18 clades per window (median 15) for SARS-CoV-2 and be
 We conduct a parallel MLR analysis of SARS-CoV-2 Pango lineages.
 Because lineages are hierarchically nested, rather than collapsing rare lineages into a shared "other" we roll each lineage with fewer than 500 sequences up into its parent lineage, repeating until every retained lineage clears this count.
 A lineage is additionally retained only if at least 200 sequences are assigned to that lineage itself rather than to a descendant sub-lineage, otherwise it is folded into "other".
-This leaves between 13 and 165 lineages per window (median 79) for SARS-CoV-2.
+This leaves between 20 and 165 lineages per window (median 79) for SARS-CoV-2.
 Rationale for specific collapse cutoffs is available at [github.com/blab/fitness-flux/tree/main/inclusion-thresholds](https://github.com/blab/fitness-flux/tree/main/inclusion-thresholds).
 
 ### Scaffolding across timepoints

@@ -1,3 +1,9 @@
+# The SARS-CoV-2 and H3N2 2025-26 datasets have enough sequence data
+# to give good estimates, but clade designation has recently and there is
+# effectively just a single circulating clade in 2026 for each. This gives
+# an artificial small fitness flux. I'm waiting to include these for clades
+# to be designated.
+
 datasets:
   - sarscov2_clades_2020
   - sarscov2_clades_2020-21
@@ -10,7 +16,7 @@ datasets:
   - sarscov2_clades_2024
   - sarscov2_clades_2024-25
   - sarscov2_clades_2025
-  - sarscov2_clades_2025-26
+  # - sarscov2_clades_2025-26
   - sarscov2_lineages_2020
   - sarscov2_lineages_2020-21
   - sarscov2_lineages_2021
@@ -22,7 +28,7 @@ datasets:
   - sarscov2_lineages_2024
   - sarscov2_lineages_2024-25
   - sarscov2_lineages_2025
-  - sarscov2_lineages_2025-26
+  # - sarscov2_lineages_2025-26
   - h3n2_clades_2016-17
   - h3n2_clades_2017-18
   - h3n2_clades_2018-19
@@ -32,7 +38,7 @@ datasets:
   - h3n2_clades_2022-23
   - h3n2_clades_2023-24
   - h3n2_clades_2024-25
-  - h3n2_clades_2025-26
+  # - h3n2_clades_2025-26
 
 # Per-virus metadata provisioning (the provision_metadata rule): stream the
 # Nextstrain metadata from S3, subset to these columns, and recompress to the
