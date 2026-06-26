@@ -281,9 +281,11 @@ We recover a single fitness per variant by treating scaffolding as a weighted tw
 We choose the $f_i$ and $c_w$ that jointly minimize the abundance-weighted squared error across every window,
 $$\min_{\{f_i\},\,\{c_w\}} \; \sum_{i,w} a_{i,w} \, (f_{i,w} - f_i + c_w)^2,$$
 weighting each estimate by $a_{i,w}$, the area under variant $i$'s modeled-frequency curve in window $w$, so a window in which a variant is rare with poorly constrained MLR estimate will contribute negligibly.
-The optimum is a pair of interleaved abundance-weighted means,
-$$f_i = \frac{\sum_w a_{i,w} \, (f_{i,w} + c_w)}{\sum_w a_{i,w}}, \qquad c_w = \frac{\sum_i a_{i,w} \, (f_i - f_{i,w})}{\sum_i a_{i,w}},$$
-each variant's fitness being the weighted mean of its offset-corrected estimates over its windows, and each window's offset the weighted-mean gap between the global scale and that window's estimates; we solve by alternating the two to convergence.
+The optimum is a pair of interleaved abundance-weighted means, each variant's fitness being the weighted mean of its offset-corrected estimates over its windows
+$$f_i = \frac{\sum_w a_{i,w} \, (f_{i,w} + c_w)}{\sum_w a_{i,w}},$$ 
+and each window's offset the weighted-mean gap between the global scale and that window's estimates
+$$c_w = \frac{\sum_i a_{i,w} \, (f_i - f_{i,w})}{\sum_i a_{i,w}}.$$
+We solve by alternating the two to convergence.
 The overlap of variants between windows ties them into one connected scale, leaving a single global constant free, which we fix by shifting all values so that the founding variant, our least-fit baseline, sits at zero, leaving each variant's scaffolded value as its cumulative fitness flux $\Phi_i = f_i - f_0$.
 
 ### Lineage mutation counts and branch contrasts
