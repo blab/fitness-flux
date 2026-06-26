@@ -3,12 +3,6 @@
 #
 # evofr is only needed to regenerate mlr-estimates/ (scripts/run-mlr-model.py);
 # the analysis scripts + viz need only numpy + scipy.
-#
-# Note: the evofr published on PyPI still caps pandas<2 / numpy<2, which has no
-# wheel on Python 3.12 and fails to build from source. Install the local,
-# constraint-relaxed copy first so it works on 3.12 with modern pandas/numpy:
-#     pip install -e ../evofr
-#     pip install -r requirements.txt   # evofr already satisfied, not re-fetched
 
 # Workflow engine
 snakemake
