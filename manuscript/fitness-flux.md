@@ -189,7 +189,7 @@ The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (
 We can track this relationship through time by fitting the regression separately within each season ([@fig:delta-trends]).
 The per-substitution effect on fitness of spike and RBD changes is largest early and erodes toward zero as the readily accessible routes to host adaptation are exhausted, while other regions stay near zero throughout.
 However, note that across accessory proteins and in ORF1ab there is moderate correlation from 2020 to 2022 of mutations to changes in fitness suggesting some lesser, but likely non-zero, involvement in adaptation compared to spike.
-Although per-substitution effect (ie regression slope) of RBD decays from 2020, the predictive ability of spike S1 and RBD substitutions as measured by Pearson and Spearman correlations stays high through the period with average correlation coefficients of $r$ = [TODO] and $\rho$ = [TODO]. 
+Although per-substitution effect (ie regression slope) of RBD decays from 2020, the predictive ability of spike S1 and RBD substitutions as measured by Pearson and Spearman correlations stays high through the period with average correlation coefficients of $r$ = 0.73 and $\rho$ = 0.56 for spike S1 and $r$ = 0.68 and $\rho$ = 0.51 for spike RBD.
 
 :::figure{#fig:delta-trends component=lineage-delta-trends dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
 **Strength of the mutation–fitness relationship through time.**
@@ -228,7 +228,7 @@ For SARS-CoV-2 and influenza this comes off the shelf, with Nextstrain clades su
 Pathogens without an established nomenclature could be analyzed via automated methods that partition a tree into lineages [@mcbroome2024framework; @lefrancq2025learning].
 
 Beyond describing historical adaptation, the per-branch contrast of mutation against fitness change yields a simple, interpretable account of which substitutions matter.
-For SARS-CoV-2 the signal concentrates in spike (and particularly spike RBD) and a plain count of spike S1 substitutions disambiguates the relative fitness of co-circulating lineages about as well as state-of-the-art deep-learning escape and protein-language-model scores [@thadani2023learning; @hie2021learning].
+For SARS-CoV-2 the signal concentrates in spike (and particularly spike RBD) and a plain count of spike S1 substitutions disambiguates the relative fitness of co-circulating lineages about as well as recently proposed deep-learning escape and protein-language-model scores [@thadani2023learning; @hie2021learning].
 This makes the mutation-to-fitness deltas a strong and transparent baseline for forecasting variant success, where a predictor that does not improve on counting spike substitutions has not yet justified its added complexity.
 
 ## Methods
@@ -264,6 +264,19 @@ The optimum is a pair of interleaved abundance-weighted means,
 $$f_i = \frac{\sum_w a_{i,w} \, (f_{i,w} + c_w)}{\sum_w a_{i,w}}, \qquad c_w = \frac{\sum_i a_{i,w} \, (f_i - f_{i,w})}{\sum_i a_{i,w}},$$
 each variant's fitness being the weighted mean of its offset-corrected estimates over its windows, and each window's offset the weighted-mean gap between the global scale and that window's estimates; we solve by alternating the two to convergence.
 The overlap of variants between windows ties them into one connected scale, leaving a single global constant free, which we fix by shifting all values so that the founding variant, our least-fit baseline, sits at zero, leaving each variant's scaffolded value as its cumulative fitness flux $\Phi_i = f_i - f_0$.
+
+### Lineage mutation counts and branch contrasts
+
+To relate change in fitness to change in genotype, we count amino-acid substitutions per Pango lineage and compare each lineage against its parent.
+Per-lineage substitution counts are read from the Nextclade SARS-CoV-2 reference tree at [nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs](https://nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs), in which each tip corresponds to a Pango lineage.
+For each lineage we count substitutions relative to the Wuhan-Hu-1 reference.
+We tally these genome-wide and by region: whole spike, the spike S1 and S2 subunits, the N-terminal domain (NTD, spike positions 14–305) and receptor-binding domain (RBD, 319–541) within S1, ORF1ab and the accessory and structural genes (ORF3a, E, M, ORF6, ORF7a, ORF7b, ORF8, N).
+
+We then form parent-to-child branches between hierarchically nested Pango lineages.
+Within each window a lineage's parent is its closest retained ancestor, where the retained set is fixed by the collapsing described above, so lineages that were rolled up into a parent or folded into "other" do not themselves appear as branch endpoints.
+For every branch whose parent and child both carry an MLR fitness estimate in that window, we record the change in substitution count in each genome region (child minus parent) and the change in fitness, taken as the difference in their per-window MLR fitness; because both endpoints are estimated against the same window's pivot, this contrast is well defined without scaffolding.
+A branch is recorded once per window in which it appears, so a lineage pair that co-circulates across several windows contributes several observations.
+These per-branch deltas in mutation count and fitness are the unit of the mutational-fitness analyses.
 
 ## Acknowledgments
 
