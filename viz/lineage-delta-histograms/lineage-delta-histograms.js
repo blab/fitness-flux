@@ -90,7 +90,7 @@ export function render(container, data, opts = {}) {
     );
     panels.push(
         makePanel(
-            "Change in log fitness",
+            "Change in fitness",
             finite(data.points.map((p) => p.delta_log_fitness)),
             FITNESS_BIN,
             2,

@@ -87,8 +87,8 @@ export function render(container, data, opts = {}) {
         dateStr: p.dateStr,
     }));
 
-    const VAR_LABEL = "Log fitness variance (× 10⁻³)";
-    const FLUX_LABEL = "Log fitness flux\nper gen (× 10⁻³)";
+    const VAR_LABEL = "Fitness variance (× 10⁻³)";
+    const FLUX_LABEL = "Fitness flux\nper gen (× 10⁻³)";
     const fmtDate = d3.utcFormat("%Y-%m-%d");
 
     const root = document.createElement("div");

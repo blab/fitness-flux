@@ -310,7 +310,7 @@ export function render(container, data, opts = {}) {
             },
             y: {
                 domain: yDomain,
-                label: index === 0 ? "Change in log fitness" : null,
+                label: index === 0 ? "Change in fitness" : null,
                 labelAnchor: "center",
                 labelArrow: "none",
             },
@@ -345,7 +345,7 @@ export function render(container, data, opts = {}) {
                         x: "x",
                         y: "y",
                         title: (d) =>
-                            `${d.parent} → ${d.child}\nseason ${d.timepoint}\nΔ ${labelOf(key)} ${d.x}\nΔ log fitness ${d.y.toFixed(3)}`,
+                            `${d.parent} → ${d.child}\nseason ${d.timepoint}\nΔ ${labelOf(key)} ${d.x}\nΔ fitness ${d.y.toFixed(3)}`,
                     }),
                 ),
             ],

@@ -43,10 +43,10 @@ PREDICTOR_LABELS = {
 
 # ESM embedding columns in esm_deltas.tsv -> display label.
 ESM_LABELS = {
-    "esm_650M_pretrained": "ESM 650M pretrained",
-    "esm_650M_fine_tuned": "ESM 650M fine-tuned",
-    "esm_3B_pretrained": "ESM 3B pretrained",
-    "esm_3B_fine_tuned": "ESM 3B fine-tuned",
+    "esm_650M_pretrained": "ESM semanticity (pretrained)",
+    "esm_650M_fine_tuned": "ESM semanticity (fine-tuned)",
+    "esm_3B_pretrained": "ESM 3B semanticity (pretrained)",
+    "esm_3B_fine_tuned": "ESM 3B semanticity (fine-tuned)",
 }
 
 # Early = Jan 2020 - Jun 2022 windows; everything else is late.
