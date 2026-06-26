@@ -217,11 +217,19 @@ The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (
 
 ## Conclusions
 
-Highlight that this method lets us look directly at evolution of fitness rather than all the normal proxies for adaptation like dN/dS, etc... [TODO]
+Most measures of viral adaptation are indirect, diagnosing the presence of selection based on mutations patterns.
+Here we instead read adaptation directly off the dynamics of variant frequencies, aggregating per-variant growth rates into the population's fitness flux.
+This turns the tempo of adaptation into a single quantity that can be followed through time, placed on a common per-generation scale across pathogens and connected to first principles.
+On this scale SARS-CoV-2 adapts rapidly, doubling in fitness roughly every 1.5 years, but decelerating from a peak flux in 2021 towards a baseline flux in 2024, while seasonal H3N2 sustains a slower, steadier flux.
+Importantly these numbers can be connected back to epidemiological impacts [@figgins2025frequency] and have an absolute scale to them.
 
-General applicability of this method depends largely on convenient nomenclatures to bin genetic diversity into discrete variants or alternatively on automated methods to identify lineages (autolin [@mcbroome2024framework], Phylowave [@lefrancq2025learning]).
+The generality of the approach rests on a single requirement: a way to bin genetic diversity into discrete, comparable variants.
+For SARS-CoV-2 and influenza this comes off the shelf, with Nextstrain clades supporting the frequency and flux analysis and finer, hierarchically nested Pango lineages supporting the phylogenetic-contrast analysis of mutational effects.
+Pathogens without an established nomenclature could be analyzed via automated methods that partition a tree into lineages [@mcbroome2024framework; @lefrancq2025learning].
 
-Power of simple spike mutations and this deltas analysis as baseline for forecasting models.
+Beyond describing historical adaptation, the per-branch contrast of mutation against fitness change yields a simple, interpretable account of which substitutions matter.
+For SARS-CoV-2 the signal concentrates in spike (and particularly spike RBD) and a plain count of spike S1 substitutions disambiguates the relative fitness of co-circulating lineages about as well as state-of-the-art deep-learning escape and protein-language-model scores [@thadani2023learning; @hie2021learning].
+This makes the mutation-to-fitness deltas a strong and transparent baseline for forecasting variant success, where a predictor that does not improve on counting spike substitutions has not yet justified its added complexity.
 
 ## Methods
 
@@ -232,15 +240,18 @@ For influenza H3N2, we use data from GISAID [@shu2017gisaid].
 In each case, the raw sequences are processed with Nextclade [@aksamentov2021nextclade] to assign Nextstrain clade and Pango lineage [@rambaut2020dynamic] to SARS-CoV-2 sequences and to assign subclade [@neher2026nomenclature] to influenza H3N2 sequences.
 We filter out sequences with Nextclade overall QC status of "bad".
 We additionally filter to sequences collected from the USA.
-This leaves [TODO] total sequences for SARS-CoV-2 sampled between 2020 and 2026 and [TODO] total sequences for H3N2 sampled between 2016 and 2026.
+This leaves 3,594,555 total sequences for SARS-CoV-2 sampled between 2020 and 2026 and 49,623 total sequences for H3N2 sampled between 2016 and 2026.
 
 We conducted multinomial logistic regression (MLR) using the evofr package ([github.com/blab/evofr](https://github.com/blab/evofr)) on 1-year sliding windows for SARS-CoV-2 (12 windows total) and 2-year sliding windows for H3N2 (10 windows total).
-For each window we need treat each clade as a distinct variant except for overly rare clades that are collapsed together into an "other" variant category.
-For both SARS-CoV-2 and H3N2, within each analysis window, clades observed at a mean frequency below 0.1% were collapsed into a single 'other' category prior to MLR fitting; this frequency threshold keeps the set of independently-modeled clades comparable across windows spanning ~10³-10⁶ sequences and was chosen to... [TODO]
-This leaves [TODO] clades for SARS-CoV-2 and [TODO] clades for influenza H3N2.
+For each window we treat each clade as a distinct variant, collapsing rare clades together into a single "other" category before fitting.
+For both SARS-CoV-2 and H3N2, a clade is modeled separately only if it reaches at least 50 sequences and a mean frequency of at least 0.1% within the window, while clades below either threshold are merged into "other".
+This leaves between 7 and 18 clades per window (median 15) for SARS-CoV-2 and between 5 and 13 (median 9) for influenza H3N2.
 
-We conduct a similar MLR analysis of SARS-CoV-2 lineages.
-Here, we collapse lineages according to the following logic... [TODO].
+We conduct a parallel MLR analysis of SARS-CoV-2 Pango lineages.
+Because lineages are hierarchically nested, rather than collapsing rare lineages into a shared "other" we roll each lineage with fewer than 500 sequences up into its parent lineage, repeating until every retained lineage clears this count.
+A lineage is additionally retained only if at least 200 sequences are assigned to that lineage itself rather than to a descendant sub-lineage, otherwise it is folded into "other".
+This leaves between 13 and 165 lineages per window (median 79) for SARS-CoV-2.
+Rationale for specific collapse cutoffs is available at [github.com/blab/fitness-flux/tree/main/inclusion-thresholds](https://github.com/blab/fitness-flux/tree/main/inclusion-thresholds).
 
 ### Scaffolding across timepoints
 
