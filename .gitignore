@@ -39,7 +39,9 @@ embeddings_3B_pretrained.tsv
 embeddings_3B_fine_tuned.tsv
 
 # Compiled manuscript files
+fitness-flux.tex
 fitness_flux.pdf
+fitness-flux.pdf
 
 # press build output
 manuscript/dist/

@@ -70,7 +70,7 @@ We use only the USA, the one country with sufficient temporal sequencing coverag
 We collapse rare clades into a single "other" clade for MLR analysis to prevent noisy estimates from low sequence counts (see Methods).
 The match between the empirical frequencies (dotted trajectories) and MLR frequencies (solid trajectories) indicates the model fits well despite having few parameters.
 
-:::figure{#fig:time-vs-frequency-sarscov2 component=time-vs-frequency dataset=sarscov2_clades static=figures/sarscov2_clades_time_vs_frequency.png}
+:::figure{#fig:time-vs-frequency-sarscov2 component=time-vs-frequency dataset=sarscov2_clades}
 **Relative frequencies of SARS-CoV-2 clades through time.**
 Points represent empirical frequencies of SARS-CoV-2 Nextstrain clades, while solid lines represent modeled frequencies from multinomial logistic regression (MLR).
 All data is taken from the USA.
@@ -83,7 +83,7 @@ The model fits are worse for H3N2 compared to SARS-CoV-2.
 This is especially apparent at junctions between influenza seasons where stochastic seeding of a new season may result in a discontinuity of clade frequency compared to MLR expectation.
 However, H3N2 fits remain sufficient to estimate the magnitude of fitness effects.
 
-:::figure{#fig:time-vs-frequency-h3n2 component=time-vs-frequency dataset=h3n2_clades static=figures/h3n2_clades_time_vs_frequency.png}
+:::figure{#fig:time-vs-frequency-h3n2 component=time-vs-frequency dataset=h3n2_clades}
 **Relative frequencies of H3N2 clades through time.**
 Points represent empirical frequencies of H3N2 Nextstrain clades, while solid lines represent modeled frequencies from multinomial logistic regression (MLR).
 All data is taken from the USA.
@@ -108,7 +108,7 @@ We find that SARS-CoV-2 accumulates fitness flux rapidly, over the course of 202
 After initial spread of D614G [@korber2020tracking] in 2020, we observe a lull, followed by rapid growth in fitness in 2021 and 2022 with initial VOCs, Omicron and initial Omicron sub-lineages [@roemer2023sars], and then a slower, more steady pace since 2024.
 There is a mix of large jumps in fitness (in particular to BA.1, but also more recently to JN.1) and smaller, more gradual step change.
 
-:::figure{#fig:time-vs-fitness-sarscov2 component=time-vs-fitness dataset=sarscov2_clades static=figures/sarscov2_clades_time_vs_fitness.png}
+:::figure{#fig:time-vs-fitness-sarscov2 component=time-vs-fitness dataset=sarscov2_clades}
 **Cumulative SARS-CoV-2 fitness flux.**
 Empirical frequencies of SARS-CoV-2 clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
 All data is taken from the USA.
@@ -120,7 +120,7 @@ However, H3N2 dynamics play out on a slower timescale ([@fig:time-vs-fitness-h3n
 Rather than doubling in fitness every 1.4 years, H3N2 shows a doubling period of 9.7 years.
 Greater coexistence of multiple co-circulating clades is also apparent relative to SARS-CoV-2.
 
-:::figure{#fig:time-vs-fitness-h3n2 component=time-vs-fitness dataset=h3n2_clades static=figures/h3n2_clades_time_vs_fitness.png}
+:::figure{#fig:time-vs-fitness-h3n2 component=time-vs-fitness dataset=h3n2_clades}
 **Cumulative H3N2 fitness flux.**
 Empirical frequencies of H3N2 clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
 All data is taken from the USA.
@@ -151,7 +151,7 @@ In fact we find that the relationship is near the 1:1 expectation from Fisher's 
 Looking in detail at rate of fitness flux through time, we find a peak fitness flux of $8.5 \times 10^{-3}$ per-gen in 2021 followed by a reduction to $1.7-1.8 \times 10^{-3}$ per-gen in 2024 and 2025.
 This shows that the rate of adaptation of SARS-CoV-2 has been slowing as low hanging fruit of host adaptation is exhausted, leaving only red-queen antigenic evolution to drive adaptation.
 
-:::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40 static=figures/sarscov2_clades_fitness_variance_vs_flux.png}
+:::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40}
 **Fitness variance and fitness flux in SARS-CoV-2.**
 Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
 :::
@@ -160,7 +160,7 @@ Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness fl
 This is roughly 3 times lower than recent years of SARS-CoV-2 fitness flux.
 However, it remains possible that SARS-CoV-2 slows further in the coming years.
 
-:::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades static=figures/h3n2_clades_fitness_variance_vs_flux.png}
+:::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades}
 **Fitness variance and fitness flux in H3N2.**
 Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
 :::
