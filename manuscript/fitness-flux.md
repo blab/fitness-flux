@@ -60,7 +60,7 @@ The model has $2n$ parameters, with each variant $i$ having an initial frequency
 Because growth rates are necessarily relative, we fix an arbitrary "pivot" variant as a reference with growth rate $f=0$.
 MLR growth rates are directly estimated in terms of calendar time with per-day or per-year values of $f$.
 To express fitness in per-generation units we multiply each per-day rate by the generation time $\tau$ measured in days, giving $f_i = \tau \, f_i^{\mathrm{day}}$, the change in log frequency accrued over a single generation.
-We assume $\tau = 3.2$ days for both SARS-CoV-2 and influenza H3N2 [@song2022serial].
+We assume $\tau$ of 5.0 days for pre-Omicron SARS-CoV-2, 3.2 days for post-Omicron SARS-CoV-2 and 3.2 for influenza H3N2 (see Methods).
 Throughout, we refer to this per-generation growth rate $f_i = \mathrm{log}(1+s_i)$ as the fitness of variant $i$.
 Because $f_i$ is defined on a log scale, mean fitness, fitness variance, fitness flux and changes in fitness between lineages are all likewise computed on this log scale.
 
@@ -265,10 +265,13 @@ We filter out sequences with Nextclade overall QC status of "bad".
 We additionally filter to sequences collected from the USA.
 This leaves 3,588,802 total sequences for SARS-CoV-2 sampled between 2020 and 2025 and 44,456 total sequences for H3N2 sampled between 2016 and 2025.
 
+### Multinomial logistic regression
+
 We conducted multinomial logistic regression (MLR) using the evofr package ([github.com/blab/evofr](https://github.com/blab/evofr)) on 1-year sliding windows for SARS-CoV-2 (11 windows total) and 2-year sliding windows for H3N2 (9 windows total).
 For each window we treat each clade as a distinct variant, collapsing rare clades together into a single "other" category before fitting.
 For both SARS-CoV-2 and H3N2, a clade is modeled separately only if it reaches at least 50 sequences and a mean frequency of at least 0.1% within the window, while clades below either threshold are merged into "other".
 This leaves between 7 and 18 clades per window (median 15) for SARS-CoV-2 and between 5 and 13 (median 9) for influenza H3N2.
+We use generation time $\tau$ of 5.0 days for pre-Omicron SARS-CoV-2 following [@ferretti2020quantifying; @ganyani2020estimating; @hart2022generation], generation time of 3.2 days for post-Omicron SARS-CoV-2 following [@park2023inferring; @chan2026estimating] and generation time of 3.2 days for seasonal influenza H3N2 following [@cowling2009estimation; @vink2014serial; @chan2025estimating].
 
 We conduct a parallel MLR analysis of SARS-CoV-2 Pango lineages.
 Because lineages are hierarchically nested, rather than collapsing rare lineages into a shared "other" we roll each lineage with fewer than 500 sequences up into its parent lineage, repeating until every retained lineage clears this count.
