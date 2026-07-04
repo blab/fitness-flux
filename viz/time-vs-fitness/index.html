@@ -10,11 +10,9 @@
     import { render } from "./time-vs-fitness.js";
     const slot = document.getElementById("fig");
     const meta = await fetch("./meta.json").then((r) => r.json()).catch(() => null);
-    const id =
-        new URLSearchParams(location.search).get("dataset") ??
-        meta?.default ??
-        "sarscov2_clades";
+    const params = new URLSearchParams(location.search);
+    const id = params.get("dataset") ?? meta?.default ?? "sarscov2_clades";
     const data = await fetch(`./data/${id}.json`).then((r) => r.json());
-    const fig = render(slot, data, { mode: "slide" });
+    const fig = render(slot, data, { mode: "slide", regressions: params.get("regressions") ?? undefined });
     new ResizeObserver(() => fig.resize()).observe(slot);
 </script>
