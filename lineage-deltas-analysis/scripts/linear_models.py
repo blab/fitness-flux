@@ -61,14 +61,39 @@ def design_matrix(rows):
     )
 
 
-def fit_multiple(rows):
-    """Fit OLS ``delta_log_fitness ~ 1 + PREDICTOR_COLUMNS``.
+def collapse_to_pairs(rows):
+    """Collapse to one row per unique parent->child pair.
 
-    Return a dict with per-term estimate / standard error / t / p (ordinary OLS
-    inference: coefficient covariance ``sigma^2 (X'X)^-1``, two-sided Student-t
-    p-values on ``n - k`` degrees of freedom), plus ``r_squared``, ``n`` and the
-    raw coefficient vector for generating predictions. ``None`` if too few rows.
+    A pair recurs across every window it co-circulates in with identical mutation
+    deltas (structural) and only a window-varying fitness delta, so treating each
+    window as a separate observation is pseudoreplication that shrinks OLS standard
+    errors. We keep the shared covariates and average the fitness delta, giving one
+    independent phylogenetic contrast per pair for the regression inference.
     """
+    by_pair = {}
+    for row in rows:
+        by_pair.setdefault((row["parent"], row["child"]), []).append(row)
+    collapsed = []
+    for group in by_pair.values():
+        base = dict(group[0])
+        base["delta_log_fitness"] = float(
+            np.mean([float(g["delta_log_fitness"]) for g in group])
+        )
+        collapsed.append(base)
+    return collapsed
+
+
+def fit_multiple(rows):
+    """Fit OLS ``delta_log_fitness ~ 1 + PREDICTOR_COLUMNS`` on unique pairs.
+
+    Rows are first collapsed to one observation per parent->child pair (see
+    ``collapse_to_pairs``) so p-values are not inflated by the same contrast
+    recurring across windows. Return a dict with per-term estimate / standard error
+    / t / p (ordinary OLS inference: coefficient covariance ``sigma^2 (X'X)^-1``,
+    two-sided Student-t p-values on ``n - k`` degrees of freedom), plus
+    ``r_squared``, ``n`` and the raw coefficient vector. ``None`` if too few rows.
+    """
+    rows = collapse_to_pairs(rows)
     k = len(PREDICTOR_COLUMNS) + 1  # predictors + intercept
     n = len(rows)
     if n <= k:
