@@ -12,6 +12,9 @@ settings:
   ps: [0.5, 0.8, 0.95] # HPDI intervals to be exported
 
 model:
+  # Fallback only; production generation time comes from the top-level
+  # `generation_time` block in config.yaml, passed per dataset via
+  # --generation-time / --generation-time-pre-omicron.
   generation_time: 4.8
   pivot: "20A"
   hierarchical: true

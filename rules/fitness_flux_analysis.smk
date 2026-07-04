@@ -101,7 +101,10 @@ rule fitness_flux_wave:
         timeseries = "fitness-flux-analysis/results/{analysis}_flux_timeseries.tsv",
         summary = "fitness-flux-analysis/results/{analysis}_flux_summary.json"
     params:
-        generation_time = config.get("analysis_generation_time", 3.2)
+        # Virus-keyed generation time (helper defined in rules/mlr_estimates.smk).
+        # For SARS-CoV-2 this expands to the per-variant pre/post-Omicron flags, so
+        # the velocity time-axis uses a frequency-weighted generation time.
+        generation_time = lambda wildcards: _generation_time_options(wildcards.analysis)
     log:
         "logs/fitness_flux/{analysis}_wave.txt"
     shell:
@@ -110,7 +113,7 @@ rule fitness_flux_wave:
             --dataset {wildcards.analysis} \
             --scaffolded {input.scaffolded} \
             --frequencies {input.frequencies} \
-            --generation-time {params.generation_time} \
+            {params.generation_time} \
             --timeseries-output {output.timeseries} \
             --summary-output {output.summary} 2>&1 | tee {log}
         """

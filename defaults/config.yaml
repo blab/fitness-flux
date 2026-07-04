@@ -57,6 +57,16 @@ provision:
     decompress: "xz -dc"
     columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
 
+# Generation time (days) to convert per-day MLR growth rates to per-generation
+# fitness. SARS-CoV-2 splits by Omicron status (assigned per variant at fit time
+# by scripts/generation_time.py); H3N2 uses a single value. Resolved per dataset
+# by virus prefix in the MLR and fitness-flux rules.
+generation_time:
+  sarscov2:
+    pre_omicron: 5.0
+    post_omicron: 3.2
+  h3n2: 3.2
+
 # Nextclade SARS-CoV-2 reference tree used to count per-Pango-lineage amino-acid
 # mutations (the mutation_counts rules, feeding the lineage-deltas analysis).
 # Re-fetch with `--forcerun fetch_nextclade_pango` to pick up newly defined lineages.
@@ -79,7 +89,6 @@ h3n2_clades_2016-17:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "B.1"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2017-18:
@@ -94,7 +103,6 @@ h3n2_clades_2017-18:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "B.2"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2018-19:
@@ -109,7 +117,6 @@ h3n2_clades_2018-19:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "C.1"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2019-20:
@@ -124,7 +131,6 @@ h3n2_clades_2019-20:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "E.2"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2020-21:
@@ -139,7 +145,6 @@ h3n2_clades_2020-21:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "G.1.1.1"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2021-22:
@@ -154,7 +159,6 @@ h3n2_clades_2021-22:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "G.1.1.1"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2022-23:
@@ -169,7 +173,6 @@ h3n2_clades_2022-23:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "G.2"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2023-24:
@@ -184,7 +187,6 @@ h3n2_clades_2023-24:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "J.2"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2024-25:
@@ -199,7 +201,6 @@ h3n2_clades_2024-25:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "J.2"
-  generation_time: 3.2
   raw_freq_window: 14
 
 h3n2_clades_2025-26:
@@ -214,7 +215,6 @@ h3n2_clades_2025-26:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "J.2"
-  generation_time: 3.2
   raw_freq_window: 14
 
 sarscov2_clades_2020:
@@ -228,8 +228,6 @@ sarscov2_clades_2020:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "19B"
-  generation_time: 3.2
-
 sarscov2_clades_2020-21:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -241,8 +239,6 @@ sarscov2_clades_2020-21:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "20G"
-  generation_time: 3.2
-
 sarscov2_clades_2021:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -254,8 +250,6 @@ sarscov2_clades_2021:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "21J"
-  generation_time: 3.2
-
 sarscov2_clades_2021-22:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -267,8 +261,6 @@ sarscov2_clades_2021-22:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "21K"
-  generation_time: 3.2
-
 sarscov2_clades_2022:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -280,8 +272,6 @@ sarscov2_clades_2022:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "22B"
-  generation_time: 3.2
-
 sarscov2_clades_2022-23:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -293,8 +283,6 @@ sarscov2_clades_2022-23:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "22E"
-  generation_time: 3.2
-
 sarscov2_clades_2023:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -306,8 +294,6 @@ sarscov2_clades_2023:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "23B"
-  generation_time: 3.2
-
 sarscov2_clades_2023-24:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -319,8 +305,6 @@ sarscov2_clades_2023-24:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "24A"
-  generation_time: 3.2
-
 sarscov2_clades_2024:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -332,8 +316,6 @@ sarscov2_clades_2024:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "24A"
-  generation_time: 3.2
-
 sarscov2_clades_2024-25:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -345,8 +327,6 @@ sarscov2_clades_2024-25:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "24A"
-  generation_time: 3.2
-
 sarscov2_clades_2025:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -358,8 +338,6 @@ sarscov2_clades_2025:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "25A"
-  generation_time: 3.2
-
 sarscov2_clades_2025-26:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
@@ -371,8 +349,6 @@ sarscov2_clades_2025-26:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "25A"
-  generation_time: 3.2
-
 sarscov2_lineages_2020:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -384,8 +360,6 @@ sarscov2_lineages_2020:
   max_date: "2020-12-31"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2020-21:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -397,8 +371,6 @@ sarscov2_lineages_2020-21:
   max_date: "2021-06-30"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2021:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -410,8 +382,6 @@ sarscov2_lineages_2021:
   max_date: "2021-12-31"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2021-22:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -423,8 +393,6 @@ sarscov2_lineages_2021-22:
   max_date: "2022-06-30"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2022:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -436,8 +404,6 @@ sarscov2_lineages_2022:
   max_date: "2022-12-31"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2022-23:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -449,8 +415,6 @@ sarscov2_lineages_2022-23:
   max_date: "2023-06-30"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2023:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -462,8 +426,6 @@ sarscov2_lineages_2023:
   max_date: "2023-12-31"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2023-24:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -475,8 +437,6 @@ sarscov2_lineages_2023-24:
   max_date: "2024-06-30"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2024:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -488,8 +448,6 @@ sarscov2_lineages_2024:
   max_date: "2024-12-31"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2024-25:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -501,8 +459,6 @@ sarscov2_lineages_2024-25:
   max_date: "2025-06-30"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2025:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -514,8 +470,6 @@ sarscov2_lineages_2025:
   max_date: "2025-12-31"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 sarscov2_lineages_2025-26:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
@@ -527,6 +481,4 @@ sarscov2_lineages_2025-26:
   max_date: "2026-06-30"
   collapse_threshold: 500
   min_core_count: 200
-  generation_time: 3.2
-
 mlr_config: "defaults/mlr-config.yaml"
