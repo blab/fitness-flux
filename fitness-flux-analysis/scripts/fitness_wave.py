@@ -18,10 +18,15 @@ import argparse
 import csv
 import json
 import math
+import os
+import sys
 
 import numpy as np
 
 import ff_io
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
+from generation_time import generation_time_for, load_aliasor  # noqa: E402
 
 DAYS_PER_YEAR = 365.0
 
@@ -38,6 +43,25 @@ def parse_args():
         type=float,
         default=3.2,
         help="generation time in days (velocity is scaled to per-generation)",
+    )
+    parser.add_argument(
+        "--generation-time-pre-omicron",
+        type=float,
+        default=None,
+        help="if set, the per-timepoint generation time is a frequency-weighted mean "
+        + "of per-variant tau (pre-Omicron variants use this, others --generation-time)",
+    )
+    parser.add_argument(
+        "--variant-classification",
+        choices=["clades", "lineages"],
+        default=None,
+        help="how to read variant names for the pre/post-Omicron split",
+    )
+    parser.add_argument(
+        "--aliasing",
+        type=str,
+        default=None,
+        help="optional local Pango alias_key.json for lineage classification",
     )
     parser.add_argument(
         "--velocity-window",
@@ -82,8 +106,32 @@ def location_and_variance(dates, by_date, logfit):
     return location, variance
 
 
-def velocity_series(dates, location, generation_time, window):
-    gen_years = generation_time / DAYS_PER_YEAR
+def per_variant_tau(variants, tau_post, tau_pre, variant_classification, aliasor):
+    """variant -> generation time. Uniform tau_post when no pre-Omicron split."""
+    if tau_pre is None or variant_classification is None:
+        return {v: tau_post for v in variants}
+    return {
+        v: generation_time_for(v, variant_classification, tau_pre, tau_post, aliasor)
+        for v in variants
+    }
+
+
+def tau_bar_by_date(dates, by_date, tau_v, tau_post):
+    """Frequency-weighted mean generation time at each date, tau_bar(t) = sum_v
+    freq_v(t) * tau_v; the effective generation clock as the population shifts from
+    pre-Omicron (5.0) to Omicron (3.2)."""
+    out = {}
+    for date in dates:
+        freqs = by_date[date]
+        total = sum(freqs.values())
+        if total <= 0:
+            out[date] = tau_post
+        else:
+            out[date] = sum(f * tau_v.get(v, tau_post) for v, f in freqs.items()) / total
+    return out
+
+
+def velocity_series(dates, location, tau_bar, window):
     series = []  # (midpoint_date, velocity)
     decimals = [ff_io.decimal_year(d) for d in dates]
     for i in range(window, len(dates)):
@@ -91,8 +139,10 @@ def velocity_series(dates, location, generation_time, window):
         if years <= 0:
             continue
         distance = location[i] - location[i - window]
+        midpoint = dates[i - window // 2]
+        gen_years = tau_bar[midpoint] / DAYS_PER_YEAR
         velocity = gen_years * distance / years
-        series.append((dates[i - window // 2], velocity))
+        series.append((midpoint, velocity))
     return series
 
 
@@ -104,8 +154,19 @@ def main():
 
     logfit = read_scaffolded(args.scaffolded)
     dates, by_date = read_frequencies(args.frequencies)
+
+    variants = set(logfit) | {v for freqs in by_date.values() for v in freqs}
+    aliasor = None
+    if args.generation_time_pre_omicron is not None and args.variant_classification == "lineages":
+        aliasor = load_aliasor(args.aliasing)
+    tau_v = per_variant_tau(
+        variants, args.generation_time, args.generation_time_pre_omicron,
+        args.variant_classification, aliasor,
+    )
+    tau_bar = tau_bar_by_date(dates, by_date, tau_v, args.generation_time)
+
     location, variance = location_and_variance(dates, by_date, logfit)
-    velocity = velocity_series(dates, location, args.generation_time, window)
+    velocity = velocity_series(dates, location, tau_bar, window)
     velocity_by_date = dict(velocity)
 
     with open(args.timeseries_output, "w", newline="") as handle:
@@ -131,9 +192,11 @@ def main():
     paired = [
         (var_by_date[d], v) for d, v in velocity if d in var_by_date
     ]
+    mean_tau = sum(tau_bar[d] for d in dates) / len(dates) if dates else args.generation_time
     summary = {
         "dataset": args.dataset,
         "generation_time_days": args.generation_time,
+        "mean_generation_time_days": mean_tau,
         "velocity_window_days": window,
         "avg_variance": float(np.mean(variance)),
         "avg_sd": float(np.mean([math.sqrt(v) for v in variance])),
@@ -143,7 +206,7 @@ def main():
     total_years = decimals[-1] - decimals[0]
     if total_years > 0:
         summary["simple_velocity"] = (
-            (args.generation_time / DAYS_PER_YEAR)
+            (mean_tau / DAYS_PER_YEAR)
             * (location[-1] - location[0])
             / total_years
         )

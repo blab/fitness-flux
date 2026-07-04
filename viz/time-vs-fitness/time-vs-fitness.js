@@ -58,6 +58,95 @@ function slopeText(points) {
         : "";
 }
 
+function linearFit(points) {
+    const n = points.length;
+    if (n < 2) return null;
+    let sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (const [x, y] of points) { sx += x; sy += y; sxx += x * x; sxy += x * y; }
+    const denom = n * sxx - sx * sx;
+    if (denom === 0) return null;
+    const slope = (n * sxy - sx * sy) / denom;
+    return { slope, intercept: (sy - slope * sx) / n };
+}
+
+// "2020-2021.5,2021.5-2023" -> [{lo, hi, below}] as half-open decimal-year ranges
+// [lo, hi); bounds are literal decimal years, so 2022 = Jan 1 2022 and 2021.5 =
+// ~Jul 1 2021. An optional ":side" suffix flips a segment's label to the other side
+// of its line -- "below"/"down"/"right" put it under-and-downstream (default above);
+// e.g. "2021-2022.5,2022.5-2026:below".
+function parseRegressions(spec) {
+    if (!spec) return [];
+    return String(spec).split(",").map((s) => s.trim()).filter(Boolean).map((token) => {
+        const [range, place] = token.split(":");
+        const [a, b] = range.split("-").map((y) => parseFloat(y));
+        if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+        const below = /^(below|down|right)$/i.test((place ?? "").trim());
+        return { lo: a, hi: b, below };
+    }).filter(Boolean);
+}
+
+function dateFromDecimalYear(dy) {
+    const y = Math.floor(dy);
+    const start = Date.UTC(y, 0, 1), end = Date.UTC(y + 1, 0, 1);
+    return new Date(start + (dy - y) * (end - start));
+}
+
+// data value -> pixel, from a Plot scale descriptor (works for utc + linear).
+function scaleApply(scale) {
+    if (scale && typeof scale.apply === "function") return (v) => scale.apply(v);
+    const [d0, d1] = scale.domain, [r0, r1] = scale.range;
+    const n0 = +d0, n1 = +d1;
+    return (v) => r0 + ((+v - n0) / (n1 - n0)) * (r1 - r0);
+}
+
+// Place each segment's doubling label off the pixel-space center of its regression
+// line, along the perpendicular (above by default, or below when the segment opts
+// in) with a short leader so it clears the blobs. Drawn as raw SVG after Plot
+// computes the scales, which the perpendicular needs.
+function placeRegressionLabels(plotEl, segments) {
+    if (typeof plotEl.scale !== "function") return;
+    const svg = plotEl.tagName && plotEl.tagName.toLowerCase() === "svg"
+        ? plotEl
+        : plotEl.querySelector("svg");
+    if (!svg) return;
+    const xa = scaleApply(plotEl.scale("x"));
+    const ya = scaleApply(plotEl.scale("y"));
+    const NS = "http://www.w3.org/2000/svg";
+    const LEADER = 15, GAP = 3;
+    for (const s of segments) {
+        if (!s.t) continue;
+        const p0 = [xa(s.link.x1), ya(s.link.y1)];
+        const p1 = [xa(s.link.x2), ya(s.link.y2)];
+        const mid = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
+        const dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+        const len = Math.hypot(dx, dy) || 1;
+        let nx = -dy / len, ny = dx / len;   // rotate line direction 90°
+        if (ny > 0) { nx = -nx; ny = -ny; }   // normalize to the upward side
+        if (s.below) { nx = -nx; ny = -ny; }  // ...unless this segment opts below
+        const ex = mid[0] + nx * LEADER, ey = mid[1] + ny * LEADER;
+        const leader = document.createElementNS(NS, "line");
+        leader.setAttribute("x1", mid[0]);
+        leader.setAttribute("y1", mid[1]);
+        leader.setAttribute("x2", ex);
+        leader.setAttribute("y2", ey);
+        leader.setAttribute("stroke", "#777");
+        leader.setAttribute("stroke-width", "1");
+        svg.appendChild(leader);
+        // Anchor the label's near edge at the leader tip, so the leader meets the
+        // side of the text (right edge when the label sits left of the line).
+        const toLeft = nx < 0;
+        const text = document.createElementNS(NS, "text");
+        text.setAttribute("x", ex + (toLeft ? -GAP : GAP));
+        text.setAttribute("y", ey);
+        text.setAttribute("text-anchor", toLeft ? "end" : "start");
+        text.setAttribute("dominant-baseline", "central");
+        text.setAttribute("fill", "#555");
+        text.setAttribute("font-size", "11");
+        text.textContent = s.t;
+        svg.appendChild(text);
+    }
+}
+
 const MEASURES = [
     ["flux", "Cumulative fitness flux"],
     ["relative", "Relative to population average"],
@@ -110,7 +199,37 @@ export function render(container, data, opts = {}) {
     const halfHeightFor = (m) =>
         HALF_HEIGHT_FRACTION * (m === "relative" ? spanRel : spanFlux);
 
-    const annotation = slopeText(points);
+    // Population mean log fitness f̄(t) = Σ x_v f_v (the fitness-flux trajectory),
+    // fit piecewise over the ranges in opts.regressions and drawn as gray lines below.
+    const meanLogFitPoints = [];
+    for (const [date, rows] of d3.group(points, (d) => +d.date)) {
+        let num = 0, den = 0;
+        for (const r of rows) { num += r.empFreq * r.logFitness; den += r.empFreq; }
+        if (den > 0) meanLogFitPoints.push([decimalYear(date), num / den]);
+    }
+    const segments = parseRegressions(opts.regressions)
+        .map(({ lo, hi, below }) => {
+            const seg = meanLogFitPoints.filter(([x]) => x >= lo && x < hi);
+            const fit = linearFit(seg);
+            if (!fit) return null;
+            const xs = seg.map(([x]) => x);
+            const x0 = Math.min(...xs), x1 = Math.max(...xs);
+            const doubling = fit.slope > 0 ? Math.log(2) / fit.slope : null;
+            return {
+                link: {
+                    x1: dateFromDecimalYear(x0), y1: fit.intercept + fit.slope * x0,
+                    x2: dateFromDecimalYear(x1), y2: fit.intercept + fit.slope * x1,
+                },
+                t: doubling
+                    ? `doubling ${doubling < 1 ? `${Math.round(doubling * 12)} mo` : `${doubling.toFixed(1)} yr`}`
+                    : "",
+                below,
+            };
+        })
+        .filter(Boolean);
+    // Explicit regression ranges label each line on the plot; otherwise fall back to
+    // the single dominant-variant slope annotation in the header.
+    const annotation = segments.length ? "" : slopeText(points);
 
     const root = document.createElement("div");
     container.appendChild(root);
@@ -215,8 +334,7 @@ export function render(container, data, opts = {}) {
             plotWidth = Math.max(MIN_PLOT, Math.floor(totalWidth));
         }
 
-        plotHolder.replaceChildren(
-            Plot.plot({
+        const plotEl = Plot.plot({
                 style: { fontSize: axisFont },
                 width: plotWidth,
                 height,
@@ -258,6 +376,21 @@ export function render(container, data, opts = {}) {
                         strokeWidth: 1,
                         curve: "basis",
                     }),
+                    // Gray piecewise regression lines over the mean-fitness trajectory
+                    // (flux mode only). Their doubling labels are placed after render
+                    // by placeRegressionLabels, which needs the computed scales.
+                    ...(!relative
+                        ? segments.map((s) =>
+                              Plot.link([s.link], {
+                                  x1: "x1",
+                                  y1: "y1",
+                                  x2: "x2",
+                                  y2: "y2",
+                                  stroke: "#777",
+                                  strokeWidth: 1,
+                              }),
+                          )
+                        : []),
                     Plot.tip(
                         points,
                         Plot.pointerX({
@@ -268,8 +401,9 @@ export function render(container, data, opts = {}) {
                         }),
                     ),
                 ],
-            }),
-        );
+            });
+        if (!relative) placeRegressionLabels(plotEl, segments);
+        plotHolder.replaceChildren(plotEl);
     }
 
     // Toggle modes with the blobs and centerlines gliding to their new y-positions

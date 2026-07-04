@@ -10,6 +10,8 @@ import json
 import evofr as ef
 from datetime import date
 
+from generation_time import generation_time_for, load_aliasor
+
 def parse_with_default(cf, var, dflt):
     if var in cf:
         return cf[var]
@@ -293,7 +295,31 @@ def make_modeled_freq_tidy(data, samples, location):
     return {"metadata": metadata, "data": entries}
 
 
-def export_results(multi_posterior, ps, path, data_name, hier, raw_freq_window=7):
+def rescale_ga_per_variant(entries, tau_pre, tau_ref, variant_classification, aliasor):
+    """Re-express each variant's growth advantage on its own generation time.
+
+    evofr fits ga = exp(delta_perday * tau_ref); raising a variant's ga to
+    tau_v/tau_ref yields exp(delta_perday * tau_v), i.e. per-generation fitness on
+    that variant's own generation clock (pre-Omicron 5.0, Omicron/other 3.2). The
+    map is monotone, so the median (all downstream numbers) is exact; mean/HDI
+    bounds are rescaled consistently on the same scale.
+    """
+    tau_by_variant = {}
+    for entry in entries:
+        if entry.get("site") != "ga" or entry.get("value") is None:
+            continue
+        variant = entry["variant"]
+        if variant not in tau_by_variant:
+            tau_by_variant[variant] = generation_time_for(
+                variant, variant_classification, tau_pre, tau_ref, aliasor
+            )
+        power = tau_by_variant[variant] / tau_ref
+        if power != 1.0:
+            entry["value"] = float(np.around(entry["value"] ** power, decimals=3))
+
+
+def export_results(multi_posterior, ps, path, data_name, hier, raw_freq_window=7,
+                   tau_pre=None, tau_ref=None, variant_classification=None, aliasor=None):
     # `freq` and `ga` samples are split per group for hierarchical export; `ga`
     # keeps full HDI, `freq` is exported median-only (see make_modeled_freq_tidy).
     EXPORT_SITES = ["freq", "ga"]
@@ -371,6 +397,8 @@ def export_results(multi_posterior, ps, path, data_name, hier, raw_freq_window=7
             )
 
     results = ef.posterior.combine_sites_tidy(results)
+    if tau_pre is not None:
+        rescale_ga_per_variant(results["data"], tau_pre, tau_ref, variant_classification, aliasor)
     results["metadata"]["updated"] = pd.to_datetime(date.today())
     ef.save_json(results, path=f"{path}/{data_name}_results.json")
 
@@ -402,6 +430,27 @@ if __name__ == "__main__":
         "--generation-time",
         type=float,
         help="Generation time to use. Overrides model.generation_time in config.",
+    )
+    parser.add_argument(
+        "--generation-time-pre-omicron",
+        type=float,
+        default=None,
+        help="If set, pre-Omicron SARS-CoV-2 variants use this generation time (e.g. 5.0) "
+        + "while Omicron variants keep --generation-time. Requires --variant-classification. "
+        + "Omit for a single generation time (e.g. H3N2).",
+    )
+    parser.add_argument(
+        "--variant-classification",
+        choices=["clades", "lineages"],
+        default=None,
+        help="How to read variant names for the pre/post-Omicron split.",
+    )
+    parser.add_argument(
+        "--aliasing",
+        type=str,
+        default=None,
+        help="Optional local Pango alias_key.json for lineage classification; "
+        + "if omitted it is downloaded from GitHub (needs internet).",
     )
     parser.add_argument(
         "--hier",  action='store_true', default=False,
@@ -491,4 +540,18 @@ if __name__ == "__main__":
             config.config["settings"], "ps", dflt=[0.5, 0.8, 0.95]
         )
         data_name = args.data_name or config.config["data"]["name"]
-        export_results(multi_posterior, ps, export_path, data_name, hier, raw_freq_window=args.raw_freq_window)
+
+        # Per-variant generation time (pre- vs post-Omicron); no-op when the
+        # pre-Omicron flag is absent, preserving single-tau behavior (e.g. H3N2).
+        aliasor = None
+        if args.generation_time_pre_omicron is not None and args.variant_classification == "lineages":
+            aliasor = load_aliasor(args.aliasing)
+
+        export_results(
+            multi_posterior, ps, export_path, data_name, hier,
+            raw_freq_window=args.raw_freq_window,
+            tau_pre=args.generation_time_pre_omicron,
+            tau_ref=generation_time,
+            variant_classification=args.variant_classification,
+            aliasor=aliasor,
+        )

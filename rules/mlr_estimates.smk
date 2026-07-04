@@ -27,6 +27,25 @@ def _get_models_option(wildcards, option_name):
 
     return ''
 
+def _generation_time_options(dataset):
+    """Generation-time CLI flags from the virus-keyed config['generation_time'].
+
+    SARS-CoV-2 is a dict carrying the per-variant pre/post-Omicron split (the split
+    is applied per variant inside run-mlr-model.py); H3N2 is a single scalar. Also
+    used by rules/fitness_flux_analysis.smk (lazy param lambdas, so include order
+    does not matter).
+    """
+    virus = dataset.split("_")[0]
+    gt = config["generation_time"][virus]
+    if isinstance(gt, dict):
+        classification = "lineages" if "lineages" in dataset else "clades"
+        return (
+            f"--generation-time {gt['post_omicron']}"
+            f" --generation-time-pre-omicron {gt['pre_omicron']}"
+            f" --variant-classification {classification}"
+        )
+    return f"--generation-time {gt}"
+
 rule mlr_model:
     input:
         sequence_counts = "sequence-counts/{dataset}/collapsed_seq_counts.tsv"
@@ -42,7 +61,7 @@ rule mlr_model:
         model_config = config.get("mlr_config"),
         export_path = lambda w: f"mlr-estimates/{w.dataset}",
         pivot = lambda wildcards: _get_models_option(wildcards, 'pivot'),
-        generation_time = lambda wildcards: _get_models_option(wildcards, 'generation_time'),
+        generation_time = lambda wildcards: _generation_time_options(wildcards.dataset),
         # Empirical weekly_raw_freq smoothing window (days), from config
         # (raw_freq_window). H3N2 sets 14; datasets without the key use the
         # run-mlr-model.py default of 7.
