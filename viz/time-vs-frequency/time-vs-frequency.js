@@ -27,6 +27,12 @@ const YEAR_MS = 365.25 * 24 * 3600 * 1000;
 const FREQ_MIN = 0.01;
 const FREQ_MAX = 0.99;
 const LOGIT_TICK_FREQS = [0.01, 0.1, 0.5, 0.9, 0.99];
+// MLR line drawing: a line is drawn only within ±LINE_SLACK_DAYS of an empirical
+// point above LINE_FREQ_THRESHOLD, so it tracks where there is data to compare
+// against. The slack bridges the ~weekly sampling into a continuous line but not
+// across large data gaps (e.g. the H3N2 summer/pandemic fadeouts).
+const LINE_FREQ_THRESHOLD = FREQ_MIN;
+const LINE_SLACK_DAYS = 14;
 const toLogit = (p) => Math.log(p / (1 - p));
 const fromLogit = (t) => 1 / (1 + Math.exp(-t));
 const clampFreq = (p) => Math.min(FREQ_MAX, Math.max(FREQ_MIN, p));
@@ -45,6 +51,48 @@ function tickIntervalFor(dated) {
     return median > 1.4 * YEAR_MS ? d3.utcYear : d3.utcMonth.every(6);
 }
 
+// A variant's MLR line is drawn only near empirical support: within ±slackDays
+// of each empirical point above `threshold`. Overlapping ±slack windows merge
+// into continuous segments (so ~weekly sampling stays one line), but a data gap
+// wider than 2·slack breaks the line — so a variant present on both sides of a
+// long fadeout (e.g. "other" across the pandemic) is not bridged across it.
+// Returns copies tagged with `seg` (variant + segment index) so Plot draws each
+// segment as its own path, coloured by variant. Both params are figure options.
+function modeledLineRows(rows, threshold, slackDays) {
+    const slackMs = slackDays * 864e5;
+    const validByVariant = new Map(); // variant -> sorted ms of empirical > threshold
+    for (const d of rows) {
+        if (typeof d.empirical === "number" && d.empirical > threshold) {
+            const arr = validByVariant.get(d.variant);
+            if (arr) arr.push(+d.date);
+            else validByVariant.set(d.variant, [+d.date]);
+        }
+    }
+    const segmentsByVariant = new Map(); // variant -> merged [lo, hi] intervals
+    for (const [variant, times] of validByVariant) {
+        times.sort((a, b) => a - b);
+        const merged = [];
+        for (const t of times) {
+            const lo = t - slackMs;
+            const hi = t + slackMs;
+            const last = merged[merged.length - 1];
+            if (last && lo <= last[1]) last[1] = Math.max(last[1], hi);
+            else merged.push([lo, hi]);
+        }
+        segmentsByVariant.set(variant, merged);
+    }
+    const out = [];
+    for (const d of rows) {
+        if (typeof d.modeled !== "number") continue;
+        const merged = segmentsByVariant.get(d.variant);
+        if (!merged) continue;
+        const t = +d.date;
+        const seg = merged.findIndex(([lo, hi]) => t >= lo && t <= hi);
+        if (seg !== -1) out.push({ ...d, seg: `${d.variant}#${seg}` });
+    }
+    return out;
+}
+
 export function render(container, data, opts = {}) {
     const mode = opts.mode ?? "inline";
     const panelFont = mode === "slide" ? "14px" : "12px";
@@ -54,6 +102,8 @@ export function render(container, data, opts = {}) {
 
     let useLogit = opts.logit === true;
     let lastWidth = 0;
+    const lineThreshold = opts.lineThreshold ?? LINE_FREQ_THRESHOLD;
+    const lineSlackDays = opts.lineSlackDays ?? LINE_SLACK_DAYS;
 
     const scale = colorScale(data.colors);
     const dated = data.seasonal.map((d) => ({
@@ -143,10 +193,11 @@ export function render(container, data, opts = {}) {
 
     function panelFor(season) {
         const rows = bySeason.get(season);
+        const modeledRows = modeledLineRows(rows, lineThreshold, lineSlackDays);
         const tipPoints = [];
+        for (const d of modeledRows)
+            tipPoints.push({ variant: d.variant, date: d.date, value: d.modeled, kind: "MLR" });
         for (const d of rows) {
-            if (typeof d.modeled === "number")
-                tipPoints.push({ variant: d.variant, date: d.date, value: d.modeled, kind: "MLR" });
             if (typeof d.empirical === "number")
                 tipPoints.push({ variant: d.variant, date: d.date, value: d.empirical, kind: "empirical" });
         }
@@ -173,10 +224,10 @@ export function render(container, data, opts = {}) {
             marks: [
                 Plot.frame({ anchor: "left", stroke: "#333" }),
                 Plot.frame({ anchor: "bottom", stroke: "#333" }),
-                Plot.line(rows.filter((d) => typeof d.modeled === "number"), {
+                Plot.line(modeledRows, {
                     x: "date",
                     y: (d) => yOf(d.modeled),
-                    z: "variant",
+                    z: "seg",
                     stroke: (d) => scale.color(d.variant),
                     strokeWidth: 1.3,
                 }),

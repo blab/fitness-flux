@@ -75,6 +75,7 @@ The match between the empirical frequencies (dotted trajectories) and MLR freque
 Points represent empirical frequencies of SARS-CoV-2 Nextstrain clades, while solid lines represent modeled frequencies from multinomial logistic regression (MLR).
 All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
+MLR frequency lines are drawn where there is sufficient sequence data to estimate empirical frequencies.
 :::
 
 For comparison purposes, we take a similar approach to estimating frequencies and fitnesses of seasonal influenza H3N2 ([@fig:time-vs-frequency-h3n2]).
@@ -88,6 +89,7 @@ However, H3N2 fits remain sufficient to estimate the magnitude of fitness effect
 Points represent empirical frequencies of H3N2 Nextstrain clades, while solid lines represent modeled frequencies from multinomial logistic regression (MLR).
 All data is taken from the USA.
 The MLR analysis assumes that the fitness of each clade is constant through time.
+MLR frequency lines are drawn where there is sufficient sequence data to estimate empirical frequencies.
 :::
 
 We "scaffold" MLR fitness estimates across windows to arrive at a single fitness estimate per variant.
