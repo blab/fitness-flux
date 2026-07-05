@@ -279,7 +279,7 @@ At first order, the fitness $f_i = \tau \, f_i^{\mathrm{day}}$ is the log ratio 
 Only the mean generation interval $\tau$ enters at this order.
 The shape of the generation-interval distribution enters at second order, informed by the interval's variance and absolute per-day growth rates rather than $f_i^{\mathrm{day}}$.
 Because the frequency data identify only this relative rate, the second order correction cannot be estimated from frequency dynamics alone.
-The per-generation multiplicative fitness $\mathrm{exp}(f_i) = 1 + s_i$ therefore equals the reproduction-number ratio $R_i / R_{\mathrm{pivot}}$ under a fixed (point) generation interval and is an upper bound under a realistically dispersed interval, for which the fuller frequency-to-reproduction-number conversion is given in Figgins and Bedford [@figgins2025frequency].
+The per-generation multiplicative fitness $\mathrm{exp}(f_i) = 1 + s_i$ therefore equals the reproduction-number ratio $R_i / R_{\mathrm{pivot}}$ under a fixed (point) generation interval and is an upper bound under a realistically dispersed interval [@wallinga2006generation], for which the fuller frequency-to-reproduction-number conversion is given in Figgins and Bedford [@figgins2025frequency].
 
 We conduct a parallel MLR analysis of SARS-CoV-2 Pango lineages.
 Because lineages are hierarchically nested, rather than collapsing rare lineages into a shared "other" we roll each lineage with fewer than 500 sequences up into its parent lineage, repeating until every retained lineage clears this count.
