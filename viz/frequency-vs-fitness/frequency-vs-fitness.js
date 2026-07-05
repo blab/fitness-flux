@@ -84,7 +84,11 @@ export function render(container, data, opts = {}) {
             display: "flex",
             alignItems: "flex-start",
             gap: `${GAP}px`,
-            flexWrap: "wrap",
+            // nowrap: the sideBySide logic below owns the beside/fold decision.
+            // With wrap, the sub-pixel gap between the floored plotWidth and the
+            // fractional legend.offsetWidth overflows the row by <1px and silently
+            // drops the legend under the plot — at any width.
+            flexWrap: "nowrap",
         });
         root.appendChild(figRow);
 
