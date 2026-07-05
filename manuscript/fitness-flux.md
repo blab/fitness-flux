@@ -38,7 +38,7 @@ Because it expresses fitness as a difference in growth rate between variants, th
 These growth-rate differences correspond to differences in the time-varying effective reproduction number between co-circulating variants [@figgins2025frequency].
 Aggregating these per-variant fitnesses into the rate of change of mean population fitness yields the population's fitness flux [@mustonen2010fitness], a direct, frequency-based alternative to dN/dS for quantifying the tempo of adaptation.
 
-Here we use this frequency-based view of fitness to trace how SARS-CoV-2 has adapted from the early pandemic in 2020 through to 2026, spanning the transition from initial host adaptation to sustained evolution for antigenic novelty.
+Here we use this frequency-based view of fitness to trace how SARS-CoV-2 has adapted from the early pandemic in 2020 through 2025, spanning the transition from initial host adaptation to sustained evolution for antigenic novelty.
 We place the rate of SARS-CoV-2 fitness change in context by comparing it against seasonal influenza A/H3N2 which exhibits canonically rapid and continuous adaptation [@bedford2014integrating].
 Finally, we relate the inferred changes in fitness to molecular predictors, most directly the accumulation of spike mutations, to identify the substitutions that drive fitness gain.
 
@@ -66,7 +66,7 @@ We assume $\tau$ of 5.0 days for pre-Omicron SARS-CoV-2, 3.2 days for post-Omicr
 Throughout, we refer to this per-generation growth rate $f_i = \mathrm{log}(1+s_i)$ as the fitness of variant $i$, or equivalently $\mathrm{exp}(f_i) = 1+s_i$ is its per-generation multiplicative fitness, the factor by which the variant's abundance grows each generation relative to the pivot.
 Because $f_i$ is defined on a log scale, mean fitness, fitness variance, fitness flux and changes in fitness between lineages are all likewise computed on this log scale.
 
-We estimate frequencies and fitnesses of SARS-CoV-2 clades in 1-year sliding windows between Jan 2020 and Jan 2026 ([@fig:time-vs-frequency-sarscov2]).
+We estimate frequencies and fitnesses of SARS-CoV-2 clades in 1-year sliding windows between Jan 2020 and Dec 2025 ([@fig:time-vs-frequency-sarscov2]).
 In each window we collect clade sequence counts for viruses sampled from the USA and estimate per-variant frequencies and fitnesses.
 We use only the USA, the one country with sufficient temporal sequencing coverage over this period.
 We collapse rare clades into a single "other" clade for MLR analysis to prevent noisy estimates from low sequence counts (see Methods).
@@ -195,7 +195,7 @@ Splitting branches into early and late periods shows that the fitness value of a
 
 :::figure{#fig:delta-genome component=lineage-deltas dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
 **Lineage-specific amino acid change versus lineage-specific fitness change across regions of the SARS-CoV-2 genome.**
-Each point is one parent-to-child Pango lineage branch in one season: the change in the number of substitutions in a genome region (x) against the change in fitness (y), colored by time from blue (2020) to red (2026), with a least-squares fit per panel.
+Each point is one parent-to-child Pango lineage branch in one season: the change in the number of substitutions in a genome region (x) against the change in fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
 The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
 :::
 
@@ -222,7 +222,7 @@ The four-region model explains most of the variance in per-pair fitness change (
 **Multiple regression of fitness change on non-overlapping genome regions.**
 An ordinary-least-squares fit of the change in fitness on the change in substitution count in four non-overlapping regions of the SARS-CoV-2 genome (spike RBD, spike S1 outside the RBD, ORF1ab, accessory), fit over unique parent-to-child pairs (collapsing observations of a pair that recur across windows).
 The table gives each region's partial estimate.
-The scatter plots each parent-to-child Pango lineage branch's model-predicted change in fitness (x) against its observed change in fitness (y), colored by time from blue (2020) to red (2026) and with dashed 1:1 calibration line.
+The scatter plots each parent-to-child Pango lineage branch's model-predicted change in fitness (x) against its observed change in fitness (y), colored by time from blue (2020) to red (2025) and with dashed 1:1 calibration line.
 The All / Early / Late toggle refits the model over all pairs or the early (Jan 2020–Jun 2022) and late (Jul 2022 onward) subsets, updating both the table and the scatter.
 :::
 
@@ -238,7 +238,7 @@ Both perform similarly to a plain count of spike S1 substitutions in disambiguat
 
 :::figure{#fig:delta-predictors component=lineage-deltas dataset=sarscov2_lineages predictors=s1,evescape,esm_650M_pretrained,esm_650M_fine_tuned}
 **Lineage-specific predictors versus lineage-specific fitness change.**
-Each point is one parent-to-child Pango lineage branch in one season: change in predictor value (x) against the change in fitness (y), colored by time from blue (2020) to red (2026), with a least-squares fit per panel.
+Each point is one parent-to-child Pango lineage branch in one season: change in predictor value (x) against the change in fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
 The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
 :::
 
