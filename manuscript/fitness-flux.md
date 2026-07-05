@@ -9,6 +9,9 @@ affiliations:
   - id: hhmi
     name: Howard Hughes Medical Institute, Seattle, WA, USA
 date: 2026-07-05
+version:
+  name: v1.0.0
+  url: https://github.com/blab/fitness-flux/releases/tag/v1.0.0
 ---
 
 ## Abstract
