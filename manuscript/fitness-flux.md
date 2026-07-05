@@ -8,7 +8,7 @@ affiliations:
     name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, WA, USA
   - id: hhmi
     name: Howard Hughes Medical Institute, Seattle, WA, USA
-date: 2026-06-21
+date: 2026-07-05
 ---
 
 ## Abstract
@@ -21,6 +21,8 @@ Seasonal influenza H3N2 sustained a slower, steadier pace doubling in fitness ev
 In both, the rate of fitness gain closely tracks the variance in fitness, matching the 1:1 expectation of Fisher's fundamental theorem.
 Phylogenetic contrasts between parent and child lineages localize most fitness gain to spike, and within spike to the receptor-binding domain, where a simple count of spike S1 substitutions predicts lineage fitness about as well as deep-learning escape and protein-language-model scores.
 Measuring fitness directly thus offers a transparent, frequency-based alternative to mutational proxies for tracking and anticipating viral adaptation.
+
+_The website [blab.github.io/fitness-flux/](https://blab.github.io/fitness-flux/) is the intended reading experience of this paper, providing responsive layout and interactive figures._
 
 ## Introduction
 
@@ -106,7 +108,7 @@ the total adaptive change accumulated along the population's trajectory.
 Because variant fitnesses are estimated only relative to a pivot, an individual variant's scaffolded fitness is meaningful as a difference from a baseline rather than as an absolute value.
 Chaining these locally-measured advantages across overlapping windows places variant $i$ at a cumulative fitness flux $\Phi_i = f_i - f_0$ relative to the founding variant, and the population sits at the frequency-weighted average $\Phi(t) = \sum_i x_i(t) \, \Phi_i$.
 
-We find that SARS-CoV-2 initially accumulated fitness flux rapidly with mean fitness doubling every 6 months between Jan 2021 and Jun 2022, but then then slowing to doubling every 2.4 years from July 2022 to Dec 2025 ([@fig:time-vs-fitness-sarscov2]).
+We find that SARS-CoV-2 initially accumulated fitness flux rapidly with mean fitness doubling every 6 months between Jan 2021 and Jun 2022, but then slowing to doubling every 2.4 years from July 2022 to Dec 2025 ([@fig:time-vs-fitness-sarscov2]).
 After initial spread of D614G [@korber2020tracking] in 2020, we observe a lull, followed by rapid growth in fitness in 2021 and 2022 with initial VOCs, Omicron and initial Omicron sub-lineages [@roemer2023sars], and then a slower, more steady pace since 2024.
 There is a mix of large jumps in fitness (familiar examples like Delta and BA.1, but also more recently with JN.1) and smaller, more gradual step change.
 
@@ -325,6 +327,12 @@ Each Pango lineage's spike amino-acid sequence is embedded with the 650M-paramet
 We embed lineages with both the released pretrained weights and weights fine-tuned under a masked-language-model objective (15% of residues masked) for one epoch (AdamW, learning rate $5 \times 10^{-5}$) on roughly 16,000 SARS-CoV-2 spike sequences collected from 2020 through 2022.
 Fine-tuning and embedding code is available at [github.com/blab/embedded-pathways](https://github.com/blab/embedded-pathways).
 The semanticity of a branch is the Euclidean distance between its child and parent lineage embeddings.
+
+### Reproducibility
+
+The workflow to reproduce data, analyses and manuscript is available at [github.com/blab/fitness-flux](https://github.com/blab/fitness-flux).
+SARS-CoV-2 sequence data were sourced from publicly available open data in NCBI GenBank and so this side of the workflow is easily runnable.
+However, influenza H3N2 sequence data was collected from GISAID and these data are not allowed to be reshared and consequently the influenza side of the workflow is unfortunately not reproducible without separately providing GISAID data.
 
 ## Acknowledgments
 
