@@ -101,6 +101,29 @@ lineage-deltas-analysis/results/predictor_correlations.tsv
 - `inclusion-thresholds/` — collapse-threshold sweep and the rationale behind the chosen cutoffs.
 - `viz/` — interactive figure components (HTML/JS) fed by the `viz/*/data/` tables the workflow generates.
 
+## Versioning
+
+The manuscript is released under [semantic versioning](https://semver.org): each release is a git tag `vX.Y.Z` with a matching GitHub Release, and the current version is shown in the manuscript header. The bump reflects the size of the scientific change:
+
+| bump  | example  | meaning |
+|-------|----------|---|
+| MAJOR | `v2.0.0` | changes the scientific story — a major/minor journal revision, added or removed analyses, changed conclusions |
+| MINOR | `v1.1.0` | textual or data changes that refine but do not overturn the message (data refresh, added references, clarified Methods) |
+| PATCH | `v1.0.1` | typos, formatting, link or figure fixes — no change in meaning |
+
+`v0.x.0` marks pre-submission drafts; `v1.0.0` is the first preprint/submission.
+
+To cut a release:
+
+1. Bump `version.name`, `version.url`, and `date` in the `manuscript/fitness-flux.md` front-matter.
+2. `git commit -m "Release vX.Y.Z"`
+3. `git tag -a vX.Y.Z -m "vX.Y.Z — <one-line summary>"`
+4. `git push origin main --follow-tags`
+5. `gh release create vX.Y.Z --title vX.Y.Z --notes "<what changed>"`
+6. `./manuscript/publish.sh` to rebuild and redeploy the page.
+
+Review changes between versions with GitHub's `vA...vB` compare view or `git diff vA vB -- manuscript/fitness-flux.md`.
+
 ## Citation
 
 Manuscript in preparation; citation forthcoming.
