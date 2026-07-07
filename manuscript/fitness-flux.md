@@ -173,19 +173,83 @@ This shows that the rate of adaptation of SARS-CoV-2 has been slowing as low han
 :::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40}
 **Fitness variance and fitness flux in SARS-CoV-2.**
 Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
+In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
 :::
 
-Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ per-gen from 2016 to 2025 ([@fig:h3n2-variance-flux]).
+Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.6 \times 10^{-3}$ per-gen from 2016 to 2025 ([@fig:h3n2-variance-flux]).
 This is roughly 3 times lower than recent years of SARS-CoV-2 fitness flux.
 However, it remains possible that SARS-CoV-2 slows further in the coming years.
 
-:::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades}
+:::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades scalemax=3.5}
 **Fitness variance and fitness flux in H3N2.**
 Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
+In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
 :::
 
 For both SARS-CoV-2 and influenza H3N2, the connection between fitness flux and fitness variance is clear.
 This suggests from first principles that interventions that decrease variance in fitness across the virus population would be expected to slow adaptation, while interventions that increase variance would be expected to speed adaptation.
+
+### Other seasonal influenza lineages
+
+To place the H3N2 result in context, we repeat the identical analysis strategy for the two other seasonal influenza lineages that circulate in humans, H1N1pdm and B/Victoria, over the same 2016 to 2025 period.
+As with H3N2, we use USA data, 2-year sliding windows (some widened to bridge the 2020-2022 low-circulation gap so that fitness scaffolds across it), a 2-week empirical-frequency smoothing window, and Nextclade HA subclades (`subclade_nextclade_ha`) as the variant classification.
+Two windows are necessarily excluded because they resolve to a single fittable clade in the USA and so carry no relative-fitness signal: the 2016-17 H1N1pdm window, which predates HA subclade resolution and consists almost entirely of unassigned sequences, and the 2021-22 B/Victoria window, a pandemic-era sampling and nomenclature gap between the A.3.2 and C.5 eras.
+The earliest H1N1pdm windows additionally lean on a paraphyletic "unassigned" background clade until genuine subclade resolution emerges around 2019-20.
+
+Relative frequencies for both lineages show the same alternation of clade emergence and replacement seen in H3N2 ([@fig:time-vs-frequency-h1n1pdm]; [@fig:time-vs-frequency-vic]).
+
+:::figure{#fig:time-vs-frequency-h1n1pdm component=time-vs-frequency dataset=h1n1pdm_clades}
+**Relative frequencies of H1N1pdm clades through time.**
+Points represent empirical frequencies of H1N1pdm Nextstrain clades, while solid lines represent modeled frequencies from multinomial logistic regression (MLR).
+All data is taken from the USA.
+The MLR analysis assumes that the fitness of each clade is constant through time.
+MLR frequency lines are drawn where there is sufficient sequence data to estimate empirical frequencies.
+:::
+
+:::figure{#fig:time-vs-frequency-vic component=time-vs-frequency dataset=vic_clades}
+**Relative frequencies of B/Victoria clades through time.**
+Points represent empirical frequencies of B/Victoria Nextstrain clades, while solid lines represent modeled frequencies from multinomial logistic regression (MLR).
+All data is taken from the USA.
+The MLR analysis assumes that the fitness of each clade is constant through time.
+MLR frequency lines are drawn where there is sufficient sequence data to estimate empirical frequencies.
+:::
+
+Translating these frequencies into cumulative fitness flux, we find that both lineages accumulate directional fitness more slowly than H3N2 over this period.
+H1N1pdm mean fitness doubles roughly every 14 years ([@fig:time-vs-fitness-h1n1pdm]), while B/Victoria accumulates fitness flux more slowly still, doubling roughly every 43 years ([@fig:time-vs-fitness-vic]).
+Both are slower than H3N2's doubling every 10.0 years, and far slower than SARS-CoV-2.
+
+:::figure{#fig:time-vs-fitness-h1n1pdm component=time-vs-fitness dataset=h1n1pdm_clades regressions=2016.0-2026.0}
+**Cumulative H1N1pdm fitness flux.**
+Empirical frequencies of H1N1pdm clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
+Gray lines are least-squares fits to the mean fitness over each labeled period, annotated with the implied doubling time.
+All data is taken from the USA.
+The MLR analysis assumes that the fitness of each clade is constant through time.
+:::
+
+:::figure{#fig:time-vs-fitness-vic component=time-vs-fitness dataset=vic_clades regressions=2016.0-2026.0}
+**Cumulative B/Victoria fitness flux.**
+Empirical frequencies of B/Victoria clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
+Gray lines are least-squares fits to the mean fitness over each labeled period, annotated with the implied doubling time.
+All data is taken from the USA.
+The MLR analysis assumes that the fitness of each clade is constant through time.
+:::
+
+The average rate of fitness flux mirrors this ordering.
+H1N1pdm averages $0.5 \times 10^{-3}$ per-gen and B/Victoria $0.15 \times 10^{-3}$ per-gen, both below the $0.6 \times 10^{-3}$ per-gen observed for H3N2 ([@fig:h1n1pdm-variance-flux]; [@fig:vic-variance-flux]).
+We time-weight this average across daily timepoints so that uneven sampling density does not bias it; a plain per-timepoint mean would overweight densely-sampled high-flux stretches (for H1N1pdm, the 2024-2025 D.3.1 sweep) and inflate the average above the net rate implied by the cumulative fitness flux.
+In both lineages, as in SARS-CoV-2 and H3N2, fitness flux tracks fitness variance in line with Fisher's fundamental theorem (H1N1pdm slope = 0.85, Pearson $r$ = 0.82; B/Victoria slope = 0.82, $r$ = 0.66).
+
+:::figure{#fig:h1n1pdm-variance-flux component=variance-vs-flux dataset=h1n1pdm_clades scalemax=3.5}
+**Fitness variance and fitness flux in H1N1pdm.**
+Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
+In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
+:::
+
+:::figure{#fig:vic-variance-flux component=variance-vs-flux dataset=vic_clades scalemax=3.5}
+**Fitness variance and fitness flux in B/Victoria.**
+Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
+In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
+:::
 
 ### Mutational fitness effects
 
