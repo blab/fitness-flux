@@ -38,17 +38,14 @@ const fromLogit = (t) => 1 / (1 + Math.exp(-t));
 const clampFreq = (p) => Math.min(FREQ_MAX, Math.max(FREQ_MIN, p));
 const pct = d3.format(".0%");
 
-// Seasons span ~1 year (SARS-CoV-2) or ~2 years (H3N2); tick every 6 months or
-// yearly accordingly. Derived from the data so the component is dataset-agnostic.
-function tickIntervalFor(dated) {
-    const spans = [];
-    for (const [, rows] of d3.group(dated, (d) => d.timepoint)) {
-        const [lo, hi] = d3.extent(rows, (d) => d.date);
-        if (lo && hi) spans.push(hi - lo);
-    }
-    spans.sort((a, b) => a - b);
-    const median = spans.length ? spans[Math.floor(spans.length / 2)] : 0;
-    return median > 1.4 * YEAR_MS ? d3.utcYear : d3.utcMonth.every(6);
+// Tick spacing scaled to a single panel's own span so wide (multi-year bridge)
+// windows don't crowd their axis: 6-monthly up to ~1.4 yr, yearly up to ~3.2 yr,
+// then every 2 years. Kept on clean year / 6-month boundaries. Applied per panel
+// (windows may differ in width), so the component stays dataset-agnostic.
+function tickIntervalForSpan(spanMs) {
+    if (spanMs > 3.2 * YEAR_MS) return d3.utcYear.every(2);
+    if (spanMs > 1.4 * YEAR_MS) return d3.utcYear;
+    return d3.utcMonth.every(6);
 }
 
 // A variant's MLR line is drawn only near empirical support: within ±slackDays
@@ -110,7 +107,6 @@ export function render(container, data, opts = {}) {
         ...d,
         date: d.date instanceof Date ? d.date : new Date(d.date),
     }));
-    const tickInterval = tickIntervalFor(dated);
     const bySeason = d3.group(dated, (d) => d.timepoint);
     const seasons = [...bySeason.keys()].sort();
 
@@ -193,6 +189,8 @@ export function render(container, data, opts = {}) {
 
     function panelFor(season) {
         const rows = bySeason.get(season);
+        const [xLo, xHi] = d3.extent(rows, (d) => d.date);
+        const tickInterval = tickIntervalForSpan(xHi - xLo);
         const modeledRows = modeledLineRows(rows, lineThreshold, lineSlackDays);
         const tipPoints = [];
         for (const d of modeledRows)
@@ -219,7 +217,11 @@ export function render(container, data, opts = {}) {
             marginTop: 6,
             marginRight: 28,
             color: { type: "identity" },
-            x: { type: "utc", ticks: tickInterval, tickFormat: "%b %Y", nice: tickInterval, label: null },
+            // Span the full analysis window (extent of all rows, since the modeled
+            // series is defined across min_date–max_date) rather than letting Plot
+            // auto-fit to empirical support, so the panel honors the configured
+            // window bounds. Ticks still land on year / 6-month boundaries.
+            x: { type: "utc", domain: [xLo, xHi], ticks: tickInterval, tickFormat: "%b %Y", label: null },
             y,
             marks: [
                 Plot.frame({ anchor: "left", stroke: "#333" }),
