@@ -39,6 +39,29 @@ datasets:
   - h3n2_clades_2023-24
   - h3n2_clades_2024-25
   # - h3n2_clades_2025-26
+  # h1n1pdm_clades_2016-17 is a single clade (only "unassigned" in the USA) so
+  # MLR cannot fit it; excluded. 2017-18 and 2018-19 are dominated by the
+  # paraphyletic "unassigned" bucket with thin real-clade signal (flagged as
+  # candidates to drop on follow-up review).
+  - h1n1pdm_clades_2018-19
+  - h1n1pdm_clades_2019-20
+  - h1n1pdm_clades_2020-23
+  # - h1n1pdm_clades_2021-22
+  - h1n1pdm_clades_2022-23
+  - h1n1pdm_clades_2023-24
+  - h1n1pdm_clades_2024-25
+  - vic_clades_2016-17
+  - vic_clades_2017-18
+  - vic_clades_2018-19
+  - vic_clades_2019-20
+  - vic_clades_2020-21
+  # vic_clades_2021-22 collapses to a single "other" clade in the USA (COVID-era
+  # sampling / nomenclature gap between the A.3.2 and C.5 eras), so MLR cannot fit
+  # it; excluded, leaving a one-window gap in the Vic series.
+  # - vic_clades_2021-22
+  - vic_clades_2022-23
+  - vic_clades_2023-24
+  - vic_clades_2024-25
 
 # Per-virus metadata provisioning (the provision_metadata rule): stream the
 # Nextstrain metadata from S3, subset to these columns, and recompress to the
@@ -56,6 +79,14 @@ provision:
     metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/h3n2/metadata.tsv.xz"
     decompress: "xz -dc"
     columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
+  h1n1pdm:
+    metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/h1n1pdm/metadata.tsv.xz"
+    decompress: "xz -dc"
+    columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
+  vic:
+    metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/vic/metadata.tsv.xz"
+    decompress: "xz -dc"
+    columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
 
 # Generation time (days) to convert per-day MLR growth rates to per-generation
 # fitness. SARS-CoV-2 splits by Omicron status (assigned per variant at fit time
@@ -66,6 +97,8 @@ generation_time:
     pre_omicron: 5.0
     post_omicron: 3.2
   h3n2: 3.2
+  h1n1pdm: 3.2
+  vic: 3.2
 
 # Nextclade SARS-CoV-2 reference tree used to count per-Pango-lineage amino-acid
 # mutations (the mutation_counts rules, feeding the lineage-deltas analysis).
@@ -215,6 +248,235 @@ h3n2_clades_2025-26:
   clade_min_count: 50
   clade_min_freq: 0.001
   pivot: "J.2"
+  raw_freq_window: 14
+
+# H1N1pdm and Vic mirror the H3N2 setup (2-year sliding windows, USA only,
+# subclade_nextclade_ha clades, 14-day empirical smoothing). Per-window `pivot`
+# clades are chosen from the provisioned data (ancestral clade present in each
+# window), so they differ from H3N2's.
+
+h1n1pdm_clades_2018-19:
+  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2018-01-01"
+  max_date: "2019-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "A"
+  raw_freq_window: 14
+
+h1n1pdm_clades_2019-20:
+  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2019-01-01"
+  max_date: "2020-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "A"
+  raw_freq_window: 14
+
+h1n1pdm_clades_2020-23:
+  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2019-07-01"
+  max_date: "2023-06-30"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "B"
+  raw_freq_window: 14
+
+# h1n1pdm_clades_2021-22:
+#   local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+#   seq_count_options: >-
+#     --clade-column subclade_nextclade_ha
+#     --filter-columns country
+#     --filter-query "country == 'USA'"
+#     --location-column country
+#   min_date: "2021-01-01"
+#   max_date: "2022-12-33"
+#   clade_min_count: 50
+#   clade_min_freq: 0.001
+#   pivot: "C.1"
+#   raw_freq_window: 14
+
+h1n1pdm_clades_2022-23:
+  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2022-01-01"
+  max_date: "2023-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "C.1"
+  raw_freq_window: 14
+
+h1n1pdm_clades_2023-24:
+  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2023-01-01"
+  max_date: "2024-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "C.1"
+  raw_freq_window: 14
+
+h1n1pdm_clades_2024-25:
+  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2024-01-01"
+  max_date: "2025-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "C.1"
+  raw_freq_window: 14
+
+vic_clades_2016-17:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2016-01-01"
+  max_date: "2017-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "A"
+  raw_freq_window: 14
+
+vic_clades_2017-18:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2017-01-01"
+  max_date: "2018-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "A"
+  raw_freq_window: 14
+
+vic_clades_2018-19:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2018-01-01"
+  max_date: "2019-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "A"
+  raw_freq_window: 14
+
+vic_clades_2019-20:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2019-01-01"
+  max_date: "2020-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "A.1"
+  raw_freq_window: 14
+
+vic_clades_2020-21:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2019-07-01"
+  max_date: "2023-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "A.1"
+  raw_freq_window: 14
+
+vic_clades_2021-22:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2021-01-01"
+  max_date: "2022-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "other"
+  raw_freq_window: 14
+
+vic_clades_2022-23:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2022-01-01"
+  max_date: "2023-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "C.3"
+  raw_freq_window: 14
+
+vic_clades_2023-24:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2023-01-01"
+  max_date: "2024-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "C.3"
+  raw_freq_window: 14
+
+vic_clades_2024-25:
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  min_date: "2024-01-01"
+  max_date: "2025-12-31"
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  pivot: "C.5.1"
   raw_freq_window: 14
 
 sarscov2_clades_2020:

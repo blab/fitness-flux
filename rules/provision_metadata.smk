@@ -11,8 +11,8 @@ The rule has no `input:`, so Snakemake provisions each file once and never
 re-downloads it on its own; refresh with `--forcerun provision_metadata` or by
 deleting the file. (data/ is gitignored and untouched by the clean rules.)
 
-Requires `aws`, `zstd`, `xz`, and `tsv-select` on PATH; H3N2 reads a private
-bucket and needs AWS credentials.
+Requires `aws`, `zstd`, `xz`, and `tsv-select` on PATH; the seasonal-flu lineages
+(h3n2, h1n1pdm, vic) read a private bucket and need AWS credentials.
 """
 
 import json
@@ -22,7 +22,7 @@ rule provision_metadata:
     output:
         "data/{virus}_subset_metadata.tsv.zst"
     wildcard_constraints:
-        virus = "sarscov2|h3n2"
+        virus = "sarscov2|h3n2|h1n1pdm|vic"
     params:
         url = lambda w: config["provision"][w.virus]["metadata_url"],
         decompress = lambda w: config["provision"][w.virus]["decompress"],
@@ -49,7 +49,7 @@ rule merge_clades:
     output:
         "data/{virus}_merged_metadata.tsv.zst"
     wildcard_constraints:
-        virus = "sarscov2|h3n2"
+        virus = "sarscov2|h3n2|h1n1pdm|vic"
     params:
         merges = lambda w: json.dumps(config["provision"][w.virus].get("merge_clades", {}))
     log:

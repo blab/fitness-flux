@@ -7,13 +7,26 @@ joins mutation counts to fitness. Outputs land in fitness-flux-analysis/results/
 and are visualized by viz/fitness-flux.html.
 """
 
-FITNESS_FLUX_ANALYSES = ["h3n2_clades", "sarscov2_clades", "sarscov2_lineages"]
+FITNESS_FLUX_ANALYSES = [
+    "h3n2_clades",
+    "h1n1pdm_clades",
+    "vic_clades",
+    "sarscov2_clades",
+    "sarscov2_lineages",
+]
+
+# mutation_fitness needs a committed source-data/{analysis}_mut_counts.tsv, which
+# only exists for these analyses. The seasonal-flu additions (h1n1pdm, vic) have no
+# mutation-count table, so they are excluded from just this one output.
+MUTATION_FITNESS_ANALYSES = ["h3n2_clades", "sarscov2_clades", "sarscov2_lineages"]
 
 # Pin {analysis} to the dataset names so the greedy wildcard can't, e.g., claim
 # "{analysis}_frequencies.tsv" for "..._seasonal_frequencies.tsv".
 wildcard_constraints:
     analysis = "|".join(FITNESS_FLUX_ANALYSES)
 
+# Built for every analysis. mutation_fitness.tsv is handled separately (see
+# MUTATION_FITNESS_ANALYSES) because it depends on a committed source-data table.
 FITNESS_FLUX_OUTPUTS = [
     "direct_fitness.tsv",
     "scaffolded_fitness.tsv",
@@ -21,7 +34,6 @@ FITNESS_FLUX_OUTPUTS = [
     "mean_date.tsv",
     "flux_timeseries.tsv",
     "flux_summary.json",
-    "mutation_fitness.tsv",
     "colors.tsv",
     "seasonal_frequencies.tsv",
 ]
@@ -275,6 +287,10 @@ rule all_fitness_flux:
             "fitness-flux-analysis/results/{analysis}_{output}",
             analysis=FITNESS_FLUX_ANALYSES,
             output=FITNESS_FLUX_OUTPUTS,
+        ),
+        expand(
+            "fitness-flux-analysis/results/{analysis}_mutation_fitness.tsv",
+            analysis=MUTATION_FITNESS_ANALYSES,
         ),
         expand(
             "viz/time-vs-fitness/data/{analysis}.json",

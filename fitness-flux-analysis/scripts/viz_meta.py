@@ -17,6 +17,8 @@ DATASETS = [
     {"id": "sarscov2_clades", "label": "SARS-CoV-2 clades"},
     {"id": "sarscov2_lineages", "label": "SARS-CoV-2 lineages"},
     {"id": "h3n2_clades", "label": "H3N2 clades"},
+    {"id": "h1n1pdm_clades", "label": "H1N1pdm clades"},
+    {"id": "vic_clades", "label": "Vic clades"},
 ]
 DEFAULT = "sarscov2_clades"
 
