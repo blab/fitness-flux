@@ -126,4 +126,4 @@ Review changes between versions with GitHub's `vA...vB` compare view or `git dif
 
 ## Citation
 
-Manuscript in preparation; citation forthcoming.
+Bedford T. 2026. Fitness flux in SARS-CoV-2 and influenza H3N2. bioRxiv: 2026.07.05.736619.

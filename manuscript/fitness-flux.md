@@ -8,10 +8,20 @@ affiliations:
     name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, WA, USA
   - id: hhmi
     name: Howard Hughes Medical Institute, Seattle, WA, USA
-date: 2026-07-05
+date: 2026-07-06
 version:
-  name: v1.0.0
-  url: https://github.com/blab/fitness-flux/releases/tag/v1.0.0
+  name: v1.0.1
+  url: https://github.com/blab/fitness-flux/releases/tag/v1.0.1
+links:
+  - name: github.com
+    url: https://github.com/blab/fitness-flux
+  - name: bedford.io
+    url: https://bedford.io/papers/bedford-fitness-flux
+  - name: biorxiv.org
+    url: https://www.biorxiv.org/content/10.64898/2026.07.05.736619
+  - name: doi.org
+    url: https://doi.org/10.64898/2026.07.05.736619
+citation: "Bedford T. 2026. Fitness flux in SARS-CoV-2 and influenza H3N2. bioRxiv: 2026.07.05.736619."  
 ---
 
 ## Abstract
