@@ -48,6 +48,8 @@ def main():
         {
             "points": build_points(args.timeseries),
             "fit": summary.get("variance_vs_velocity", {}),
+            # Time-weighted mean flux, drawn as a reference line in the flux panel.
+            "avg_velocity": summary.get("avg_velocity"),
         },
     )
 

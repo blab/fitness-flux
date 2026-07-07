@@ -13,7 +13,8 @@
 //
 // data = {
 //   points: Array<{ date (ISO string), variance (number), velocity (number|null) }>,
-//   fit:    { slope, intercept, r_squared, n }
+//   fit:    { slope, intercept, r_squared, n },
+//   avg_velocity?: number   // time-weighted mean flux, drawn as a dashed line in the flux panel
 // }
 // opts = { mode?: "inline"|"slide"|"dashboard", width?, height? }
 //
@@ -51,6 +52,9 @@ export function render(container, data, opts = {}) {
         velocity: typeof p.velocity === "number" ? p.velocity * 1000 : null,
     }));
     const velPts = pts.filter((p) => p.velocity != null);
+    // Time-weighted mean flux (×10⁻³), drawn as a dashed reference line in the flux
+    // timeseries panel; null when absent so older data still renders.
+    const avgFlux = typeof data.avg_velocity === "number" ? data.avg_velocity * 1000 : null;
     // Shared x-domain for the two timeseries panels so their axes align (velocity
     // starts later than variance, after the velocity window).
     const dateExtent = d3.extent(pts, (p) => p.date);
@@ -116,7 +120,7 @@ export function render(container, data, opts = {}) {
         y: { labelAnchor: "center", labelArrow: "none", ...y },
     });
 
-    function timeseriesPanel(panelW, panelH, points, accessor, label, what, yDom) {
+    function timeseriesPanel(panelW, panelH, points, accessor, label, what, yDom, hLine) {
         return Plot.plot({
             ...base(panelW, panelH, yDom ? { label, domain: yDom } : { label }),
             x: { type: "utc", domain: dateExtent, label: null },
@@ -124,6 +128,20 @@ export function render(container, data, opts = {}) {
                 Plot.frame({ anchor: "left", stroke: "#333" }),
                 Plot.frame({ anchor: "bottom", stroke: "#333" }),
                 Plot.dot(points, { x: "date", y: accessor, fill: COL, r: 2, fillOpacity: 0.5 }),
+                // Dashed time-weighted mean line (flux panel only), labeled at right.
+                ...(hLine != null
+                    ? [
+                          Plot.ruleY([hLine], { stroke: "#000", strokeDasharray: "4,3" }),
+                          Plot.text([`avg ${hLine.toFixed(1)}`], {
+                              frameAnchor: "top-right",
+                              dx: -6,
+                              dy: 6,
+                              textAnchor: "end",
+                              lineAnchor: "top",
+                              fontSize: 11,
+                          }),
+                      ]
+                    : []),
                 Plot.tip(
                     points,
                     Plot.pointerX({
@@ -207,7 +225,7 @@ export function render(container, data, opts = {}) {
         grid.replaceChildren(
             timeseriesPanel(panelW, panelH, pts, (d) => d.variance, VAR_LABEL, "variance", varDom),
             scatterPanel(panelW, panelH),
-            timeseriesPanel(panelW, panelH, velPts, (d) => d.velocity, FLUX_LABEL, "flux", fluxDom),
+            timeseriesPanel(panelW, panelH, velPts, (d) => d.velocity, FLUX_LABEL, "flux", fluxDom, avgFlux),
             yearlyPanel(panelW, panelH),
         );
     }

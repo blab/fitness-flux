@@ -131,6 +131,33 @@ def tau_bar_by_date(dates, by_date, tau_v, tau_post):
     return out
 
 
+def time_weighted_velocity(velocity):
+    """Mean velocity weighting each point by the time it represents (trapezoidal
+    over the midpoint dates), rather than a plain per-point mean.
+
+    Velocity points only exist where there is sequence data, so densely-sampled,
+    high-flux stretches (and, conversely, dormant gaps) bias a plain mean. Weighting
+    by time span de-biases this: the result is net fitness displacement over the
+    sampled span, so the average flux is consistent with the cumulative fitness-flux
+    slope (the doubling time) rather than reporting the active-period churn.
+    """
+    if not velocity:
+        return None
+    pts = sorted((ff_io.decimal_year(d), v) for d, v in velocity)
+    if len(pts) == 1:
+        return pts[0][1]
+    times = [t for t, _ in pts]
+    acc = 0.0
+    total = 0.0
+    for i, (t, v) in enumerate(pts):
+        lo = times[i - 1] if i > 0 else t
+        hi = times[i + 1] if i < len(pts) - 1 else t
+        weight = (hi - lo) / 2
+        acc += weight * v
+        total += weight
+    return acc / total if total > 0 else None
+
+
 def velocity_series(dates, location, tau_bar, window):
     series = []  # (midpoint_date, velocity)
     decimals = [ff_io.decimal_year(d) for d in dates]
@@ -200,7 +227,11 @@ def main():
         "velocity_window_days": window,
         "avg_variance": float(np.mean(variance)),
         "avg_sd": float(np.mean([math.sqrt(v) for v in variance])),
-        "avg_velocity": float(np.mean([v for _, v in velocity])) if velocity else None,
+        # Time-weighted so uneven sampling density doesn't bias the average flux
+        # (keeps it consistent with the cumulative fitness-flux slope). The plain
+        # per-point mean is retained as avg_velocity_pointwise for reference.
+        "avg_velocity": time_weighted_velocity(velocity),
+        "avg_velocity_pointwise": float(np.mean([v for _, v in velocity])) if velocity else None,
     }
     decimals = [ff_io.decimal_year(d) for d in dates]
     total_years = decimals[-1] - decimals[0]
