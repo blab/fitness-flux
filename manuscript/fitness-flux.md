@@ -8,10 +8,10 @@ affiliations:
     name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, WA, USA
   - id: hhmi
     name: Howard Hughes Medical Institute, Seattle, WA, USA
-date: 2026-07-06
+date: 2026-07-08
 version:
-  name: v1.0.1
-  url: https://github.com/blab/fitness-flux/releases/tag/v1.0.1
+  name: v1.0.2
+  url: https://github.com/blab/fitness-flux/releases/tag/v1.0.2
 links:
   - name: github.com
     url: https://github.com/blab/fitness-flux
@@ -45,7 +45,7 @@ Once a virus becomes endemic, adaptation is instead dominated by continual escap
 Adaptation of either kind leaves a signature in amino-acid replacing nonsynonymous vs silent synonymous substitutions, with methods ranging from simple comparisons of nonsynonymous to synonymous substitution rates (dN/dS) to McDonald–Kreitman-style approaches [@mcdonald1991adaptive] that weigh mutations fixed along a virus's successful trunk lineage against those lost on unsuccessful side branches [@wolf2006long].
 Such approaches have revealed rapid, continued adaptation in the SARS-CoV-2 spike S1 subunit [@kistler2022rapid; @markov2023evolution].
 
-A complementary class of methods estimates fitness directly from the dynamics of variant frequencies rather than from the composition of mutations [@volz2023fitness].
+A complementary class of methods estimates fitness directly from the dynamics of variant frequencies rather than from the composition of mutations [dorp2021estimating; @volz2023fitness].
 Multinomial logistic regression (MLR) models the frequencies of co-circulating variants through time and infers a relative growth rate, or fitness, for each [@obermeyer2022analysis; @abousamra2024fitness].
 Because it expresses fitness as a difference in growth rate between variants, this measure maps directly onto the population-genetic notion of selective advantage.
 These growth-rate differences correspond to differences in the time-varying effective reproduction number between co-circulating variants [@figgins2025frequency].
