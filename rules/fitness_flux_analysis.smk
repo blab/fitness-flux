@@ -27,8 +27,13 @@ FITNESS_FLUX_OUTPUTS = [
 ]
 
 # The Nextstrain tree JSON supplies the sarscov2_clades clade colors; the other
-# datasets derive colors from a Rainbow gradient and need no external input.
-NCOV_TREE_JSON = "fitness-flux-analysis/ncov_global_all-time_6k_2026-03-02.json"
+# datasets derive colors from a Rainbow gradient and need no external input. It is
+# committed under source-data/ as pinned versioned input (like the *_mut_counts.tsv
+# files). To refresh, re-download and re-commit:
+#   nextstrain remote download \
+#     https://nextstrain.org/groups/blab/ncov/global/all-time/6k/2026-03-02 \
+#     fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02
+NCOV_TREE_JSON = "fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02.json"
 
 
 def _fitness_flux_season_inputs(wildcards):
