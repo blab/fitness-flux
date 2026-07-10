@@ -46,7 +46,12 @@ if __name__ == '__main__':
              "Dates are expected to be in ISO 8601 date format (i.e. YYYY-MM-DD). " +
              "Rows with incorrect date format or ambiguous dates will be dropped.")
     parser.add_argument("--location-column", default="country",
-        help="Column in metadata TSV with location information")
+        help="Column in metadata TSV with location information. "
+             "Only used when --location-value is not provided.")
+    parser.add_argument("--location-value",
+        help="Assign this constant location label to all sequences (e.g. 'global'), "
+             "instead of reading --location-column. Sequences are not grouped or "
+             "filtered by geography.")
     parser.add_argument("--clade-column", required=True,
         help="Column in metadata TSV with clade information")
     parser.add_argument("--filter-columns", nargs="+",
@@ -70,13 +75,15 @@ if __name__ == '__main__':
             file=sys.stderr)
         sys.exit(1)
 
-    # Map of metadata columns to output columns
+    # Map of metadata columns to output columns. The location column is only read
+    # from the metadata when a constant --location-value is not supplied.
     metadata_column_map = {
         args.id_column: 'sequences',
         args.date_column: 'date',
-        args.location_column: 'location',
         args.clade_column: 'clade'
     }
+    if args.location_value is None:
+        metadata_column_map[args.location_column] = 'location'
 
     # Only use required columns, adding filter columns if provided
     metadata_usecols = set(metadata_column_map.keys())
@@ -111,6 +118,11 @@ if __name__ == '__main__':
 
         # Rename columns to output column names
         metadata.rename(columns=metadata_column_map, inplace=True)
+
+        # Stamp a single constant location on every row when requested, so that all
+        # sequences are treated as one pooled location regardless of geography.
+        if args.location_value is not None:
+            metadata['location'] = args.location_value
 
         # Convert location and clade columns to category dtype
         metadata['location'] = metadata['location'].astype('category')
