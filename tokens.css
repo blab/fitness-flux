@@ -1,0 +1,58 @@
+/*
+ * fitness-flux theme — the blotter brand layer.
+ * Defines the full press token interface with blotter values (the Bedford-lab
+ * site look): Nunito Sans (self-hosted) and warm grayscale chrome.
+ * Color belongs to data; chrome is paper and ink.
+ */
+
+/* Nunito Sans (SIL Open Font License), a geometric humanist sans in the spirit
+   of Museo Sans. Self-hosted variable font (weight axis 200-1000) so headings
+   render at true weights with no external font dependency. Files in theme/fonts/
+   are the latin + latin-ext subsets (normal + italic) pulled from Google Fonts. */
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("fonts/nunito-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("fonts/nunito-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: italic;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("fonts/nunito-sans-italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: italic;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("fonts/nunito-sans-italic-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --serif: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Achromatic chrome ramp — data owns the chromatic axis. */
+  --ink: #555555;
+  --paper: #ffffff;
+  --ink-muted: #777777;
+  --ink-fill: #333333;
+  --line: #e7e7e7;
+  --wash: #f8f8f8;
+  --ink-press: #444444;
+  --disabled: #9a9a9a;
+}
