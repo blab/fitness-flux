@@ -8,10 +8,10 @@ affiliations:
     name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, WA, USA
   - id: hhmi
     name: Howard Hughes Medical Institute, Seattle, WA, USA
-date: 2026-07-08
+date: 2026-07-10
 version:
-  name: v1.0.2
-  url: https://github.com/blab/fitness-flux/releases/tag/v1.0.2
+  name: v1.1.0
+  url: https://github.com/blab/fitness-flux/releases/tag/v1.1.0
 links:
   - name: github.com
     url: https://github.com/blab/fitness-flux
@@ -177,7 +177,9 @@ Fitness variance is compared to fitness flux, where each dot represents a daily 
 
 Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ per-gen from 2016 to 2025 ([@fig:h3n2-variance-flux]).
 This is roughly 3 times lower than recent years of SARS-CoV-2 fitness flux.
-However, it remains possible that SARS-CoV-2 slows further in the coming years.
+Łuksza and Lässig previously estimated H3N2 fitness flux from a strain-level fitness model where strain fitness was based on predictors like epitope mutations and reported a mean rate of $1.5\ \mathrm{yr}^{-1}$ [@luksza2014predictive].
+Because they express fitness per calendar year rather than per generation, we convert unit by dividing by $G^2$, where $G = 365.25/\tau \approx 114$ is the number of generations per year (for $\tau = 3.2$ days).
+This places their estimate at $\approx 0.1 \times 10^{-3}$ per-gen.
 
 :::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades}
 **Fitness variance and fitness flux in H3N2.**
