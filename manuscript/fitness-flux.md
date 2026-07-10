@@ -177,8 +177,8 @@ Fitness variance is compared to fitness flux, where each dot represents a daily 
 
 Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ per-gen from 2016 to 2025 ([@fig:h3n2-variance-flux]).
 This is roughly 3 times lower than recent years of SARS-CoV-2 fitness flux.
-Łuksza and Lässig previously estimated H3N2 fitness flux from a strain-level fitness model where strain fitness was based on predictors like epitope mutations and reported a mean rate of $1.5\ \mathrm{yr}^{-1}$ [@luksza2014predictive].
-Because they express fitness per calendar year rather than per generation, we convert unit by dividing by $G^2$, where $G = 365.25/\tau \approx 114$ is the number of generations per year (for $\tau = 3.2$ days).
+Łuksza and Lässig previously estimated H3N2 fitness flux from a strain-level fitness model where strain fitness was based on predictors like epitope mutations and reported a mean rate of $1.5$ per-year [@luksza2014predictive].
+Because they express fitness per year rather than per generation, we convert units by dividing by $G^2$, where $G = 365.25/\tau \approx 114$ is the number of generations per year (for $\tau = 3.2$ days).
 This places their estimate at $\approx 0.1 \times 10^{-3}$ per-gen.
 
 :::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades}
