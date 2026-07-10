@@ -124,6 +124,38 @@ rule fitness_flux_wave:
         """
 
 
+# Datasets annualized for the Łuksza & Lässig (2014) per-year comparison. H3N2 has
+# a single generation time (τ = 3.2 d, exact conversion); SARS-CoV-2 clades split
+# pre/post-Omicron (5.0/3.2 d) so the script uses the frequency-weighted mean τ and
+# flags the per-year magnitudes as approximate. Lineages are excluded (the clade-level
+# series is the flux figure's basis).
+ANNUALIZE_ANALYSES = ["h3n2_clades", "sarscov2_clades"]
+
+
+rule fitness_flux_annualize:
+    """Annualize a per-generation fitness flux/variance series (both × G², G = 365.25/τ)
+    for comparison to Łuksza & Lässig (2014)'s per-year influenza fitness flux/variance.
+    Writes the per-gen / per-year / L&L table as JSON and asserts the variance→flux
+    Fisher slope is unchanged by the rescaling (a built-in units check)."""
+    input:
+        timeseries = "fitness-flux-analysis/results/{analysis}_flux_timeseries.tsv",
+        summary = "fitness-flux-analysis/results/{analysis}_flux_summary.json"
+    output:
+        "fitness-flux-analysis/results/{analysis}_annualized_flux.json"
+    wildcard_constraints:
+        analysis = "|".join(ANNUALIZE_ANALYSES)
+    log:
+        "logs/fitness_flux/{analysis}_annualize.txt"
+    shell:
+        """
+        python -u fitness-flux-analysis/scripts/annualize_flux.py \
+            --dataset {wildcards.analysis} \
+            --timeseries {input.timeseries} \
+            --summary {input.summary} \
+            --output {output} 2>&1 | tee {log}
+        """
+
+
 rule fitness_flux_mutation_fitness:
     input:
         mut_counts = "fitness-flux-analysis/source-data/{analysis}_mut_counts.tsv",
@@ -280,6 +312,10 @@ rule all_fitness_flux:
             "fitness-flux-analysis/results/{analysis}_{output}",
             analysis=FITNESS_FLUX_ANALYSES,
             output=FITNESS_FLUX_OUTPUTS,
+        ),
+        expand(
+            "fitness-flux-analysis/results/{analysis}_annualized_flux.json",
+            analysis=ANNUALIZE_ANALYSES,
         ),
         expand(
             "viz/time-vs-fitness/data/{analysis}.json",
