@@ -43,10 +43,12 @@ datasets:
 # Per-virus metadata provisioning (the provision_metadata rule): stream the
 # Nextstrain metadata from S3, subset to these columns, and recompress to the
 # data/{virus}_subset_metadata.tsv.zst that every dataset block's local_metadata
-# points at. H3N2 is a private bucket (needs AWS credentials); SARS-CoV-2 is public.
+# points at. SARS-CoV-2 is a public bucket, fetched unsigned (aws_no_sign_request,
+# so no AWS credentials are needed); H3N2 is a private bucket (needs credentials).
 provision:
   sarscov2:
     metadata_url: "s3://nextstrain-data/files/ncov/open/metadata.tsv.zst"
+    aws_no_sign_request: true
     decompress: "zstd -dc"
     columns: "strain,date,country,clade_nextstrain,Nextclade_pango,QC_overall_status"
     merge_clades:

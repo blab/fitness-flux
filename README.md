@@ -11,23 +11,34 @@ The tempo of viral adaptation is usually read indirectly from the composition of
 
 ## Installation
 
-Clone the repository and install Python dependencies:
+The recommended way to run the workflow is through the [Nextstrain CLI](https://docs.nextstrain.org/projects/cli/) with its Docker runtime, which provides every tool the pipeline needs (`snakemake`, `evofr`, `aws`, `zstd`, `xz`, `tsv-select`, …) without any local setup. [Install the Nextstrain CLI](https://docs.nextstrain.org/projects/cli/page/installation/) and run the [Docker setup](https://docs.nextstrain.org/projects/cli/page/runtimes/docker/) once:
+```
+nextstrain setup --set-default docker
+```
+Then run any workflow target with `nextstrain build --docker . <target>` (examples below). The examples below drop the `--docker` flag for brevity; keep it (or set the default runtime with `nextstrain setup --set-default docker`) when using the Docker runtime.
+
+Alternatively, run the workflow with `snakemake <target>` in a local environment. Install the Python dependencies with
 ```
 pip install -r requirements.txt
 ```
-`evofr` is needed to regenerate `mlr-estimates/` and the downstream analysis and visualization steps need  numpy/scipy/pandas.
+Provisioning the input metadata additionally requires `aws`, `zstd`, `xz`, and `tsv-select` on `PATH`.
 
-Provisioning the input metadata additionally requires `aws`, `zstd`, `xz`, and `tsv-select` on `PATH`. H3N2 reads a private bucket (`nextstrain-data-private`), so AWS credentials are required; SARS-CoV-2 uses the public `nextstrain-data` bucket.
-
-Workflow targets can be run either as `snakemake <target>` from this environment or as `nextstrain build . <target>` through the [Nextstrain CLI](https://docs.nextstrain.org/projects/cli/) runtime (`environment_nextstrain.sh`). The examples below use the latter.
+Data used to generate sequence counts is fetched from Nextstrain's S3 buckets. SARS-CoV-2 uses the public `nextstrain-data` bucket and is fetched unsigned (`--no-sign-request`), so no AWS credentials are required. A fresh clone can run the whole SARS-CoV-2 pipeline out of the box with `nextstrain build . sarscov2`. H3N2 reads the private `nextstrain-data-private` bucket, so the `h3n2` target and the full build require AWS credentials with access to it.
 
 ## Workflow
 
-Once metadata is provisioned locally, run the entire workflow with
+Run the entire workflow with
 ```
 nextstrain build .
 ```
 The default target builds the full pipeline: sequence counts, variant relationships, MLR estimates, the fitness-flux analysis, and the lineage-deltas analysis. The individual stages can also be run on their own, as described below.
+
+To build a single pathogen end-to-end, use the per-virus targets:
+```
+nextstrain build . sarscov2   # full SARS-CoV-2 pipeline (public data, no AWS credentials)
+nextstrain build . h3n2       # full H3N2 pipeline (private data, needs AWS credentials)
+```
+`sarscov2` builds the SARS-CoV-2 clade and lineage fitness-flux analyses plus the lineage-deltas analysis; `h3n2` builds the H3N2 clade fitness-flux analysis. Because SARS-CoV-2 metadata is fetched unsigned from a public bucket, `sarscov2` runs from a fresh clone with no credentials.
 
 ### Provision metadata
 

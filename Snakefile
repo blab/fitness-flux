@@ -18,6 +18,21 @@ rule all:
         rules.all_fitness_flux.input,
         rules.all_lineage_deltas.input,
 
+# Per-virus convenience targets: the full pipeline for one pathogen. SARS-CoV-2 is
+# fetched unsigned from a public bucket, so `nextstrain build --docker . sarscov2`
+# runs end-to-end with no AWS credentials; H3N2 reads a private bucket (needs
+# credentials). Upstream sequence-count and MLR jobs are pulled in as dependencies.
+rule sarscov2:
+    input:
+        fitness_flux_outputs_for([a for a in FITNESS_FLUX_ANALYSES if a.startswith("sarscov2")]),
+        rules.all_lineage_deltas.input,
+        FITNESS_FLUX_VIZ_META,
+
+rule h3n2:
+    input:
+        fitness_flux_outputs_for([a for a in FITNESS_FLUX_ANALYSES if a.startswith("h3n2")]),
+        FITNESS_FLUX_VIZ_META,
+
 rule clean:
     """
     Remove everything the workflow generates so the repo can be rerun from

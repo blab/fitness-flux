@@ -306,34 +306,43 @@ rule viz_meta:
         """
 
 
+# Component directories whose data/{analysis}.json the fitness-flux stage builds.
+FITNESS_FLUX_VIZ_COMPONENTS = [
+    "time-vs-fitness",
+    "time-vs-frequency",
+    "frequency-vs-fitness",
+    "variance-vs-flux",
+]
+
+
+def fitness_flux_outputs_for(analyses):
+    """Fitness-flux results + viz JSONs for the given analyses (a subset of
+    FITNESS_FLUX_ANALYSES). Shared by all_fitness_flux and the per-virus targets so
+    they stay in sync. The viz meta.json manifests are added by the callers (they
+    are shared across all analyses, not per-analysis)."""
+    outs = expand(
+        "fitness-flux-analysis/results/{analysis}_{output}",
+        analysis=analyses, output=FITNESS_FLUX_OUTPUTS,
+    )
+    outs += expand(
+        "fitness-flux-analysis/results/{analysis}_annualized_flux.json",
+        analysis=[a for a in analyses if a in ANNUALIZE_ANALYSES],
+    )
+    outs += expand(
+        "viz/{component}/data/{analysis}.json",
+        component=FITNESS_FLUX_VIZ_COMPONENTS, analysis=analyses,
+    )
+    return outs
+
+
+# The viz meta.json manifests list every dataset for the dashboard selector, so
+# they are shared across viruses (not per-analysis) and cheap/credential-free.
+FITNESS_FLUX_VIZ_META = expand(
+    "viz/{component}/meta.json", component=FITNESS_FLUX_VIZ_COMPONENTS,
+)
+
+
 rule all_fitness_flux:
     input:
-        expand(
-            "fitness-flux-analysis/results/{analysis}_{output}",
-            analysis=FITNESS_FLUX_ANALYSES,
-            output=FITNESS_FLUX_OUTPUTS,
-        ),
-        expand(
-            "fitness-flux-analysis/results/{analysis}_annualized_flux.json",
-            analysis=ANNUALIZE_ANALYSES,
-        ),
-        expand(
-            "viz/time-vs-fitness/data/{analysis}.json",
-            analysis=FITNESS_FLUX_ANALYSES,
-        ),
-        expand(
-            "viz/time-vs-frequency/data/{analysis}.json",
-            analysis=FITNESS_FLUX_ANALYSES,
-        ),
-        expand(
-            "viz/frequency-vs-fitness/data/{analysis}.json",
-            analysis=FITNESS_FLUX_ANALYSES,
-        ),
-        expand(
-            "viz/variance-vs-flux/data/{analysis}.json",
-            analysis=FITNESS_FLUX_ANALYSES,
-        ),
-        "viz/time-vs-fitness/meta.json",
-        "viz/time-vs-frequency/meta.json",
-        "viz/frequency-vs-fitness/meta.json",
-        "viz/variance-vs-flux/meta.json"
+        fitness_flux_outputs_for(FITNESS_FLUX_ANALYSES),
+        FITNESS_FLUX_VIZ_META

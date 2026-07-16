@@ -11,8 +11,9 @@ The rule has no `input:`, so Snakemake provisions each file once and never
 re-downloads it on its own; refresh with `--forcerun provision_metadata` or by
 deleting the file. (data/ is gitignored and untouched by the clean rules.)
 
-Requires `aws`, `zstd`, `xz`, and `tsv-select` on PATH; H3N2 reads a private
-bucket and needs AWS credentials.
+Requires `aws`, `zstd`, `xz`, and `tsv-select` on PATH. SARS-CoV-2 is fetched
+unsigned (`--no-sign-request`, via the per-virus `aws_no_sign_request` config), so
+it needs no AWS credentials; H3N2 reads a private bucket and does need credentials.
 """
 
 import json
@@ -25,6 +26,7 @@ rule provision_metadata:
         virus = "sarscov2|h3n2"
     params:
         url = lambda w: config["provision"][w.virus]["metadata_url"],
+        aws_args = lambda w: "--no-sign-request" if config["provision"][w.virus].get("aws_no_sign_request") else "",
         decompress = lambda w: config["provision"][w.virus]["decompress"],
         columns = lambda w: config["provision"][w.virus]["columns"]
     log:
@@ -32,7 +34,7 @@ rule provision_metadata:
     shell:
         """
         set -euo pipefail
-        ( aws s3 cp {params.url} - \
+        ( aws s3 cp {params.aws_args} {params.url} - \
             | {params.decompress} \
             | tsv-select -H -f {params.columns} \
             | zstd -c > {output} ) 2> {log}
