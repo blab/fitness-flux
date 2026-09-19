@@ -189,6 +189,28 @@ In the lower-left flux-through-time panel, the dashed horizontal line marks the 
 For both SARS-CoV-2 and influenza H3N2, the connection between fitness flux and fitness variance is clear.
 This suggests from first principles that interventions that decrease variance in fitness across the virus population would be expected to slow adaptation, while interventions that increase variance would be expected to speed adaptation.
 
+### Forecasting accuracy
+
+The MLR fits provide not only retrospective fitness estimates but forward projections of clade frequency, raising the question of how accurate these projections are as forecasts.
+We adapt the real-time forecast-evaluation framework of Abousamra et al. [@abousamra2024fitness] to our sliding-window design ([@fig:forecast-accuracy-sarscov2]).
+Because consecutive SARS-CoV-2 windows are offset by six months, each 1-year window's successor extends exactly six months beyond it and supplies the empirical clade frequencies over that period as retrospective truth.
+Treating each window's final date as the date of estimation, we compare two forecasts of clade frequency over the following six months: the MLR model, which projects each clade forward under its fitted logistic growth, and a naive model, which simply holds the final-date frequencies constant.
+Accuracy is summarized as the mean absolute error (MAE) between predicted and observed clade frequencies, averaged across clades and across the ten window pairs, as a function of forecast lead time.
+
+Over the three months preceding the date of estimation the two models are identical by construction — both are the in-window MLR fit — and track the retrospective frequencies to within roughly 1% MAE.
+The models diverge only once projected past the date of estimation.
+Through the six-month forecast the MLR projection remains more accurate than naive persistence at every lead, with a mean forecast MAE of 5.7% for MLR versus 7.4% for naive; MLR error stays below 5% for roughly the first two and a half months of forecasting, compared to under two months for naive.
+The advantage narrows at the longest leads: by six months out both models approach $11-12\%$ MAE, as clades that had not yet emerged at the date of estimation come to dominate and can be captured by neither a frequency projection nor a persistence forecast.
+The absolute errors here are smaller than the real-time figures reported by Abousamra et al. [@abousamra2024fitness], as expected, since we forecast from the fully backfilled retrospective fit rather than the sparse, delayed data available in real time, and our naive baseline is the MLR nowcast at the date of estimation rather than a raw recent-frequency average.
+These results confirm that the fitted MLR growth advantages carry genuine short-term predictive signal for SARS-CoV-2 clade frequencies, consistent with their use in operational nowcasting.
+
+:::figure{#fig:forecast-accuracy-sarscov2 component=forecast-accuracy dataset=sarscov2_clades}
+**Forecasting accuracy of MLR versus a naive model for SARS-CoV-2 clade frequencies.**
+Mean absolute error between predicted and observed clade frequencies as a function of forecast lead time, averaged across clades and across ten six-month-offset window pairs.
+Negative leads (hindcast) fall within the fitting window, where the MLR and naive predictions coincide (grey); positive leads (forecast) project past each window's final date, where the MLR projection (blue) is compared to naive persistence (red).
+The dashed line marks 5% error, and faint lines show the individual window pairs.
+:::
+
 ### Other seasonal influenza lineages
 
 To place the H3N2 result in context, we repeat the identical analysis strategy for the two other seasonal influenza lineages that circulate in humans, H1N1pdm and B/Victoria, over the same 2016 to 2025 period.
@@ -379,6 +401,15 @@ and each window's offset the weighted-mean gap between the global scale and that
 $$c_w = \frac{\sum_i a_{i,w} \, (f_i - f_{i,w})}{\sum_i a_{i,w}}.$$
 We solve by alternating the two to convergence.
 The overlap of variants between windows ties them into one connected scale, leaving a single global constant free, which we fix by shifting all values so that the founding variant, our least-fit baseline, sits at zero, leaving each variant's scaffolded value as its cumulative fitness flux $\Phi_i = f_i - f_0$.
+
+### Forecast accuracy
+
+To evaluate forecasting accuracy ([@fig:forecast-accuracy-sarscov2]) we pair each SARS-CoV-2 window with the window fit on data slid six months forward, which extends six months beyond it and provides retrospective truth.
+Writing $T$ for the earlier window's final date and $S$ for its fitted clade set (including the "other" category), we evaluate, at each date $t$ in $[T-90, T+180]$ days, three quantities over $S$.
+The MLR forecast is $\hat{x}^{\mathrm{MLR}}_i(t) = \mathrm{softmax}_i[\log x_i(T) + f_i^{\mathrm{day}} (t - T)]$ for $t > T$, and the in-window modeled frequency for $t \le T$, where $f_i^{\mathrm{day}} = f_i / \tau_i$ is clade $i$'s per-day logistic growth rate recovered from its fitted (within-window) growth advantage.
+The naive forecast is $\hat{x}^{\mathrm{naive}}_i(t) = x_i(T)$ held constant for $t > T$, and equal to the MLR fit for $t \le T$, so the two coincide over the hindcast and differ only in how they project forward.
+The truth $x_i(t)$ is the empirical smoothed frequency from the later window, with any clade outside $S$ folded into "other" and the result renormalized over $S$.
+The absolute error at each date is the mean over clades, $\frac{1}{|S|} \sum_{i \in S} \lvert x_i(t) - \hat{x}_i(t) \rvert$ [@abousamra2024fitness], which we average across the ten window pairs within weekly lead-time bins to give mean absolute error as a function of lead time.
 
 ### Lineage mutation counts and branch contrasts
 

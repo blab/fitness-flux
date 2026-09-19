@@ -4,6 +4,7 @@ include: "rules/provision_metadata.smk"
 include: "rules/sequence_counts.smk"
 include: "rules/mlr_estimates.smk"
 include: "rules/fitness_flux_analysis.smk"
+include: "rules/forecast_analysis.smk"
 include: "rules/mutation_counts.smk"
 include: "rules/lineage_deltas_analysis.smk"
 
@@ -16,6 +17,7 @@ rule all:
         rules.all_variant_relationships.input,
         rules.all_mlr_estimates.input,
         rules.all_fitness_flux.input,
+        rules.all_forecast_analysis.input,
         rules.all_lineage_deltas.input,
 
 rule clean:
@@ -36,7 +38,8 @@ rule clean:
                viz/time-vs-fitness/data viz/time-vs-fitness/meta.json \
                viz/time-vs-frequency/data viz/time-vs-frequency/meta.json \
                viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json \
-               viz/variance-vs-flux/data viz/variance-vs-flux/meta.json
+               viz/variance-vs-flux/data viz/variance-vs-flux/meta.json \
+               viz/forecast-accuracy/data viz/forecast-accuracy/meta.json
         """
 
 rule clean_analysis:
@@ -55,5 +58,6 @@ rule clean_analysis:
                viz/time-vs-fitness/data viz/time-vs-fitness/meta.json \
                viz/time-vs-frequency/data viz/time-vs-frequency/meta.json \
                viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json \
-               viz/variance-vs-flux/data viz/variance-vs-flux/meta.json
+               viz/variance-vs-flux/data viz/variance-vs-flux/meta.json \
+               viz/forecast-accuracy/data viz/forecast-accuracy/meta.json
         """
