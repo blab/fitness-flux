@@ -26,14 +26,22 @@ FITNESS_FLUX_OUTPUTS = [
     "seasonal_frequencies.tsv",
 ]
 
-# The Nextstrain tree JSON supplies the sarscov2_clades clade colors; the other
-# datasets derive colors from a Rainbow gradient and need no external input. It is
-# committed under source-data/ as pinned versioned input (like the *_mut_counts.tsv
-# files). To refresh, re-download and re-commit:
-#   nextstrain remote download \
-#     https://nextstrain.org/groups/blab/ncov/global/all-time/6k/2026-03-02 \
-#     fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02
-NCOV_TREE_JSON = "fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02.json"
+# The sarscov2_clades clade colors come from a Nextstrain ncov auspice tree; the other
+# datasets derive colors from a Rainbow gradient and need no external input.
+#
+# fitness_flux_colors reads only meta.colorings from the tree, so we commit a small
+# tree-stripped metadata JSON (NCOV_META_JSON) as a pinned input. Like the *_mut_counts.tsv
+# files it has no producing rule, so the default workflow builds it offline with no
+# authentication. The full tree is large and its download requires `nextstrain login`; it is
+# fetched to results/ (gitignored) and stripped only when refreshing the committed metadata:
+#   snakemake fitness-flux-analysis/results/ncov_global_all-time_6k_2026-03-02_meta.json
+#   cp fitness-flux-analysis/results/ncov_global_all-time_6k_2026-03-02_meta.json \
+#      fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02_meta.json
+#   git add fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02_meta.json && git commit
+NCOV_TREE_URL = "https://nextstrain.org/groups/blab/ncov/global/all-time/6k/2026-03-02"
+NCOV_TREE_JSON = "fitness-flux-analysis/results/ncov_global_all-time_6k_2026-03-02.json"
+NCOV_META_RESULTS = "fitness-flux-analysis/results/ncov_global_all-time_6k_2026-03-02_meta.json"
+NCOV_META_JSON = "fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02_meta.json"
 
 
 def _fitness_flux_season_inputs(wildcards):
@@ -182,8 +190,33 @@ def _fitness_flux_colors_inputs(wildcards):
         "frequencies": f"fitness-flux-analysis/results/{wildcards.analysis}_frequencies.tsv",
     }
     if wildcards.analysis == "sarscov2_clades":
-        inputs["ncov"] = NCOV_TREE_JSON
+        inputs["ncov"] = NCOV_META_JSON
     return inputs
+
+
+rule download_ncov_tree:
+    """Fetch the full Nextstrain ncov auspice tree (requires `nextstrain login`). Refresh-only:
+    writes to results/ (gitignored) and is not part of the default `all` target -- the committed
+    NCOV_META_JSON is what fitness_flux_colors reads. `nextstrain remote download` also writes
+    _root-sequence / _tip-frequencies sidecars alongside the tree; only the tree is used."""
+    output:
+        NCOV_TREE_JSON
+    params:
+        url = NCOV_TREE_URL,
+        prefix = NCOV_TREE_JSON[:-len(".json")],
+    shell:
+        "nextstrain remote download {params.url} {params.prefix}"
+
+
+rule strip_ncov_tree:
+    """Drop the heavy `tree` from the auspice JSON, keeping `meta` (colorings etc.) that
+    fitness_flux_colors needs. Refresh-only: copy the output over NCOV_META_JSON and commit it."""
+    input:
+        NCOV_TREE_JSON
+    output:
+        NCOV_META_RESULTS
+    shell:
+        "python -u fitness-flux-analysis/scripts/strip_ncov_tree.py --tree {input} --output {output}"
 
 
 rule fitness_flux_colors:
@@ -192,7 +225,7 @@ rule fitness_flux_colors:
     output:
         "fitness-flux-analysis/results/{analysis}_colors.tsv"
     params:
-        ncov_flag = lambda w: f"--ncov-json {NCOV_TREE_JSON}" if w.analysis == "sarscov2_clades" else ""
+        ncov_flag = lambda w: f"--ncov-json {NCOV_META_JSON}" if w.analysis == "sarscov2_clades" else ""
     log:
         "logs/fitness_flux/{analysis}_colors.txt"
     shell:

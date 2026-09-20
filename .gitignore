@@ -27,6 +27,13 @@ nextclade_sars-cov-2.json
 nextclade_sars-cov-2_flat.json
 nextclade_sars-cov-2_root-sequence.json
 
+# Full ncov tree is not versioned (see rules/fitness_flux_analysis.smk); only the small
+# tree-stripped _meta.json under source-data/ is committed. The tree + its sidecars are
+# re-downloaded to results/ (already gitignored) on refresh.
+fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02.json
+fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02_root-sequence.json
+fitness-flux-analysis/source-data/ncov_global_all-time_6k_2026-03-02_tip-frequencies.json
+
 # Specific ESM files
 embeddings_pretrained.tsv
 embeddings_fine_tuned.tsv
