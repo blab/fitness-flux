@@ -1,3 +1,5 @@
+# All datasets pool sequences globally into a single 'global' location (via
+# --location-value global; no geographic grouping or country filter).
 # Clade datasets slide forward every 3 months (quarterly): SARS-CoV-2 uses 1-year
 # windows, flu uses 2-year windows. sarscov2_lineages keeps its original cadence.
 # Window lists are data-driven (fittable windows only) and regenerated when the
@@ -82,6 +84,7 @@ datasets:
   - h3n2_clades_2025-07
   - h3n2_clades_2025-10
   # h1n1pdm clades (2-year windows, 3-month slide)
+  - h1n1pdm_clades_2017-10
   - h1n1pdm_clades_2018-01
   - h1n1pdm_clades_2018-04
   - h1n1pdm_clades_2018-07
@@ -91,6 +94,9 @@ datasets:
   - h1n1pdm_clades_2019-07
   - h1n1pdm_clades_2019-10
   - h1n1pdm_clades_2020-01
+  - h1n1pdm_clades_2020-04
+  - h1n1pdm_clades_2020-07
+  - h1n1pdm_clades_2020-10
   - h1n1pdm_clades_2021-01
   - h1n1pdm_clades_2021-04
   - h1n1pdm_clades_2021-07
@@ -128,6 +134,10 @@ datasets:
   - vic_clades_2019-07
   - vic_clades_2019-10
   - vic_clades_2020-01
+  - vic_clades_2020-04
+  - vic_clades_2020-07
+  - vic_clades_2020-10
+  - vic_clades_2021-01
   - vic_clades_2021-04
   - vic_clades_2021-07
   - vic_clades_2021-10
@@ -186,7 +196,9 @@ generation_time:
 mutation_counts:
   nextclade_url: "https://nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs"
 
-# All clade datasets slide forward every 3 months (quarterly), labeled by window
+# All datasets pool sequences globally (single "global" location, no country
+# filter); a QC filter (QC_overall_status / qc.overallStatus_ha != "bad") is applied.
+# Clade datasets slide forward every 3 months (quarterly), labeled by window
 # start month (YYYY-MM). SARS-CoV-2 uses 1-year windows; flu uses 2-year windows
 # (sparser data, slower dynamics, and to bridge more of the 2020-2022 COVID trough).
 # Per-window pivots are omitted: evofr uses the "other" reference and scaffolding
@@ -199,8 +211,9 @@ _sarscov2_clades: &sarscov2_clades
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   clade_min_count: 50
   clade_min_freq: 0.001
 
@@ -208,9 +221,9 @@ _h3n2_clades: &h3n2_clades
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
+    --filter-columns qc.overallStatus_ha
+    --filter-query '`qc.overallStatus_ha` != "bad"'
+    --location-value global
   clade_min_count: 50
   clade_min_freq: 0.001
   raw_freq_window: 14
@@ -219,9 +232,9 @@ _h1n1pdm_clades: &h1n1pdm_clades
   local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
+    --filter-columns qc.overallStatus_ha
+    --filter-query '`qc.overallStatus_ha` != "bad"'
+    --location-value global
   clade_min_count: 50
   clade_min_freq: 0.001
   raw_freq_window: 14
@@ -230,9 +243,9 @@ _vic_clades: &vic_clades
   local_metadata: "data/vic_subset_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
+    --filter-columns qc.overallStatus_ha
+    --filter-query '`qc.overallStatus_ha` != "bad"'
+    --location-value global
   clade_min_count: 50
   clade_min_freq: 0.001
   raw_freq_window: 14
@@ -494,6 +507,10 @@ h3n2_clades_2025-10:
   max_date: "2027-09-30"
 
 # h1n1pdm_clades windows
+h1n1pdm_clades_2017-10:
+  <<: *h1n1pdm_clades
+  min_date: "2017-10-01"
+  max_date: "2019-09-30"
 h1n1pdm_clades_2018-01:
   <<: *h1n1pdm_clades
   min_date: "2018-01-01"
@@ -530,6 +547,18 @@ h1n1pdm_clades_2020-01:
   <<: *h1n1pdm_clades
   min_date: "2020-01-01"
   max_date: "2021-12-31"
+h1n1pdm_clades_2020-04:
+  <<: *h1n1pdm_clades
+  min_date: "2020-04-01"
+  max_date: "2022-03-31"
+h1n1pdm_clades_2020-07:
+  <<: *h1n1pdm_clades
+  min_date: "2020-07-01"
+  max_date: "2022-06-30"
+h1n1pdm_clades_2020-10:
+  <<: *h1n1pdm_clades
+  min_date: "2020-10-01"
+  max_date: "2022-09-30"
 h1n1pdm_clades_2021-01:
   <<: *h1n1pdm_clades
   min_date: "2021-01-01"
@@ -676,6 +705,22 @@ vic_clades_2020-01:
   <<: *vic_clades
   min_date: "2020-01-01"
   max_date: "2021-12-31"
+vic_clades_2020-04:
+  <<: *vic_clades
+  min_date: "2020-04-01"
+  max_date: "2022-03-31"
+vic_clades_2020-07:
+  <<: *vic_clades
+  min_date: "2020-07-01"
+  max_date: "2022-06-30"
+vic_clades_2020-10:
+  <<: *vic_clades
+  min_date: "2020-10-01"
+  max_date: "2022-09-30"
+vic_clades_2021-01:
+  <<: *vic_clades
+  min_date: "2021-01-01"
+  max_date: "2022-12-31"
 vic_clades_2021-04:
   <<: *vic_clades
   min_date: "2021-04-01"
@@ -754,8 +799,9 @@ sarscov2_lineages_2020:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2020-01-01"
   max_date: "2020-12-31"
   collapse_threshold: 500
@@ -765,8 +811,9 @@ sarscov2_lineages_2020-21:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2020-07-01"
   max_date: "2021-06-30"
   collapse_threshold: 500
@@ -776,8 +823,9 @@ sarscov2_lineages_2021:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2021-01-01"
   max_date: "2021-12-31"
   collapse_threshold: 500
@@ -787,8 +835,9 @@ sarscov2_lineages_2021-22:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2021-07-01"
   max_date: "2022-06-30"
   collapse_threshold: 500
@@ -798,8 +847,9 @@ sarscov2_lineages_2022:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2022-01-01"
   max_date: "2022-12-31"
   collapse_threshold: 500
@@ -809,8 +859,9 @@ sarscov2_lineages_2022-23:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2022-07-01"
   max_date: "2023-06-30"
   collapse_threshold: 500
@@ -820,8 +871,9 @@ sarscov2_lineages_2023:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2023-01-01"
   max_date: "2023-12-31"
   collapse_threshold: 500
@@ -831,8 +883,9 @@ sarscov2_lineages_2023-24:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2023-07-01"
   max_date: "2024-06-30"
   collapse_threshold: 500
@@ -842,8 +895,9 @@ sarscov2_lineages_2024:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2024-01-01"
   max_date: "2024-12-31"
   collapse_threshold: 500
@@ -853,8 +907,9 @@ sarscov2_lineages_2024-25:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2024-07-01"
   max_date: "2025-06-30"
   collapse_threshold: 500
@@ -864,8 +919,9 @@ sarscov2_lineages_2025:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2025-01-01"
   max_date: "2025-12-31"
   collapse_threshold: 500
@@ -875,8 +931,9 @@ sarscov2_lineages_2025-26:
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column Nextclade_pango
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status
+    --filter-query "QC_overall_status != 'bad'"
+    --location-value global
   min_date: "2025-07-01"
   max_date: "2026-06-30"
   collapse_threshold: 500

@@ -43,12 +43,11 @@ def load_mlr(mlr_dir, dataset, timepoint):
 
 
 def primary_location(mlr):
-    """The single non-hierarchical geographic location for a dataset.
+    """The single non-hierarchical location for a dataset.
 
-    The notebook hardcoded ``"USA"``, but the upstream MLR runs now use other
-    locations for some datasets (e.g. ``sarscov2_clades`` reports United
-    Kingdom). Each dataset's metadata lists exactly one real location plus the
-    pooled ``hierarchical`` entry, so we select the real one dynamically.
+    Sequences are pooled into one location (currently ``"global"``); the metadata
+    lists exactly that one real location plus the pooled ``hierarchical`` entry, so
+    we select the real one dynamically rather than hardcoding its label.
     """
     locations = [loc for loc in mlr["metadata"]["location"] if loc != "hierarchical"]
     if not locations:

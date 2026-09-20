@@ -2,7 +2,7 @@
 """Gather direct (per-season) variant fitness from MLR estimates.
 
 Port of the "Gather fitnesses" section of ``fitness-flux.nb``. For each season
-of a dataset (e.g. ``sarscov2_clades``) this reads the median USA growth
+of a dataset (e.g. ``sarscov2_clades``) this reads the median global growth
 advantage (``ga``) per variant and records its natural log as the direct log
 fitness, tagged with the season midpoint year. The ``other`` category is
 dropped. Each season's values are relative to that season's own pivot; the
