@@ -1,5 +1,5 @@
 ---
-title: Fitness flux in SARS-CoV-2 and influenza H3N2
+title: Variant frequency dynamics and short-term forecasting in SARS-CoV-2 and seasonal influenza
 authors:
   - name: Trevor Bedford
     affiliations: [fredhutch, hhmi]
@@ -21,19 +21,16 @@ links:
     url: https://www.biorxiv.org/content/10.64898/2026.07.05.736619
   - name: doi.org
     url: https://doi.org/10.64898/2026.07.05.736619
-citation: "Bedford T. 2026. Fitness flux in SARS-CoV-2 and influenza H3N2. bioRxiv: 2026.07.05.736619."  
+citation: "Bedford T. 2026. Variant frequency dynamics and short-term forecasting in SARS-CoV-2 and seasonal influenza. bioRxiv: 2026.07.05.736619."  
 ---
 
 ## Abstract
 
-The tempo of viral adaptation is usually read indirectly from the composition of mutations, through measures such as dN/dS.
-Here we measure it directly from the dynamics of variant frequencies, where we use multinomial logistic regression to estimate a fitness for each co-circulating variant.
-We aggregate these estimates to derive the rate of change of mean population fitness, referred to as fitness flux.
-Tracing SARS-CoV-2 from its emergence, we find that it initially adapted rapidly, doubling in fitness every 6 months from Jan 2021 to Jun 2022, but slowing to every 2.5 years from Jul 2022 to Dec 2025.
-Seasonal influenza H3N2 sustained a slower, steadier pace doubling in fitness every 9.1 years.
-In both, the rate of fitness gain closely tracks the variance in fitness, matching the 1:1 expectation of Fisher's fundamental theorem.
-Phylogenetic contrasts between parent and child lineages localize most fitness gain to spike, and within spike to the receptor-binding domain, where a simple count of spike S1 substitutions predicts lineage fitness about as well as deep-learning escape and protein-language-model scores.
-Measuring fitness directly thus offers a transparent, frequency-based alternative to mutational proxies for tracking and anticipating viral adaptation.
+RNA virus populations are continually restructured by the emergence of new variants and their replacement of existing diversity, and tracking these variant frequencies is central to genomic surveillance.
+Here we use multinomial logistic regression (MLR) to estimate the frequencies and relative growth rates of co-circulating variants of SARS-CoV-2 and the seasonal influenza lineages H3N2, H1N1pdm and B/Victoria, fitting the model in sliding windows across years of sequence data.
+Beyond describing this turnover retrospectively, the fitted growth rates project variant frequencies forward, raising the question of how accurate those projections are as short-term forecasts.
+Evaluated against retrospective truth over a six-month horizon, MLR forecasts of named-clade frequencies beat a naive persistence baseline for SARS-CoV-2 (mean absolute error 3.4% versus 5.0%) and for most seasonal influenza (H3N2 4.6% versus 5.8%; B/Victoria 6.2% versus 6.6%).
+Frequency-based modeling thus offers both a compact description of ongoing variant turnover and a transparent baseline for anticipating it.
 
 _The website [blab.github.io/fitness-flux/](https://blab.github.io/fitness-flux/) is the intended reading experience of this paper, providing responsive layout and interactive figures._
 
@@ -41,19 +38,15 @@ _The website [blab.github.io/fitness-flux/](https://blab.github.io/fitness-flux/
 
 RNA viruses evolve rapidly and the selective pressures they face shift over the course of emergence to endemicity.
 A newly established virus initially adapts to its new host by refining its capacity for within-host replication and between-host transmission.
-Once a virus becomes endemic, adaptation is instead dominated by continual escape from accumulating population immunity, driving ongoing antigenic change, where some viruses are better able than others to sustain adaptive evolution [@kistler2023atlas].
-Adaptation of either kind leaves a signature in amino-acid replacing nonsynonymous vs silent synonymous substitutions, with methods ranging from simple comparisons of nonsynonymous to synonymous substitution rates (dN/dS) to McDonald–Kreitman-style approaches [@mcdonald1991adaptive] that weigh mutations fixed along a virus's successful trunk lineage against those lost on unsuccessful side branches [@wolf2006long].
-Such approaches have revealed rapid, continued adaptation in the SARS-CoV-2 spike S1 subunit [@kistler2022rapid; @markov2023evolution].
+Once a virus becomes endemic, adaptation is instead dominated by continual escape from accumulating population immunity, driving ongoing antigenic change and the recurrent emergence and replacement of variants [@kistler2023atlas].
+This turnover is what genomic surveillance observes most directly: the rise and fall of variant frequencies through time.
 
-A complementary class of methods estimates fitness directly from the dynamics of variant frequencies rather than from the composition of mutations [@volz2023fitness].
-Multinomial logistic regression (MLR) models the frequencies of co-circulating variants through time and infers a relative growth rate, or fitness, for each [@obermeyer2022analysis; @abousamra2024fitness].
-Because it expresses fitness as a difference in growth rate between variants, this measure maps directly onto the population-genetic notion of selective advantage.
-These growth-rate differences correspond to differences in the time-varying effective reproduction number between co-circulating variants [@figgins2025frequency].
-Aggregating these per-variant fitnesses into the rate of change of mean population fitness yields the population's fitness flux [@mustonen2010fitness], a direct, frequency-based alternative to dN/dS for quantifying the tempo of adaptation.
+Multinomial logistic regression (MLR) models the frequencies of co-circulating variants through time and infers a relative growth rate for each [@obermeyer2022analysis; @abousamra2024fitness].
+Because it expresses this advantage as a difference in growth rate between variants, the measure maps directly onto the population-genetic notion of selective advantage, and these growth-rate differences correspond to differences in the time-varying effective reproduction number between co-circulating variants [@figgins2025frequency].
+This frequency-based view of fitness [@volz2023fitness] has been widely applied to SARS-CoV-2 and provides a compact, interpretable description of variant dynamics.
 
-Here we use this frequency-based view of fitness to trace how SARS-CoV-2 has adapted from the early pandemic in 2020 through 2025, spanning the transition from initial host adaptation to sustained evolution for antigenic novelty.
-We place the rate of SARS-CoV-2 fitness change in context by comparing it against seasonal influenza A/H3N2 which exhibits canonically rapid and continuous adaptation [@bedford2014integrating].
-Finally, we relate the inferred changes in fitness to molecular predictors, most directly the accumulation of spike mutations, to identify the substitutions that drive fitness gain.
+Here we use MLR to trace the frequency dynamics of SARS-CoV-2 from the early pandemic in 2020 through 2025, alongside the three seasonal influenza lineages that circulate in humans, H3N2, H1N1pdm and B/Victoria [@bedford2014integrating].
+Because the fitted growth rates also project variant frequencies forward, we then ask how well MLR forecasts short-term clade frequencies relative to a naive persistence baseline.
 
 ## Results and discussion
 
@@ -73,14 +66,10 @@ This is the multinomial logistic regression (MLR) model, which has been widely u
 The denominator normalizes the exponential growth/decay of individual variants so that overall frequency sums to 1.
 The model has $2n$ parameters, with each variant $i$ having an initial frequency $p_i$ and a fixed growth rate $f_i$.
 Because growth rates are necessarily relative, we fix an arbitrary "pivot" variant as a reference with growth rate $f=0$.
-MLR growth rates are directly estimated in terms of calendar time with per-day or per-year values of $f$.
-To express fitness in per-generation units we multiply each per-day rate by the generation time $\tau$ measured in days, giving $f_i = \tau \, f_i^{\mathrm{day}}$, the change in log frequency accrued over a single generation.
-We assume $\tau$ of 5.0 days for pre-Omicron SARS-CoV-2, 3.2 days for post-Omicron SARS-CoV-2 and 3.2 for influenza H3N2 (see Methods).
-Throughout, we refer to this per-generation growth rate $f_i = \mathrm{log}(1+s_i)$ as the fitness of variant $i$, or equivalently $\mathrm{exp}(f_i) = 1+s_i$ is its per-generation multiplicative fitness, the factor by which the variant's abundance grows each generation relative to the pivot.
-Because $f_i$ is defined on a log scale, mean fitness, fitness variance, fitness flux and changes in fitness between lineages are all likewise computed on this log scale.
+MLR growth rates are directly estimated in terms of calendar time with per-day or per-year values of $f$; we refer to this relative growth rate as the fitness of variant $i$.
 
-We estimate frequencies and fitnesses of SARS-CoV-2 clades in 1-year sliding windows between Jan 2020 and Dec 2025 ([@fig:time-vs-frequency-sarscov2]).
-In each window we collect clade sequence counts for viruses sampled from the USA and estimate per-variant frequencies and fitnesses.
+We estimate frequencies of SARS-CoV-2 clades in 1-year sliding windows between Jan 2020 and Dec 2025 ([@fig:time-vs-frequency-sarscov2]).
+In each window we collect clade sequence counts for viruses sampled from the USA and estimate per-variant frequencies and growth rates.
 We use only the USA, the one country with sufficient temporal sequencing coverage over this period.
 We collapse rare clades into a single "other" clade for MLR analysis to prevent noisy estimates from low sequence counts (see Methods).
 The match between the empirical frequencies (dotted trajectories) and MLR frequencies (solid trajectories) indicates the model fits well despite having few parameters.
@@ -93,11 +82,11 @@ The MLR analysis assumes that the fitness of each clade is constant through time
 MLR frequency lines are drawn where there is sufficient sequence data to estimate empirical frequencies.
 :::
 
-For comparison purposes, we take a similar approach to estimating frequencies and fitnesses of seasonal influenza H3N2 ([@fig:time-vs-frequency-h3n2]).
+For comparison purposes, we take a similar approach to estimating frequencies of seasonal influenza H3N2 ([@fig:time-vs-frequency-h3n2]).
 Here we use 2-year sliding windows to account for slower frequency dynamics in seasonal influenza and still only use data from the USA.
 The model fits are worse for H3N2 compared to SARS-CoV-2.
 This is especially apparent at junctions between influenza seasons where stochastic seeding of a new season may result in a discontinuity of clade frequency compared to MLR expectation.
-However, H3N2 fits remain sufficient to estimate the magnitude of fitness effects.
+However, H3N2 fits remain sufficient to characterize clade frequency dynamics.
 
 :::figure{#fig:time-vs-frequency-h3n2 component=time-vs-frequency dataset=h3n2_clades}
 **Relative frequencies of H3N2 clades through time.**
@@ -107,94 +96,10 @@ The MLR analysis assumes that the fitness of each clade is constant through time
 MLR frequency lines are drawn where there is sufficient sequence data to estimate empirical frequencies.
 :::
 
-We "scaffold" MLR fitness estimates across windows to arrive at a single fitness estimate per variant.
-Here, each window only measures fitness differences, with its own arbitrary zero.
-We solve for the single set of clade fitnesses and per-window offsets that best fit every window at once, weighting by abundance (see Methods).
+### Seasonal influenza H1N1pdm and B/Victoria
 
-### Fitness flux
-
-With variant frequency $x_i(t)$ and constant variant fitness $f_i$, we describe the mean population fitness as a standard weighted sum $\bar{f}(t) = \sum_i x_i(t) \, f_i$.
-The fitness flux [@mustonen2010fitness] of the population is then the rate of change of population fitness at a given time $\phi(t) = \Delta \bar{f}(t) / \Delta t$.
-Integrating this rate gives the cumulative fitness flux
-$$\Phi(t) = \int_{t_0}^{t} \phi(t') \, dt' = \bar{f}(t) - \bar{f}(t_0),$$
-the total adaptive change accumulated along the population's trajectory.
-Because variant fitnesses are estimated only relative to a pivot, an individual variant's scaffolded fitness is meaningful as a difference from a baseline rather than as an absolute value.
-Chaining these locally-measured advantages across overlapping windows places variant $i$ at a cumulative fitness flux $\Phi_i = f_i - f_0$ relative to the founding variant, and the population sits at the frequency-weighted average $\Phi(t) = \sum_i x_i(t) \, \Phi_i$.
-
-We find that SARS-CoV-2 initially accumulated fitness flux rapidly with mean fitness doubling every 6 months between Jan 2021 and Jun 2022, but then slowing to doubling every 2.5 years from July 2022 to Dec 2025 ([@fig:time-vs-fitness-sarscov2]).
-After initial spread of D614G [@korber2020tracking] in 2020, we observe a lull, followed by rapid growth in fitness in 2021 and 2022 with initial VOCs, Omicron and initial Omicron sub-lineages [@roemer2023sars], and then a slower, more steady pace since 2024.
-There is a mix of large jumps in fitness (familiar examples like Delta and BA.1, but also more recently with JN.1) and smaller, more gradual step change.
-
-:::figure{#fig:time-vs-fitness-sarscov2 component=time-vs-fitness dataset=sarscov2_clades regressions=2021.0-2022.5,2022.5-2026.0:below}
-**Cumulative SARS-CoV-2 fitness flux.**
-Empirical frequencies of SARS-CoV-2 clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
-Gray lines are least-squares fits to the mean fitness over each labeled period, annotated with the implied doubling time.
-All data is taken from the USA.
-The MLR analysis assumes that the fitness of each clade is constant through time.
-:::
-
-Seasonal influenza H3N2 shows a fundamentally similar pattern of emergence of new clades and their replacement of existing diversity.
-However, H3N2 dynamics play out on a slower timescale ([@fig:time-vs-fitness-h3n2]).
-Rather than SARS-CoV-2's months-scale doubling, H3N2 adapts much more slowly, doubling roughly every 9.1 years over the course of 2016 to 2025.
-Greater coexistence of multiple co-circulating clades is also apparent relative to SARS-CoV-2.
-
-:::figure{#fig:time-vs-fitness-h3n2 component=time-vs-fitness dataset=h3n2_clades regressions=2016.0-2026.0}
-**Cumulative H3N2 fitness flux.**
-Empirical frequencies of H3N2 clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
-Gray lines are least-squares fits to the mean fitness over each labeled period, annotated with the implied doubling time.
-All data is taken from the USA.
-The MLR analysis assumes that the fitness of each clade is constant through time.
-:::
-
-SARS-CoV-2 clade frequencies and fitnesses can be viewed as a phase portrait, plotting each clade's empirical frequency against its fitness relative to the daily population average ([@fig:frequency-vs-fitness-sarscov2]).
-A clade emerges at low frequency and high relative fitness, sweeps up in frequency as its relative fitness declines toward the population average, peaks near a relative fitness of zero, and then falls back to low frequency as it is outcompeted.
-Clades that start out with a greater advantage over the population average tend to sweep to higher maximum frequency than clades that start with less of an advantage.
-
-:::figure{#fig:frequency-vs-fitness-sarscov2 component=frequency-vs-fitness dataset=sarscov2_clades}
-**Frequency vs fitness phase portrait for SARS-CoV-2 clades.**
-Each line traces a SARS-CoV-2 clade's trajectory over time through empirical frequency (x-axis, logit scale) and fitness relative to the daily population average (y-axis), estimated from multinomial logistic regression (MLR).
-All data is taken from the USA.
-The MLR analysis assumes that the fitness of each clade is constant through time.
-:::
-
-### Fisher's fundamental theorem
-
-Multistrain models that allow for antigenic evolution produce traveling waves in antigenic space [@bedford2012canalization].
-More broadly, many mutations of small fitness effect create traveling fitness waves where the rate of advance toward higher fitness is proportional to the variance in fitness [@neher2013genealogies].
-This is a consequence of Fisher's fundamental theorem of natural selection
-$$\frac{d\bar{f}}{dt} = \mathrm{Var}(f),$$
-where "the rate of increase in fitness of any organism at any time is equal to its genetic variance in fitness at that time" [@fisher1930genetical].
-
-We can investigate this relationship directly in SARS-CoV-2 ([@fig:sarscov2-variance-flux]), where we find that timepoints with larger variance in fitness $\mathrm{Var}[f(t)] = \sum_i x_i(t) \, (f_i - \bar{f}(t))^2$ correlate well with timepoints with larger change in mean population fitness $\Delta \bar{f}(t) / \Delta t$.
-In fact we find that the relationship is near the 1:1 expectation from Fisher's theorem (slope = 1.24, Pearson $r$ = 0.94).
-Looking in detail at rate of fitness flux through time, we find a yearly average fitness flux of $16.1 \times 10^{-3}$ per-gen in 2021 followed by a reduction to $1.6-1.7 \times 10^{-3}$ per-gen in 2024 and 2025.
-This shows that the rate of adaptation of SARS-CoV-2 has been slowing as low hanging fruit of host adaptation is exhausted, leaving only red-queen antigenic evolution to drive adaptation.
-
-:::figure{#fig:sarscov2-variance-flux component=variance-vs-flux dataset=sarscov2_clades scalemax=40}
-**Fitness variance and fitness flux in SARS-CoV-2.**
-Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
-In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
-:::
-
-Compared to SARS-CoV-2, influenza H3N2 shows generally lower rates of fitness flux, averaging $0.5 \times 10^{-3}$ per-gen from 2016 to 2025 ([@fig:h3n2-variance-flux]).
-This is roughly 3 times lower than recent years of SARS-CoV-2 fitness flux.
-However, it remains possible that SARS-CoV-2 slows further in the coming years.
-
-:::figure{#fig:h3n2-variance-flux component=variance-vs-flux dataset=h3n2_clades scalemax=3.5}
-**Fitness variance and fitness flux in H3N2.**
-Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
-In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
-:::
-
-For both SARS-CoV-2 and influenza H3N2, the connection between fitness flux and fitness variance is clear.
-This suggests from first principles that interventions that decrease variance in fitness across the virus population would be expected to slow adaptation, while interventions that increase variance would be expected to speed adaptation.
-
-### Other seasonal influenza lineages
-
-To place the H3N2 result in context, we repeat the identical analysis strategy for the two other seasonal influenza lineages that circulate in humans, H1N1pdm and B/Victoria, over the same 2016 to 2025 period.
-As with H3N2, we use USA data, 2-year sliding windows advanced every three months, a 2-week empirical-frequency smoothing window, and Nextclade HA subclades (`subclade_nextclade_ha`) as the variant classification.
-Windows resolving to fewer than two fittable USA clades are omitted, including those falling entirely within the 2020-2022 low-circulation trough when seasonal influenza all but vanished.
-Because no 2-year window bridges that trough for H1N1pdm or B/Victoria, their cumulative fitness scaffolds do not connect across it, leaving a gap in the series (roughly 2020 to late 2022 for H1N1pdm and 2020 to early 2023 for B/Victoria); H1N1pdm additionally lacks HA subclade resolution before ~2019, where its series begins.
+We apply the identical frequency analysis to the two other seasonal influenza lineages that circulate in humans, H1N1pdm and B/Victoria, over the same 2016 to 2025 period, using USA data, 2-year sliding windows advanced every three months, a 2-week empirical-frequency smoothing window, and Nextclade HA subclades (`subclade_nextclade_ha`) as the variant classification.
+Windows resolving fewer than two fittable USA clades are omitted, including those falling entirely within the 2020-2022 low-circulation trough when seasonal influenza all but vanished, so the series carry a gap across that period (roughly 2020 to late 2022 for H1N1pdm and 2020 to early 2023 for B/Victoria); H1N1pdm additionally lacks HA subclade resolution before ~2019, where its series begins.
 
 Relative frequencies for both lineages show the same alternation of clade emergence and replacement seen in H3N2 ([@fig:time-vs-frequency-h1n1pdm]; [@fig:time-vs-frequency-vic]).
 
@@ -214,48 +119,9 @@ The MLR analysis assumes that the fitness of each clade is constant through time
 MLR frequency lines are drawn where there is sufficient sequence data to estimate empirical frequencies.
 :::
 
-Translating these frequencies into cumulative fitness flux, we find that both lineages accumulate directional fitness more slowly than H3N2 over this period.
-H1N1pdm mean fitness doubles roughly every 31 years ([@fig:time-vs-fitness-h1n1pdm]), while B/Victoria accumulates fitness flux more slowly still, doubling roughly every 138 years ([@fig:time-vs-fitness-vic]).
-Both are slower than H3N2's doubling every 9.1 years, and far slower than SARS-CoV-2.
-These very long doubling times for H1N1pdm and B/Victoria are sensitive to the fit across the 2020-2022 scaffold gap and should be read as order-of-magnitude rather than precise.
-
-:::figure{#fig:time-vs-fitness-h1n1pdm component=time-vs-fitness dataset=h1n1pdm_clades regressions=2016.0-2026.0}
-**Cumulative H1N1pdm fitness flux.**
-Empirical frequencies of H1N1pdm clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
-Gray lines are least-squares fits to the mean fitness over each labeled period, annotated with the implied doubling time.
-All data is taken from the USA.
-The MLR analysis assumes that the fitness of each clade is constant through time.
-:::
-
-:::figure{#fig:time-vs-fitness-vic component=time-vs-fitness dataset=vic_clades regressions=2016.0-2026.0}
-**Cumulative B/Victoria fitness flux.**
-Empirical frequencies of B/Victoria clades are represented by vertical thickness and placement on the y-axis represents cumulative fitness flux estimated from multinomial logistic regression (MLR).
-Gray lines are least-squares fits to the mean fitness over each labeled period, annotated with the implied doubling time.
-All data is taken from the USA.
-The MLR analysis assumes that the fitness of each clade is constant through time.
-:::
-
-The average rate of fitness flux does not simply track this doubling-time ordering.
-H1N1pdm averages $0.8 \times 10^{-3}$ per-gen — above H3N2's $0.5 \times 10^{-3}$ — while B/Victoria averages $0.2 \times 10^{-3}$ per-gen ([@fig:h1n1pdm-variance-flux]; [@fig:vic-variance-flux]).
-That H1N1pdm shows the highest average flux yet a longer fitness doubling time than H3N2 reflects large but weakly directional flux: much of its clade turnover (notably the 2024-2025 D.3.1 sweep) contributes local flux without commensurate net cumulative gain.
-We time-weight this average across daily timepoints so that uneven sampling density does not bias it; a plain per-timepoint mean would overweight densely-sampled high-flux stretches (for H1N1pdm, the 2024-2025 D.3.1 sweep) and inflate the average above the net rate implied by the cumulative fitness flux.
-In both lineages, as in SARS-CoV-2 and H3N2, fitness flux tracks fitness variance in line with Fisher's fundamental theorem (H1N1pdm slope = 0.84, Pearson $r$ = 0.81; B/Victoria slope = 0.76, $r$ = 0.58).
-
-:::figure{#fig:h1n1pdm-variance-flux component=variance-vs-flux dataset=h1n1pdm_clades scalemax=3.5}
-**Fitness variance and fitness flux in H1N1pdm.**
-Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
-In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
-:::
-
-:::figure{#fig:vic-variance-flux component=variance-vs-flux dataset=vic_clades scalemax=3.5}
-**Fitness variance and fitness flux in B/Victoria.**
-Fitness variance is compared to fitness flux, where each dot represents a daily timepoint.
-In the lower-left flux-through-time panel, the dashed horizontal line marks the time-weighted average flux.
-:::
-
 ### Forecasting accuracy
 
-Across all four lineages the MLR fits provide not only retrospective fitness estimates but forward projections of clade frequency, raising the question of how accurate those projections are as forecasts.
+Across all four lineages the MLR fits provide not only retrospective frequency estimates but forward projections of clade frequency, raising the question of how accurate those projections are as forecasts.
 We adapt the real-time forecast-evaluation framework of Abousamra et al. [@abousamra2024fitness] to our sliding-window design ([@fig:forecast-accuracy]).
 Treating each window's final date as the date of estimation, we forecast clade frequencies over the following six months and compare two models: MLR, which projects each named clade forward under its fitted logistic growth, and a naive model, which simply holds the final-date frequencies constant.
 Because all clade windows now advance every three months, we take the window fit six months later (two quarters ahead) as the source of retrospective truth — its empirical smoothed frequency over the forecast period — and summarize accuracy as the mean absolute error (MAE) between predicted and observed frequencies, averaged across clades and across window pairs as a function of forecast lead time.
@@ -276,89 +142,17 @@ Negative leads (hindcast) fall within the fitting window, where the MLR and naiv
 The dashed line marks 5% error; faint lines show the individual window pairs, and $n$ is the number of pairs contributing to each panel.
 :::
 
-### Mutational fitness effects
-
-A simple correlation of cumulative mutations against cumulative fitness flux will fail due to phylogenetic non-independence, and instead we rely on phylogenetic contrasts of parent and child lineages [@felsenstein1985phylogenies].
-Pango lineages [@rambaut2020dynamic] provide a convenient granular and hierarchical nomenclature well suited to this.
-
-We define Pango parent-to-child branches by finding mutations that accumulate between hierarchical Pango lineages.
-Given estimates of per-lineage fitness, we also calculate the change in fitness between each parent and child.
-As expected, we observe that Pango lineages are granular with parent-to-child changes in spike mutations, non-spike mutations and fitness being modest, with most branches adding only a handful of substitutions and shifting fitness by a small amount ([@fig:delta-hist]).
-
-:::figure{#fig:delta-hist component=lineage-delta-histograms dataset=sarscov2_lineages predictors=spike,nonspike}
-**Distributions of mutation and fitness change across SARS-CoV-2 lineage branches.**
-Across all parent-to-child Pango lineage branches, the change in the number of spike substitutions, the change in non-spike substitutions, and the change in fitness.
-Each bar is the fraction of branches in that bin; rare large founder jumps fall beyond the plotted range.
-:::
-
-We compare the change in fitness along each parent-to-child branch against the substitutions it acquired in different regions of the SARS-CoV-2 genome ([@fig:delta-genome]).
-Spike S1 substitutions and those in the receptor-binding domain (RBD) in particular, carry the strongest positive association with fitness gain, while ORF1ab and accessory gene substitutions show lower regression slopes and correlation coefficients.
-Splitting branches into early and late periods shows that the fitness value of a given substitution is largest early and decays over time.
-
-:::figure{#fig:delta-genome component=lineage-deltas dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
-**Lineage-specific amino acid change versus lineage-specific fitness change across regions of the SARS-CoV-2 genome.**
-Each point is one parent-to-child Pango lineage branch in one season: the change in the number of substitutions in a genome region (x) against the change in fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
-The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
-:::
-
-We can track this relationship through time by fitting the regression separately within each season ([@fig:delta-trends]).
-The per-substitution effect on fitness of spike and RBD changes is largest early and erodes toward zero as the readily accessible routes to host adaptation are exhausted, while other regions stay near zero throughout.
-However, across accessory proteins and in ORF1ab there is moderate marginal correlation from 2020 to 2022 between substitutions and fitness change; the multiple regression below shows this to be a confound of co-occurrence with spike rather than an independent effect.
-Although per-substitution effect (ie regression slope) of RBD decays from 2020, the predictive ability of spike S1 and RBD substitutions as measured by Pearson and Spearman correlations stays high through the period with average correlation coefficients of $r$ = 0.72 and $\rho$ = 0.54 for spike S1 and $r$ = 0.70 and $\rho$ = 0.53 for spike RBD.
-
-:::figure{#fig:delta-trends component=lineage-delta-trends dataset=sarscov2_lineages predictors=s1,rbd,orf1ab,accessory}
-**Strength of the mutation–fitness relationship through time.**
-For each season the parent-to-child branches are summarized into one statistic relating change in regional substitutions to change in fitness, with one line per genome region.
-Toggle between the regression slope, Pearson *r*, and Spearman *ρ*.
-:::
-
-The marginal relationships in [@fig:delta-genome] cannot on their own establish which substitutions drive fitness.
-A more evolved lineage accumulates more substitutions across the whole genome, so a region can correlate with fitness merely by co-varying with a genuinely causal region.
-The moderate marginal association of ORF1ab substitutions is a case in point.
-To isolate each region's independent contribution we fit a multiple linear regression of the change in substitution count across four non-overlapping genome regions to per-branch change in fitness ([@fig:delta-multiple]).
-Once spike is controlled for, most of the positive signal sits in the RBD ($\beta$ = 0.064 per substitution, $p < 10^{-20}$), with a smaller contribution from the remainder of S1 ($\beta$ = 0.015, $p = 1.5 \times 10^{-4}$), while the ORF1ab and accessory-protein coefficients collapse to near zero and are no longer distinguishable from no effect ($\beta$ = 0.002, $p$ = 0.32 and $\beta$ = 0.003, $p$ = 0.41, respectively).
-The apparent marginal association of ORF1ab is therefore a confound of its co-occurrence with spike change rather than evidence that ORF1ab substitutions themselves raise fitness.
-The four-region model explains most of the variance in per-pair fitness change ($R^2$ = 0.73), with predicted and observed changes falling along the 1:1 line.
-
-:::figure{#fig:delta-multiple component=lineage-deltas-model dataset=sarscov2_lineages}
-**Multiple regression of fitness change on non-overlapping genome regions.**
-An ordinary-least-squares fit of the change in fitness on the change in substitution count in four non-overlapping regions of the SARS-CoV-2 genome (spike RBD, spike S1 outside the RBD, ORF1ab, accessory), fit over unique parent-to-child pairs (collapsing observations of a pair that recur across windows).
-The table gives each region's partial estimate.
-The scatter plots each parent-to-child Pango lineage branch's model-predicted change in fitness (x) against its observed change in fitness (y), colored by time from blue (2020) to red (2025) and with dashed 1:1 calibration line.
-The All / Early / Late toggle refits the model over all pairs or the early (Jan 2020–Jun 2022) and late (Jul 2022 onward) subsets, updating both the table and the scatter.
-:::
-
-### Predicting fitness effects
-
-The core idea of comparing change in mutation count to change in fitness expresses a similar logic to McDonald-Kreitman tests [@mcdonald1991adaptive] where the key comparison is relative success of lineages bearing different mutation patterns.
-This predictor-vs-growth-rate formulation [@kistler2022rapid] should be robust to many confounders that affect other measures of adaptation.
-
-We compare our simple, non-parameterized predictor of relative spike S1 substitution count against two recent deep-learning proposals for scoring evolutionarily successful substitutions ([@fig:delta-predictors]).
-These are EvEscape [@thadani2023learning] and protein-language-model semanticity [@hie2021learning], the latter reimplemented with pretrained and fine-tuned ESM-2 embeddings [@lin2023evolutionary] (see Methods).
-ESM is fine-tuned to SARS-CoV-2 spike sequences from 2020 through 2022.
-Both perform similarly to a plain count of spike S1 substitutions in disambiguating the fitness of co-circulating SARS-CoV-2 lineages.
-
-:::figure{#fig:delta-predictors component=lineage-deltas dataset=sarscov2_lineages predictors=s1,evescape,esm_650M_pretrained,esm_650M_fine_tuned}
-**Lineage-specific predictors versus lineage-specific fitness change.**
-Each point is one parent-to-child Pango lineage branch in one season: change in predictor value (x) against the change in fitness (y), colored by time from blue (2020) to red (2025), with a least-squares fit per panel.
-The All / Early / Late toggle restricts to early (Jan 2020–Jun 2022) or late (Jul 2022 onward) branches.
-:::
-
 ## Conclusions
 
-Most measures of viral adaptation are indirect, diagnosing the presence of selection based on mutation patterns.
-Here we instead read adaptation directly off the dynamics of variant frequencies, aggregating per-variant growth rates into the population's fitness flux.
-This turns the tempo of adaptation into a single quantity that can be followed through time, placed on a common per-generation scale across pathogens and connected to first principles.
-On this scale SARS-CoV-2 adapts rapidly, doubling in fitness roughly every 6 months during initial variant emergence in 2021 and early 2022, but decelerating towards a baseline flux in 2024, while seasonal H3N2 sustains a slower, steadier flux.
-Importantly, these numbers carry an absolute scale and connect back to epidemiological impact [@figgins2025frequency].
+Genomic surveillance rests on tracking which variants are rising and falling in frequency.
+Modeling these frequencies with multinomial logistic regression provides both a compact description of variant turnover and, through the fitted per-variant growth rates, forward projections of frequency.
+We find these projections carry genuine short-term predictive signal: across SARS-CoV-2 and seasonal influenza, MLR forecasts of named-clade frequencies beat naive persistence over a six-month horizon for all but the sparsest lineage, and most decisively for SARS-CoV-2.
+Because the growth rates carry an absolute scale, they also connect back to differences in the effective reproduction number between co-circulating variants and to epidemiological impact [@figgins2025frequency].
 
 The generality of the approach rests on a single requirement: a way to bin genetic diversity into discrete, comparable variants.
-For SARS-CoV-2 and influenza this comes off the shelf, with Nextstrain clades supporting the frequency and flux analysis and finer, hierarchically nested Pango lineages supporting the phylogenetic-contrast analysis of mutational effects.
+For SARS-CoV-2 and influenza this comes off the shelf, with Nextstrain clades supporting both the frequency and the forecast analysis.
 Pathogens without an established nomenclature could be analyzed via automated methods that partition a tree into lineages [@mcbroome2024framework; @lefrancq2025learning].
-
-Beyond describing historical adaptation, the per-branch contrast of mutation against fitness change yields a simple, interpretable account of which substitutions matter.
-For SARS-CoV-2 the signal concentrates in spike (and particularly spike RBD) and a plain count of spike S1 substitutions disambiguates the relative fitness of co-circulating lineages about as well as recently proposed deep-learning escape and protein-language-model scores [@thadani2023learning; @hie2021learning].
-This makes the mutation-to-fitness deltas a strong and transparent baseline for forecasting variant success, where a predictor that does not improve on counting spike substitutions has not yet justified its added complexity.
+These frequency-based forecasts provide a transparent baseline for anticipating variant success, against which more elaborate models can be measured.
 
 ## Methods
 
@@ -366,7 +160,7 @@ This makes the mutation-to-fitness deltas a strong and transparent baseline for 
 
 For SARS-CoV-2, we use curated "open" data from Nextstrain [@hadfield2018nextstrain] that draws from NCBI GenBank.
 For influenza H3N2, we use data from GISAID [@shu2017gisaid].
-In each case, the raw sequences are processed with Nextclade [@aksamentov2021nextclade] to assign Nextstrain clade and Pango lineage [@rambaut2020dynamic] to SARS-CoV-2 sequences and to assign subclade [@neher2026nomenclature] to influenza H3N2 sequences.
+In each case, the raw sequences are processed with Nextclade [@aksamentov2021nextclade] to assign Nextstrain clade to SARS-CoV-2 sequences and to assign subclade [@neher2026nomenclature] to influenza sequences.
 We filter out sequences with Nextclade overall QC status of "bad".
 We additionally filter to sequences collected from the USA.
 This leaves 3,588,802 total sequences for SARS-CoV-2 sampled between 2020 and 2025 and 44,456 total sequences for H3N2 sampled between 2016 and 2025.
@@ -377,8 +171,8 @@ We conducted multinomial logistic regression (MLR) using the evofr package ([git
 For each window we treat each clade as a distinct variant, collapsing rare clades together into a single "other" category before fitting.
 For all clade datasets, a clade is modeled separately only if it reaches at least 50 sequences and a mean frequency of at least 0.1% within the window, while clades below either threshold are merged into "other".
 This leaves between 7 and 18 clades per window (median 14) for SARS-CoV-2, between 3 and 16 (median 9) for H3N2, and between 2 and 16 (median 6) and 2 and 8 (median 3) for the sparser H1N1pdm and B/Victoria lineages.
-We set no explicit per-window pivot; evofr references the "other" bucket, and because the cross-window scaffolding below removes each window's arbitrary zero, the choice of reference does not affect scaffolded fitness.
-The "other" bucket is fit as a variant but excluded from all downstream analyses of clade fitness and frequency (scaffolding, cumulative flux, per-season frequencies, and the forecast evaluation), which are computed over the named clades renormalized to sum to one.
+We set no explicit per-window pivot; evofr references the "other" bucket.
+The "other" bucket is fit as a variant but excluded from all downstream analyses of clade frequency (the per-season frequencies and the forecast evaluation), which are computed over the named clades renormalized to sum to one.
 
 We use generation time $\tau$ of 5.0 days for pre-Omicron SARS-CoV-2 following [@ferretti2020quantifying; @ganyani2020estimating; @hart2022generation], generation time of 3.2 days for post-Omicron SARS-CoV-2 following [@park2023inferring; @chan2026estimating] and generation time of 3.2 days for seasonal influenza H3N2 following [@cowling2009estimation; @vink2014serial; @chan2025estimating].
 At first order, the fitness $f_i = \tau \, f_i^{\mathrm{day}}$ is the log ratio of reproduction numbers between variant $i$ and the pivot, $\mathrm{log}(R_i / R_{\mathrm{pivot}})$.
@@ -386,26 +180,6 @@ Only the mean generation interval $\tau$ enters at this order.
 The shape of the generation-interval distribution enters at second order, informed by the interval's variance and absolute per-day growth rates rather than $f_i^{\mathrm{day}}$.
 Because the frequency data identify only this relative rate, the second order correction cannot be estimated from frequency dynamics alone.
 The per-generation multiplicative fitness $\mathrm{exp}(f_i) = 1 + s_i$ therefore equals the reproduction-number ratio $R_i / R_{\mathrm{pivot}}$ under a fixed (point) generation interval and is an upper bound under a realistically dispersed interval [@wallinga2006generation], for which the fuller frequency-to-reproduction-number conversion is given in Figgins and Bedford [@figgins2025frequency].
-
-We conduct a parallel MLR analysis of SARS-CoV-2 Pango lineages.
-Because lineages are hierarchically nested, rather than collapsing rare lineages into a shared "other" we roll each lineage with fewer than 500 sequences up into its parent lineage, repeating until every retained lineage clears this count.
-A lineage is additionally retained only if at least 200 sequences are assigned to that lineage itself rather than to a descendant sub-lineage, otherwise it is folded into "other".
-This leaves between 20 and 165 lineages per window (median 79) for SARS-CoV-2.
-Rationale for specific collapse cutoffs is available at [github.com/blab/fitness-flux/tree/main/inclusion-thresholds](https://github.com/blab/fitness-flux/tree/main/inclusion-thresholds).
-
-### Scaffolding across timepoints
-
-Within each sliding window the MLR model estimates each variant's fitness only relative to that window's reference clade, so every window carries its own arbitrary additive zero and the per-window estimates $f_{i,w}$ are not directly comparable.
-We recover a single fitness per variant by treating scaffolding as a weighted two-way additive model: each estimate is a variant effect minus a window effect, $f_{i,w} \approx f_i - c_w$, where $f_i$ is variant $i$'s global fitness and $c_w$ is window $w$'s offset.
-We choose the $f_i$ and $c_w$ that jointly minimize the abundance-weighted squared error across every window,
-$$\min_{\{f_i\},\,\{c_w\}} \; \sum_{i,w} a_{i,w} \, (f_{i,w} - f_i + c_w)^2,$$
-weighting each estimate by $a_{i,w}$, the area under variant $i$'s modeled-frequency curve in window $w$, so a window in which a variant is rare with poorly constrained MLR estimate will contribute negligibly.
-The optimum is a pair of interleaved abundance-weighted means, each variant's fitness being the weighted mean of its offset-corrected estimates over its windows
-$$f_i = \frac{\sum_w a_{i,w} \, (f_{i,w} + c_w)}{\sum_w a_{i,w}},$$ 
-and each window's offset the weighted-mean gap between the global scale and that window's estimates
-$$c_w = \frac{\sum_i a_{i,w} \, (f_i - f_{i,w})}{\sum_i a_{i,w}}.$$
-We solve by alternating the two to convergence.
-The overlap of variants between windows ties them into one connected scale, leaving a single global constant free, which we fix by shifting all values so that the founding variant, our least-fit baseline, sits at zero, leaving each variant's scaffolded value as its cumulative fitness flux $\Phi_i = f_i - f_0$.
 
 ### Forecast accuracy
 
@@ -415,31 +189,6 @@ The MLR forecast is $\hat{x}^{\mathrm{MLR}}_i(t) = \mathrm{softmax}_i[\log x_i(T
 The naive forecast is $\hat{x}^{\mathrm{naive}}_i(t) = x_i(T)$ held constant for $t > T$, and equal to the MLR fit for $t \le T$, so the two coincide over the hindcast and differ only in how they project forward.
 The truth $x_i(t)$ is the empirical smoothed frequency from the later window, restricted to $S$ and renormalized over $S$ (mass in the later window's "other" bucket and in clades that emerged after $T$ is dropped).
 The absolute error at each date is the mean over clades, $\frac{1}{|S|} \sum_{i \in S} \lvert x_i(t) - \hat{x}_i(t) \rvert$ [@abousamra2024fitness], which we average within weekly lead-time bins across each lineage's contributing window pairs (21 for SARS-CoV-2, 32 for H3N2, 19 for H1N1pdm and 22 for B/Victoria) to give mean absolute error as a function of lead time.
-
-### Lineage mutation counts and branch contrasts
-
-To relate change in fitness to change in genotype, we count amino-acid substitutions per Pango lineage and compare each lineage against its parent.
-Per-lineage substitution counts are read from the Nextclade SARS-CoV-2 reference tree at [nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs](https://nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs), in which each tip corresponds to a Pango lineage.
-For each lineage we count substitutions relative to the Wuhan-Hu-1 reference.
-We tally these by region: the spike S1 subunit, the receptor-binding domain (RBD, 319–541) within S1, ORF1ab, and the accessory and structural genes (ORF3a, E, M, ORF6, ORF7a, ORF7b, ORF8, N).
-
-We then form parent-to-child branches between hierarchically nested Pango lineages.
-Within each window a lineage's parent is its closest retained ancestor, where the retained set is fixed by the collapsing described above, so lineages that were rolled up into a parent or folded into "other" do not themselves appear as branch endpoints.
-For every branch whose parent and child both carry an MLR fitness estimate in that window, we record the change in substitution count in each genome region and the change in fitness, taken as the difference in their per-window MLR fitness; because both endpoints are estimated against the same window's pivot, this contrast is well defined without scaffolding.
-A branch is recorded once per window in which it appears, so a lineage pair that co-circulates across several windows contributes several observations.
-These per-branch deltas in mutation count and fitness are the unit of the mutational-fitness analyses.
-For the multiple regression we collapse these repeated observations to a single contrast per parent-to-child pair, averaging the per-window fitness change, so that coefficients and $p$-values are not inflated by this pseudoreplication.
-
-### Mutational fitness predictors
-
-We compare the per-branch substitution counts above against two externally proposed predictors of mutational fitness, each reduced to a per-lineage value and contrasted across the same parent-to-child branches. EvEscape [@thadani2023learning] combines a variational-autoencoder fitness model with residue accessibility and biochemical dissimilarity to score spike mutations.
-We use the precomputed all-strain EvEscape scores released at [evescape.org/data](https://evescape.org/data) and take each Pango lineage's score as the mean EvEscape across the sequences assigned to that lineage.
-
-Semanticity follows the semantic-change measure of Hie et al. [@hie2021learning], reimplemented with ESM-2 [@lin2023evolutionary].
-Each Pango lineage's spike amino-acid sequence is embedded with the 650M-parameter ESM-2 model (`esm2_t33_650M_UR50D`), taking the CLS-token representation of the final (33rd) layer as a 1280-dimensional sequence embedding.
-We embed lineages with both the released pretrained weights and weights fine-tuned under a masked-language-model objective (15% of residues masked) for one epoch (AdamW, learning rate $5 \times 10^{-5}$) on roughly 16,000 SARS-CoV-2 spike sequences collected from 2020 through 2022.
-Fine-tuning and embedding code is available at [github.com/blab/embedded-pathways](https://github.com/blab/embedded-pathways).
-The semanticity of a branch is the Euclidean distance between its child and parent lineage embeddings.
 
 ### Reproducibility
 

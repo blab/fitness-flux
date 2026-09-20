@@ -15,6 +15,16 @@ FITNESS_FLUX_ANALYSES = [
     "sarscov2_lineages",
 ]
 
+# The frequency figures (time-vs-frequency) cover the clade datasets only; lineages
+# have no frequency panel in the manuscript. This is the lean set built by the
+# default `all` target on this branch (the flux/delta work is no longer default).
+FREQUENCY_ANALYSES = [
+    "sarscov2_clades",
+    "h3n2_clades",
+    "h1n1pdm_clades",
+    "vic_clades",
+]
+
 # mutation_fitness needs a committed source-data/{analysis}_mut_counts.tsv, which
 # only exists for these analyses. The seasonal-flu additions (h1n1pdm, vic) have no
 # mutation-count table, so they are excluded from just this one output.
@@ -39,8 +49,10 @@ FITNESS_FLUX_OUTPUTS = [
 ]
 
 # The Nextstrain tree JSON supplies the sarscov2_clades clade colors; the other
-# datasets derive colors from a Rainbow gradient and need no external input.
+# datasets derive colors from a Rainbow gradient and need no external input. The
+# tree is fetched by the download_ncov_tree rule below (gitignored, not versioned).
 NCOV_TREE_JSON = "fitness-flux-analysis/ncov_global_all-time_6k_2026-03-02.json"
+NCOV_TREE_URL = "https://nextstrain.org/groups/blab/ncov/global/all-time/6k/2026-03-02"
 
 
 def _fitness_flux_season_inputs(wildcards):
@@ -161,6 +173,20 @@ def _fitness_flux_colors_inputs(wildcards):
     return inputs
 
 
+rule download_ncov_tree:
+    """Fetch the Nextstrain ncov auspice tree that supplies SARS-CoV-2 clade colors
+    (read by fitness_flux_colors via NCOV_TREE_JSON). `nextstrain remote download`
+    writes <prefix>.json plus _root-sequence / _tip-frequencies sidecars (all
+    gitignored); only the main tree is used. Requires the Nextstrain CLI and network."""
+    output:
+        NCOV_TREE_JSON
+    params:
+        url=NCOV_TREE_URL,
+        prefix=NCOV_TREE_JSON[:-len(".json")],
+    shell:
+        "nextstrain remote download {params.url} {params.prefix}"
+
+
 rule fitness_flux_colors:
     input:
         unpack(_fitness_flux_colors_inputs)
@@ -279,6 +305,19 @@ rule viz_meta:
         python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.frequency_vs_fitness} 2>&1 | tee -a {log}
         python -u fitness-flux-analysis/scripts/viz_meta.py --output {output.variance_vs_flux} 2>&1 | tee -a {log}
         """
+
+
+rule all_frequencies:
+    """The frequency figures only: time-vs-frequency viz for the clade datasets. This
+    is the lean default target for the forecasting branch; it transitively pulls the
+    frequency chain (MLR fit -> gather/scaffold -> frequencies/mean_date/seasonal ->
+    colors -> viz) but none of the fitness-flux or lineage-delta figures."""
+    input:
+        expand(
+            "viz/time-vs-frequency/data/{analysis}.json",
+            analysis=FREQUENCY_ANALYSES,
+        ),
+        "viz/time-vs-frequency/meta.json",
 
 
 rule all_fitness_flux:
