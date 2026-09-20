@@ -1,18 +1,35 @@
 """
 Forecast-accuracy analysis (Abousamra et al. Fig 2B adaptation): mean absolute
 error of MLR vs naive clade-frequency forecasts as a function of forecast lead
-time. Downstream of the already-computed per-window MLR fits (mlr-estimates/);
-it does not re-run fitting. Outputs land in fitness-flux-analysis/results/ and
-are visualized by viz/forecast-accuracy/.
+time, for all four virus lineages. Downstream of the already-computed per-window
+MLR fits (mlr-estimates/); it does not re-run fitting. Per-lineage results land
+in fitness-flux-analysis/results/ and are consolidated into a single four-panel
+figure (viz/forecast-accuracy/, data/all.json).
 
 Included after rules/mlr_estimates.smk and rules/fitness_flux_analysis.smk so the
 _generation_time_options helper and the {analysis} wildcard constraint are in
 scope.
 """
 
-# SARS-CoV-2 clades only for now. The analysis is dataset-agnostic (flu also
-# slides on fixed windows), so extend this list to enable flu later.
-FORECAST_ANALYSES = ["sarscov2_clades"]
+FORECAST_ANALYSES = ["sarscov2_clades", "h3n2_clades", "h1n1pdm_clades", "vic_clades"]
+
+# Panel order + display labels for the combined figure.
+FORECAST_PANELS = [
+    ("sarscov2_clades", "SARS-CoV-2"),
+    ("h3n2_clades", "H3N2"),
+    ("h1n1pdm_clades", "H1N1pdm"),
+    ("vic_clades", "B/Victoria"),
+]
+
+# All clade datasets now use 1-year windows sliding 3 months. To keep a 6-month
+# forecast horizon, pair each window with the one two quarters (~180 days) ahead as
+# the truth source (the forecast_accuracy.py gap tolerance rejects the adjacent
+# quarter at 91 days). Uniform across lineages.
+FORECAST_SLIDE_DAYS = 180
+
+
+def _forecast_slide(analysis):
+    return FORECAST_SLIDE_DAYS
 
 
 def _forecast_season_inputs(wildcards):
@@ -32,9 +49,11 @@ rule forecast_accuracy:
         detail = "fitness-flux-analysis/results/{analysis}_forecast_accuracy.tsv",
         summary = "fitness-flux-analysis/results/{analysis}_forecast_accuracy_summary.json"
     params:
-        # Per-variant pre/post-Omicron generation time (helper in mlr_estimates.smk),
-        # matching the tau used at fit time so delta = ln(ga)/tau is recovered exactly.
-        generation_time = lambda wildcards: _generation_time_options(wildcards.analysis)
+        # Generation time (helper in mlr_estimates.smk): SARS-CoV-2 expands to the
+        # per-variant pre/post-Omicron flags, flu to a single tau. Matches the tau
+        # used at fit time so delta = ln(ga)/tau is recovered exactly.
+        generation_time = lambda wildcards: _generation_time_options(wildcards.analysis),
+        slide = lambda wildcards: _forecast_slide(wildcards.analysis)
     log:
         "logs/fitness_flux/{analysis}_forecast_accuracy.txt"
     shell:
@@ -42,45 +61,50 @@ rule forecast_accuracy:
         python -u fitness-flux-analysis/scripts/forecast_accuracy.py \
             --dataset {wildcards.analysis} \
             --mlr-dir mlr-estimates \
+            --slide-days {params.slide} \
             {params.generation_time} \
             --detail-output {output.detail} \
             --summary-output {output.summary} 2>&1 | tee {log}
         """
 
 
+def _forecast_panel_args(wildcards):
+    """`--panel KEY LABEL SUMMARY DETAIL` groups, one per lineage, in panel order."""
+    parts = []
+    for key, label in FORECAST_PANELS:
+        parts.append(
+            f'--panel {key} "{label}" '
+            f'fitness-flux-analysis/results/{key}_forecast_accuracy_summary.json '
+            f'fitness-flux-analysis/results/{key}_forecast_accuracy.tsv'
+        )
+    return " ".join(parts)
+
+
 rule viz_forecast_accuracy_data:
-    """Build the forecast-accuracy component's data.json (per dataset): the
-    aggregate MAE(lead) curve plus faint per-window-pair curves, errors in %."""
+    """Consolidate every lineage's forecast results into the combined four-panel
+    data/all.json (one panel per lineage) plus the component meta.json."""
     input:
-        detail = "fitness-flux-analysis/results/{analysis}_forecast_accuracy.tsv",
-        summary = "fitness-flux-analysis/results/{analysis}_forecast_accuracy_summary.json"
+        summaries = expand(
+            "fitness-flux-analysis/results/{analysis}_forecast_accuracy_summary.json",
+            analysis=FORECAST_ANALYSES,
+        ),
+        details = expand(
+            "fitness-flux-analysis/results/{analysis}_forecast_accuracy.tsv",
+            analysis=FORECAST_ANALYSES,
+        )
     output:
-        "viz/forecast-accuracy/data/{analysis}.json"
+        data = "viz/forecast-accuracy/data/all.json",
+        meta = "viz/forecast-accuracy/meta.json"
+    params:
+        panels = _forecast_panel_args
     log:
-        "logs/fitness_flux/{analysis}_viz_forecast_accuracy.txt"
+        "logs/fitness_flux/viz_forecast_accuracy.txt"
     shell:
         """
         python -u fitness-flux-analysis/scripts/viz_forecast_accuracy_data.py \
-            --detail {input.detail} \
-            --summary {input.summary} \
-            --output {output} 2>&1 | tee {log}
-        """
-
-
-rule viz_forecast_accuracy_meta:
-    """Emit the forecast-accuracy component's meta.json (only the datasets it
-    carries; currently just sarscov2_clades)."""
-    output:
-        "viz/forecast-accuracy/meta.json"
-    params:
-        include = ",".join(FORECAST_ANALYSES)
-    log:
-        "logs/fitness_flux/viz_forecast_accuracy_meta.txt"
-    shell:
-        """
-        python -u fitness-flux-analysis/scripts/viz_meta.py \
-            --include {params.include} \
-            --output {output} 2>&1 | tee {log}
+            {params.panels} \
+            --output {output.data} \
+            --meta-output {output.meta} 2>&1 | tee {log}
         """
 
 
@@ -94,8 +118,5 @@ rule all_forecast_analysis:
             "fitness-flux-analysis/results/{analysis}_forecast_accuracy_summary.json",
             analysis=FORECAST_ANALYSES,
         ),
-        expand(
-            "viz/forecast-accuracy/data/{analysis}.json",
-            analysis=FORECAST_ANALYSES,
-        ),
+        "viz/forecast-accuracy/data/all.json",
         "viz/forecast-accuracy/meta.json"

@@ -16,7 +16,11 @@ model:
   # `generation_time` block in config.yaml, passed per dataset via
   # --generation-time / --generation-time-pre-omicron.
   generation_time: 4.8
-  pivot: "20A"
+  # Empty => evofr auto-selects the "other" bucket as the beta=0 reference. Per-window
+  # pivots were removed from config.yaml; scaffolding removes per-window offsets, so the
+  # reference choice does not affect scaffolded fitness. (A real clade like "20A" here
+  # would otherwise silently become the reference for windows that lack a --pivot.)
+  pivot: ""
   hierarchical: true
 
 inference:

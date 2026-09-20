@@ -130,12 +130,21 @@ def _variant_date_series(mlr, site, ps=None):
 
 
 def timepoint_to_numeric(timepoint):
-    """Season label -> midpoint decimal year (``"2020-21"`` -> ``2020.5``)."""
-    parts = []
-    for piece in timepoint.split("-"):
-        value = int(piece)
-        parts.append(value if value > 2000 else value + 2000)
-    return sum(parts) / len(parts)
+    """Window label -> midpoint decimal year.
+
+    Two label styles coexist:
+      * Quarterly clade windows label by start month, ``"YYYY-MM"`` (``"2020-04"``).
+        These are 1-year windows, so the midpoint is start + 0.5 year.
+      * Legacy season labels, ``"YYYY"`` or ``"YYYY-YY"`` (``"2020"``, ``"2020-21"``),
+        still used by ``sarscov2_lineages``; the midpoint is the mean of the calendar years.
+    They are distinguished by the second token: <=12 is a month, otherwise a 2-digit year.
+    """
+    pieces = timepoint.split("-")
+    if len(pieces) == 2 and 1 <= int(pieces[1]) <= 12:
+        year, month = int(pieces[0]), int(pieces[1])
+        return year + (month - 1) / 12 + 0.5
+    years = [v if v > 2000 else v + 2000 for v in (int(p) for p in pieces)]
+    return sum(years) / len(years)
 
 
 def decimal_year(date_str):

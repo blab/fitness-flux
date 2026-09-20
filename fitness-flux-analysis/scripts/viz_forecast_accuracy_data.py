@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-Build the forecast-accuracy component's data.json: the aggregate MAE(lead) curve
-(MLR vs naive) plus faint per-window-pair curves, with absolute errors converted
-to percent for the "%" y-axis. The component renders MLR-vs-naive mean absolute
+Build the forecast-accuracy component's combined data.json: one panel per virus
+lineage, each carrying the aggregate MAE(lead) curve (MLR vs naive) plus faint
+per-window-pair curves, with absolute errors converted to percent for the "%"
+y-axis. The component renders these as a 2x2 grid of MLR-vs-naive mean absolute
 error against forecast lead time (Abousamra et al. Fig 2B adaptation).
 
-The aggregate `curve` comes straight from the summary JSON; the per-pair `points`
-are re-binned here from the detail TSV using the same weekly lead bins. Mirrors
+Takes one --panel KEY LABEL SUMMARY DETAIL group per lineage; panel order in the
+output follows the argument order. Each panel's aggregate `curve` comes from the
+summary JSON and its per-pair `points` are re-binned from the detail TSV using
+the same weekly lead bins. Also writes the component's meta.json. Mirrors
 viz_variance_flux_data.py.
 """
 import argparse
@@ -60,24 +63,46 @@ def build_pairs(detail_path, bin_days):
     return pairs
 
 
+def build_panel(key, label, summary_path, detail_path):
+    with open(summary_path) as handle:
+        summary = json.load(handle)
+    return {
+        "key": key,
+        "label": label,
+        "n_pairs": summary["n_pairs"],
+        "curve": build_curve(summary),
+        "pairs": build_pairs(detail_path, summary["lead_bin_days"]),
+    }, pct(summary["reference"])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--detail", required=True)
-    parser.add_argument("--summary", required=True)
-    parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--panel",
+        nargs=4,
+        action="append",
+        required=True,
+        metavar=("KEY", "LABEL", "SUMMARY", "DETAIL"),
+        help="one group per lineage; repeat. Panel order follows argument order.",
+    )
+    parser.add_argument("--output", required=True, help="combined data/all.json")
+    parser.add_argument("--meta-output", required=True, help="component meta.json")
     args = parser.parse_args()
 
-    with open(args.summary) as handle:
-        summary = json.load(handle)
+    panels = []
+    reference = 5.0
+    for key, label, summary_path, detail_path in args.panel:
+        panel, reference = build_panel(key, label, summary_path, detail_path)
+        panels.append(panel)
 
     viz_io.write_json(
         args.output,
-        {
-            "curve": build_curve(summary),
-            "pairs": build_pairs(args.detail, summary["lead_bin_days"]),
-            "reference": pct(summary["reference"]),
-            "models": MODELS,
-        },
+        {"panels": panels, "reference": reference, "models": MODELS},
+    )
+    viz_io.write_json(
+        args.meta_output,
+        {"datasets": [{"id": "all", "label": "Forecast accuracy"}], "default": "all"},
+        indent=2,
     )
 
 

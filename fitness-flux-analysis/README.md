@@ -2,8 +2,8 @@
 
 This analysis reconstructs variant fitness across overlapping seasonal MLR fits,
 stitches it onto a common "scaffolded" scale, and characterizes the traveling
-wave of fitness ("flux") through time, for three datasets: `sarscov2_clades`,
-`sarscov2_lineages` and `h3n2_clades`.
+wave of fitness ("flux") through time, for five datasets: `sarscov2_clades`,
+`sarscov2_lineages`, `h3n2_clades`, `h1n1pdm_clades` and `vic_clades`.
 
 The calculations were originally done in the Mathematica notebook
 `fitness-flux.nb` (retained for reference). They are now reimplemented as Python
@@ -16,8 +16,8 @@ writing TSV/JSON to `results/`. The narrative is presented interactively by
 Each analysis dataset aggregates the per-season MLR runs produced by the main
 pipeline, e.g.:
 ```
-mlr-estimates/sarscov2_clades_2020/mlr_results.json
-mlr-estimates/sarscov2_clades_2020-21/mlr_results.json
+mlr-estimates/sarscov2_clades_2020-01/mlr_results.json
+mlr-estimates/sarscov2_clades_2020-04/mlr_results.json
 ...
 ```
 The seasons belonging to a dataset are the prefix-matching entries of

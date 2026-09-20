@@ -26,23 +26,8 @@ DEFAULT = "sarscov2_clades"
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True)
-    parser.add_argument(
-        "--include",
-        default=None,
-        help="comma-separated dataset ids to keep (in the given order); default keeps all",
-    )
     args = parser.parse_args()
-
-    datasets = DATASETS
-    default = DEFAULT
-    if args.include:
-        wanted = [d.strip() for d in args.include.split(",") if d.strip()]
-        by_id = {d["id"]: d for d in DATASETS}
-        datasets = [by_id[i] for i in wanted if i in by_id]
-        if datasets:
-            default = datasets[0] if DEFAULT not in {d["id"] for d in datasets} else DEFAULT
-
-    viz_io.write_json(args.output, {"datasets": datasets, "default": default}, indent=2)
+    viz_io.write_json(args.output, {"datasets": DATASETS, "default": DEFAULT}, indent=2)
 
 
 if __name__ == "__main__":

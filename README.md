@@ -51,7 +51,7 @@ sequence-counts/sarscov2_lineages_2020/variant_relationships.tsv
 
 ### MLR estimates
 
-Fit multinomial logistic regression (MLR) with the [evofr package](https://github.com/blab/evofr) on 1-year sliding windows for SARS-CoV-2 and 2-year windows for H3N2:
+Fit multinomial logistic regression (MLR) with the [evofr package](https://github.com/blab/evofr) on 1-year sliding windows for SARS-CoV-2 and 2-year windows for seasonal influenza, both advanced every three months:
 ```
 nextstrain build . all_mlr_estimates
 ```

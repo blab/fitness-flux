@@ -1,22 +1,34 @@
-# The SARS-CoV-2 and H3N2 2025-26 datasets have enough sequence data
-# to give good estimates, but clade designation has recently and there is
-# effectively just a single circulating clade in 2026 for each. This gives
-# an artificial small fitness flux. I'm waiting to include these for clades
-# to be designated.
+# Clade datasets slide forward every 3 months (quarterly): SARS-CoV-2 uses 1-year
+# windows, flu uses 2-year windows. sarscov2_lineages keeps its original cadence.
+# Window lists are data-driven (fittable windows only) and regenerated when the
+# underlying data changes.
 
 datasets:
-  - sarscov2_clades_2020
-  - sarscov2_clades_2020-21
-  - sarscov2_clades_2021
-  - sarscov2_clades_2021-22
-  - sarscov2_clades_2022
-  - sarscov2_clades_2022-23
-  - sarscov2_clades_2023
-  - sarscov2_clades_2023-24
-  - sarscov2_clades_2024
-  - sarscov2_clades_2024-25
-  - sarscov2_clades_2025
-  # - sarscov2_clades_2025-26
+  # SARS-CoV-2 clades (1-year windows, 3-month slide)
+  - sarscov2_clades_2020-01
+  - sarscov2_clades_2020-04
+  - sarscov2_clades_2020-07
+  - sarscov2_clades_2020-10
+  - sarscov2_clades_2021-01
+  - sarscov2_clades_2021-04
+  - sarscov2_clades_2021-07
+  - sarscov2_clades_2021-10
+  - sarscov2_clades_2022-01
+  - sarscov2_clades_2022-04
+  - sarscov2_clades_2022-07
+  - sarscov2_clades_2022-10
+  - sarscov2_clades_2023-01
+  - sarscov2_clades_2023-04
+  - sarscov2_clades_2023-07
+  - sarscov2_clades_2023-10
+  - sarscov2_clades_2024-01
+  - sarscov2_clades_2024-04
+  - sarscov2_clades_2024-07
+  - sarscov2_clades_2024-10
+  - sarscov2_clades_2025-01
+  - sarscov2_clades_2025-04
+  - sarscov2_clades_2025-07
+  # SARS-CoV-2 Pango lineages (unchanged cadence)
   - sarscov2_lineages_2020
   - sarscov2_lineages_2020-21
   - sarscov2_lineages_2021
@@ -28,45 +40,113 @@ datasets:
   - sarscov2_lineages_2024
   - sarscov2_lineages_2024-25
   - sarscov2_lineages_2025
-  # - sarscov2_lineages_2025-26
-  - h3n2_clades_2016-17
-  - h3n2_clades_2017-18
-  - h3n2_clades_2018-19
-  - h3n2_clades_2019-20
-  - h3n2_clades_2020-21
-  - h3n2_clades_2021-22
-  - h3n2_clades_2022-23
-  - h3n2_clades_2023-24
-  - h3n2_clades_2024-25
-  # - h3n2_clades_2025-26
-  # h1n1pdm_clades_2016-17 is a single clade (only "unassigned" in the USA) so
-  # MLR cannot fit it; excluded. 2017-18 and 2018-19 are dominated by the
-  # paraphyletic "unassigned" bucket with thin real-clade signal (flagged as
-  # candidates to drop on follow-up review).
-  - h1n1pdm_clades_2018-19
-  - h1n1pdm_clades_2019-20
-  - h1n1pdm_clades_2020-23
-  # - h1n1pdm_clades_2021-22
-  - h1n1pdm_clades_2022-23
-  - h1n1pdm_clades_2023-24
-  - h1n1pdm_clades_2024-25
-  - vic_clades_2016-17
-  - vic_clades_2017-18
-  - vic_clades_2018-19
-  - vic_clades_2019-20
-  - vic_clades_2020-21
-  # vic_clades_2021-22 collapses to a single "other" clade in the USA (COVID-era
-  # sampling / nomenclature gap between the A.3.2 and C.5 eras), so MLR cannot fit
-  # it; excluded, leaving a one-window gap in the Vic series.
-  # - vic_clades_2021-22
-  - vic_clades_2022-23
-  - vic_clades_2023-24
-  - vic_clades_2024-25
+  # h3n2 clades (2-year windows, 3-month slide)
+  - h3n2_clades_2016-01
+  - h3n2_clades_2016-04
+  - h3n2_clades_2016-07
+  - h3n2_clades_2016-10
+  - h3n2_clades_2017-01
+  - h3n2_clades_2017-04
+  - h3n2_clades_2017-07
+  - h3n2_clades_2017-10
+  - h3n2_clades_2018-01
+  - h3n2_clades_2018-04
+  - h3n2_clades_2018-07
+  - h3n2_clades_2018-10
+  - h3n2_clades_2019-01
+  - h3n2_clades_2019-04
+  - h3n2_clades_2019-07
+  - h3n2_clades_2019-10
+  - h3n2_clades_2020-01
+  - h3n2_clades_2020-04
+  - h3n2_clades_2020-07
+  - h3n2_clades_2020-10
+  - h3n2_clades_2021-01
+  - h3n2_clades_2021-04
+  - h3n2_clades_2021-07
+  - h3n2_clades_2021-10
+  - h3n2_clades_2022-01
+  - h3n2_clades_2022-04
+  - h3n2_clades_2022-07
+  - h3n2_clades_2022-10
+  - h3n2_clades_2023-01
+  - h3n2_clades_2023-04
+  - h3n2_clades_2023-07
+  - h3n2_clades_2023-10
+  - h3n2_clades_2024-01
+  - h3n2_clades_2024-04
+  - h3n2_clades_2024-07
+  - h3n2_clades_2024-10
+  - h3n2_clades_2025-01
+  - h3n2_clades_2025-04
+  - h3n2_clades_2025-07
+  - h3n2_clades_2025-10
+  # h1n1pdm clades (2-year windows, 3-month slide)
+  - h1n1pdm_clades_2018-01
+  - h1n1pdm_clades_2018-04
+  - h1n1pdm_clades_2018-07
+  - h1n1pdm_clades_2018-10
+  - h1n1pdm_clades_2019-01
+  - h1n1pdm_clades_2019-04
+  - h1n1pdm_clades_2019-07
+  - h1n1pdm_clades_2019-10
+  - h1n1pdm_clades_2020-01
+  - h1n1pdm_clades_2021-01
+  - h1n1pdm_clades_2021-04
+  - h1n1pdm_clades_2021-07
+  - h1n1pdm_clades_2021-10
+  - h1n1pdm_clades_2022-01
+  - h1n1pdm_clades_2022-04
+  - h1n1pdm_clades_2022-07
+  - h1n1pdm_clades_2022-10
+  - h1n1pdm_clades_2023-01
+  - h1n1pdm_clades_2023-04
+  - h1n1pdm_clades_2023-07
+  - h1n1pdm_clades_2023-10
+  - h1n1pdm_clades_2024-01
+  - h1n1pdm_clades_2024-04
+  - h1n1pdm_clades_2024-07
+  - h1n1pdm_clades_2024-10
+  - h1n1pdm_clades_2025-01
+  - h1n1pdm_clades_2025-04
+  - h1n1pdm_clades_2025-07
+  # vic clades (2-year windows, 3-month slide)
+  - vic_clades_2016-01
+  - vic_clades_2016-04
+  - vic_clades_2016-07
+  - vic_clades_2016-10
+  - vic_clades_2017-01
+  - vic_clades_2017-04
+  - vic_clades_2017-07
+  - vic_clades_2017-10
+  - vic_clades_2018-01
+  - vic_clades_2018-04
+  - vic_clades_2018-07
+  - vic_clades_2018-10
+  - vic_clades_2019-01
+  - vic_clades_2019-04
+  - vic_clades_2019-07
+  - vic_clades_2019-10
+  - vic_clades_2020-01
+  - vic_clades_2021-04
+  - vic_clades_2021-07
+  - vic_clades_2021-10
+  - vic_clades_2022-01
+  - vic_clades_2022-04
+  - vic_clades_2022-07
+  - vic_clades_2022-10
+  - vic_clades_2023-01
+  - vic_clades_2023-04
+  - vic_clades_2023-07
+  - vic_clades_2023-10
+  - vic_clades_2024-01
+  - vic_clades_2024-04
+  - vic_clades_2024-07
+  - vic_clades_2024-10
+  - vic_clades_2025-01
+  - vic_clades_2025-04
+  - vic_clades_2025-07
 
-# Per-virus metadata provisioning (the provision_metadata rule): stream the
-# Nextstrain metadata from S3, subset to these columns, and recompress to the
-# data/{virus}_subset_metadata.tsv.zst that every dataset block's local_metadata
-# points at. H3N2 is a private bucket (needs AWS credentials); SARS-CoV-2 is public.
 provision:
   sarscov2:
     metadata_url: "s3://nextstrain-data/files/ncov/open/metadata.tsv.zst"
@@ -106,511 +186,569 @@ generation_time:
 mutation_counts:
   nextclade_url: "https://nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs"
 
-# H3N2 uses a 2-year analysis window and slides 1-year forward, and a 2-week
-# (14-day) empirical-frequency smoothing window (raw_freq_window) since it is
-# sparser than SARS-CoV-2, which stays at the 1-week default.
+# All clade datasets slide forward every 3 months (quarterly), labeled by window
+# start month (YYYY-MM). SARS-CoV-2 uses 1-year windows; flu uses 2-year windows
+# (sparser data, slower dynamics, and to bridge more of the 2020-2022 COVID trough).
+# Per-window pivots are omitted: evofr uses the "other" reference and scaffolding
+# removes per-window offsets, so the reference choice does not affect scaffolded
+# fitness. Unfittable windows (a single clade, or a window entirely within the COVID
+# trough for flu) are omitted from the datasets list above. Flu uses a 2-week (14-day)
+# empirical-frequency smoothing window; SARS-CoV-2 keeps the 1-week default.
 
-h3n2_clades_2016-17:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2016-01-01"
-  max_date: "2017-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "B.1"
-  raw_freq_window: 14
-
-h3n2_clades_2017-18:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2017-01-01"
-  max_date: "2018-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "B.2"
-  raw_freq_window: 14
-
-h3n2_clades_2018-19:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2018-01-01"
-  max_date: "2019-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "C.1"
-  raw_freq_window: 14
-
-h3n2_clades_2019-20:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2019-01-01"
-  max_date: "2020-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "E.2"
-  raw_freq_window: 14
-
-h3n2_clades_2020-21:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2020-01-01"
-  max_date: "2021-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "G.1.1.1"
-  raw_freq_window: 14
-
-h3n2_clades_2021-22:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2021-01-01"
-  max_date: "2022-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "G.1.1.1"
-  raw_freq_window: 14
-
-h3n2_clades_2022-23:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2022-01-01"
-  max_date: "2023-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "G.2"
-  raw_freq_window: 14
-
-h3n2_clades_2023-24:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2023-01-01"
-  max_date: "2024-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "J.2"
-  raw_freq_window: 14
-
-h3n2_clades_2024-25:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2024-01-01"
-  max_date: "2025-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "J.2"
-  raw_freq_window: 14
-
-h3n2_clades_2025-26:
-  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2025-01-01"
-  max_date: "2026-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "J.2"
-  raw_freq_window: 14
-
-# H1N1pdm and Vic mirror the H3N2 setup (2-year sliding windows, USA only,
-# subclade_nextclade_ha clades, 14-day empirical smoothing). Per-window `pivot`
-# clades are chosen from the provisioned data (ancestral clade present in each
-# window), so they differ from H3N2's.
-
-h1n1pdm_clades_2018-19:
-  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2018-01-01"
-  max_date: "2019-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "A"
-  raw_freq_window: 14
-
-h1n1pdm_clades_2019-20:
-  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2019-01-01"
-  max_date: "2020-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "A"
-  raw_freq_window: 14
-
-h1n1pdm_clades_2020-23:
-  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2019-07-01"
-  max_date: "2023-06-30"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "B"
-  raw_freq_window: 14
-
-# h1n1pdm_clades_2021-22:
-#   local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
-#   seq_count_options: >-
-#     --clade-column subclade_nextclade_ha
-#     --filter-columns country
-#     --filter-query "country == 'USA'"
-#     --location-column country
-#   min_date: "2021-01-01"
-#   max_date: "2022-12-33"
-#   clade_min_count: 50
-#   clade_min_freq: 0.001
-#   pivot: "C.1"
-#   raw_freq_window: 14
-
-h1n1pdm_clades_2022-23:
-  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2022-01-01"
-  max_date: "2023-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "C.1"
-  raw_freq_window: 14
-
-h1n1pdm_clades_2023-24:
-  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2023-01-01"
-  max_date: "2024-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "C.1"
-  raw_freq_window: 14
-
-h1n1pdm_clades_2024-25:
-  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2024-01-01"
-  max_date: "2025-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "C.1"
-  raw_freq_window: 14
-
-vic_clades_2016-17:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2016-01-01"
-  max_date: "2017-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "A"
-  raw_freq_window: 14
-
-vic_clades_2017-18:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2017-01-01"
-  max_date: "2018-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "A"
-  raw_freq_window: 14
-
-vic_clades_2018-19:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2018-01-01"
-  max_date: "2019-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "A"
-  raw_freq_window: 14
-
-vic_clades_2019-20:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2019-01-01"
-  max_date: "2020-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "A.1"
-  raw_freq_window: 14
-
-vic_clades_2020-21:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2019-07-01"
-  max_date: "2023-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "A.1"
-  raw_freq_window: 14
-
-vic_clades_2021-22:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2021-01-01"
-  max_date: "2022-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "other"
-  raw_freq_window: 14
-
-vic_clades_2022-23:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2022-01-01"
-  max_date: "2023-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "C.3"
-  raw_freq_window: 14
-
-vic_clades_2023-24:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2023-01-01"
-  max_date: "2024-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "C.3"
-  raw_freq_window: 14
-
-vic_clades_2024-25:
-  local_metadata: "data/vic_subset_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
-  min_date: "2024-01-01"
-  max_date: "2025-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "C.5.1"
-  raw_freq_window: 14
-
-sarscov2_clades_2020:
+_sarscov2_clades: &sarscov2_clades
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
     --filter-columns QC_overall_status country
     --filter-query "QC_overall_status != 'bad' & country == 'USA'"
-  min_date: "2020-01-01"
-  max_date: "2020-12-31"
   clade_min_count: 50
   clade_min_freq: 0.001
-  pivot: "19B"
-sarscov2_clades_2020-21:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
+
+_h3n2_clades: &h3n2_clades
+  local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  raw_freq_window: 14
+
+_h1n1pdm_clades: &h1n1pdm_clades
+  local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  raw_freq_window: 14
+
+_vic_clades: &vic_clades
+  local_metadata: "data/vic_subset_metadata.tsv.zst"
+  seq_count_options: >-
+    --clade-column subclade_nextclade_ha
+    --filter-columns country
+    --filter-query "country == 'USA'"
+    --location-column country
+  clade_min_count: 50
+  clade_min_freq: 0.001
+  raw_freq_window: 14
+
+# sarscov2_clades windows
+sarscov2_clades_2020-01:
+  <<: *sarscov2_clades
+  min_date: "2020-01-01"
+  max_date: "2020-12-31"
+sarscov2_clades_2020-04:
+  <<: *sarscov2_clades
+  min_date: "2020-04-01"
+  max_date: "2021-03-31"
+sarscov2_clades_2020-07:
+  <<: *sarscov2_clades
   min_date: "2020-07-01"
   max_date: "2021-06-30"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "20G"
-sarscov2_clades_2021:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2020-10:
+  <<: *sarscov2_clades
+  min_date: "2020-10-01"
+  max_date: "2021-09-30"
+sarscov2_clades_2021-01:
+  <<: *sarscov2_clades
   min_date: "2021-01-01"
   max_date: "2021-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "21J"
-sarscov2_clades_2021-22:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2021-04:
+  <<: *sarscov2_clades
+  min_date: "2021-04-01"
+  max_date: "2022-03-31"
+sarscov2_clades_2021-07:
+  <<: *sarscov2_clades
   min_date: "2021-07-01"
   max_date: "2022-06-30"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "21K"
-sarscov2_clades_2022:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2021-10:
+  <<: *sarscov2_clades
+  min_date: "2021-10-01"
+  max_date: "2022-09-30"
+sarscov2_clades_2022-01:
+  <<: *sarscov2_clades
   min_date: "2022-01-01"
   max_date: "2022-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "22B"
-sarscov2_clades_2022-23:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2022-04:
+  <<: *sarscov2_clades
+  min_date: "2022-04-01"
+  max_date: "2023-03-31"
+sarscov2_clades_2022-07:
+  <<: *sarscov2_clades
   min_date: "2022-07-01"
   max_date: "2023-06-30"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "22E"
-sarscov2_clades_2023:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2022-10:
+  <<: *sarscov2_clades
+  min_date: "2022-10-01"
+  max_date: "2023-09-30"
+sarscov2_clades_2023-01:
+  <<: *sarscov2_clades
   min_date: "2023-01-01"
   max_date: "2023-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "23B"
-sarscov2_clades_2023-24:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2023-04:
+  <<: *sarscov2_clades
+  min_date: "2023-04-01"
+  max_date: "2024-03-31"
+sarscov2_clades_2023-07:
+  <<: *sarscov2_clades
   min_date: "2023-07-01"
   max_date: "2024-06-30"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "24A"
-sarscov2_clades_2024:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2023-10:
+  <<: *sarscov2_clades
+  min_date: "2023-10-01"
+  max_date: "2024-09-30"
+sarscov2_clades_2024-01:
+  <<: *sarscov2_clades
   min_date: "2024-01-01"
   max_date: "2024-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "24A"
-sarscov2_clades_2024-25:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2024-04:
+  <<: *sarscov2_clades
+  min_date: "2024-04-01"
+  max_date: "2025-03-31"
+sarscov2_clades_2024-07:
+  <<: *sarscov2_clades
   min_date: "2024-07-01"
   max_date: "2025-06-30"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "24A"
-sarscov2_clades_2025:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2024-10:
+  <<: *sarscov2_clades
+  min_date: "2024-10-01"
+  max_date: "2025-09-30"
+sarscov2_clades_2025-01:
+  <<: *sarscov2_clades
   min_date: "2025-01-01"
   max_date: "2025-12-31"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "25A"
-sarscov2_clades_2025-26:
-  local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
-  seq_count_options: >-
-    --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+sarscov2_clades_2025-04:
+  <<: *sarscov2_clades
+  min_date: "2025-04-01"
+  max_date: "2026-03-31"
+sarscov2_clades_2025-07:
+  <<: *sarscov2_clades
   min_date: "2025-07-01"
   max_date: "2026-06-30"
-  clade_min_count: 50
-  clade_min_freq: 0.001
-  pivot: "25A"
+
+# h3n2_clades windows
+h3n2_clades_2016-01:
+  <<: *h3n2_clades
+  min_date: "2016-01-01"
+  max_date: "2017-12-31"
+h3n2_clades_2016-04:
+  <<: *h3n2_clades
+  min_date: "2016-04-01"
+  max_date: "2018-03-31"
+h3n2_clades_2016-07:
+  <<: *h3n2_clades
+  min_date: "2016-07-01"
+  max_date: "2018-06-30"
+h3n2_clades_2016-10:
+  <<: *h3n2_clades
+  min_date: "2016-10-01"
+  max_date: "2018-09-30"
+h3n2_clades_2017-01:
+  <<: *h3n2_clades
+  min_date: "2017-01-01"
+  max_date: "2018-12-31"
+h3n2_clades_2017-04:
+  <<: *h3n2_clades
+  min_date: "2017-04-01"
+  max_date: "2019-03-31"
+h3n2_clades_2017-07:
+  <<: *h3n2_clades
+  min_date: "2017-07-01"
+  max_date: "2019-06-30"
+h3n2_clades_2017-10:
+  <<: *h3n2_clades
+  min_date: "2017-10-01"
+  max_date: "2019-09-30"
+h3n2_clades_2018-01:
+  <<: *h3n2_clades
+  min_date: "2018-01-01"
+  max_date: "2019-12-31"
+h3n2_clades_2018-04:
+  <<: *h3n2_clades
+  min_date: "2018-04-01"
+  max_date: "2020-03-31"
+h3n2_clades_2018-07:
+  <<: *h3n2_clades
+  min_date: "2018-07-01"
+  max_date: "2020-06-30"
+h3n2_clades_2018-10:
+  <<: *h3n2_clades
+  min_date: "2018-10-01"
+  max_date: "2020-09-30"
+h3n2_clades_2019-01:
+  <<: *h3n2_clades
+  min_date: "2019-01-01"
+  max_date: "2020-12-31"
+h3n2_clades_2019-04:
+  <<: *h3n2_clades
+  min_date: "2019-04-01"
+  max_date: "2021-03-31"
+h3n2_clades_2019-07:
+  <<: *h3n2_clades
+  min_date: "2019-07-01"
+  max_date: "2021-06-30"
+h3n2_clades_2019-10:
+  <<: *h3n2_clades
+  min_date: "2019-10-01"
+  max_date: "2021-09-30"
+h3n2_clades_2020-01:
+  <<: *h3n2_clades
+  min_date: "2020-01-01"
+  max_date: "2021-12-31"
+h3n2_clades_2020-04:
+  <<: *h3n2_clades
+  min_date: "2020-04-01"
+  max_date: "2022-03-31"
+h3n2_clades_2020-07:
+  <<: *h3n2_clades
+  min_date: "2020-07-01"
+  max_date: "2022-06-30"
+h3n2_clades_2020-10:
+  <<: *h3n2_clades
+  min_date: "2020-10-01"
+  max_date: "2022-09-30"
+h3n2_clades_2021-01:
+  <<: *h3n2_clades
+  min_date: "2021-01-01"
+  max_date: "2022-12-31"
+h3n2_clades_2021-04:
+  <<: *h3n2_clades
+  min_date: "2021-04-01"
+  max_date: "2023-03-31"
+h3n2_clades_2021-07:
+  <<: *h3n2_clades
+  min_date: "2021-07-01"
+  max_date: "2023-06-30"
+h3n2_clades_2021-10:
+  <<: *h3n2_clades
+  min_date: "2021-10-01"
+  max_date: "2023-09-30"
+h3n2_clades_2022-01:
+  <<: *h3n2_clades
+  min_date: "2022-01-01"
+  max_date: "2023-12-31"
+h3n2_clades_2022-04:
+  <<: *h3n2_clades
+  min_date: "2022-04-01"
+  max_date: "2024-03-31"
+h3n2_clades_2022-07:
+  <<: *h3n2_clades
+  min_date: "2022-07-01"
+  max_date: "2024-06-30"
+h3n2_clades_2022-10:
+  <<: *h3n2_clades
+  min_date: "2022-10-01"
+  max_date: "2024-09-30"
+h3n2_clades_2023-01:
+  <<: *h3n2_clades
+  min_date: "2023-01-01"
+  max_date: "2024-12-31"
+h3n2_clades_2023-04:
+  <<: *h3n2_clades
+  min_date: "2023-04-01"
+  max_date: "2025-03-31"
+h3n2_clades_2023-07:
+  <<: *h3n2_clades
+  min_date: "2023-07-01"
+  max_date: "2025-06-30"
+h3n2_clades_2023-10:
+  <<: *h3n2_clades
+  min_date: "2023-10-01"
+  max_date: "2025-09-30"
+h3n2_clades_2024-01:
+  <<: *h3n2_clades
+  min_date: "2024-01-01"
+  max_date: "2025-12-31"
+h3n2_clades_2024-04:
+  <<: *h3n2_clades
+  min_date: "2024-04-01"
+  max_date: "2026-03-31"
+h3n2_clades_2024-07:
+  <<: *h3n2_clades
+  min_date: "2024-07-01"
+  max_date: "2026-06-30"
+h3n2_clades_2024-10:
+  <<: *h3n2_clades
+  min_date: "2024-10-01"
+  max_date: "2026-09-30"
+h3n2_clades_2025-01:
+  <<: *h3n2_clades
+  min_date: "2025-01-01"
+  max_date: "2026-12-31"
+h3n2_clades_2025-04:
+  <<: *h3n2_clades
+  min_date: "2025-04-01"
+  max_date: "2027-03-31"
+h3n2_clades_2025-07:
+  <<: *h3n2_clades
+  min_date: "2025-07-01"
+  max_date: "2027-06-30"
+h3n2_clades_2025-10:
+  <<: *h3n2_clades
+  min_date: "2025-10-01"
+  max_date: "2027-09-30"
+
+# h1n1pdm_clades windows
+h1n1pdm_clades_2018-01:
+  <<: *h1n1pdm_clades
+  min_date: "2018-01-01"
+  max_date: "2019-12-31"
+h1n1pdm_clades_2018-04:
+  <<: *h1n1pdm_clades
+  min_date: "2018-04-01"
+  max_date: "2020-03-31"
+h1n1pdm_clades_2018-07:
+  <<: *h1n1pdm_clades
+  min_date: "2018-07-01"
+  max_date: "2020-06-30"
+h1n1pdm_clades_2018-10:
+  <<: *h1n1pdm_clades
+  min_date: "2018-10-01"
+  max_date: "2020-09-30"
+h1n1pdm_clades_2019-01:
+  <<: *h1n1pdm_clades
+  min_date: "2019-01-01"
+  max_date: "2020-12-31"
+h1n1pdm_clades_2019-04:
+  <<: *h1n1pdm_clades
+  min_date: "2019-04-01"
+  max_date: "2021-03-31"
+h1n1pdm_clades_2019-07:
+  <<: *h1n1pdm_clades
+  min_date: "2019-07-01"
+  max_date: "2021-06-30"
+h1n1pdm_clades_2019-10:
+  <<: *h1n1pdm_clades
+  min_date: "2019-10-01"
+  max_date: "2021-09-30"
+h1n1pdm_clades_2020-01:
+  <<: *h1n1pdm_clades
+  min_date: "2020-01-01"
+  max_date: "2021-12-31"
+h1n1pdm_clades_2021-01:
+  <<: *h1n1pdm_clades
+  min_date: "2021-01-01"
+  max_date: "2022-12-31"
+h1n1pdm_clades_2021-04:
+  <<: *h1n1pdm_clades
+  min_date: "2021-04-01"
+  max_date: "2023-03-31"
+h1n1pdm_clades_2021-07:
+  <<: *h1n1pdm_clades
+  min_date: "2021-07-01"
+  max_date: "2023-06-30"
+h1n1pdm_clades_2021-10:
+  <<: *h1n1pdm_clades
+  min_date: "2021-10-01"
+  max_date: "2023-09-30"
+h1n1pdm_clades_2022-01:
+  <<: *h1n1pdm_clades
+  min_date: "2022-01-01"
+  max_date: "2023-12-31"
+h1n1pdm_clades_2022-04:
+  <<: *h1n1pdm_clades
+  min_date: "2022-04-01"
+  max_date: "2024-03-31"
+h1n1pdm_clades_2022-07:
+  <<: *h1n1pdm_clades
+  min_date: "2022-07-01"
+  max_date: "2024-06-30"
+h1n1pdm_clades_2022-10:
+  <<: *h1n1pdm_clades
+  min_date: "2022-10-01"
+  max_date: "2024-09-30"
+h1n1pdm_clades_2023-01:
+  <<: *h1n1pdm_clades
+  min_date: "2023-01-01"
+  max_date: "2024-12-31"
+h1n1pdm_clades_2023-04:
+  <<: *h1n1pdm_clades
+  min_date: "2023-04-01"
+  max_date: "2025-03-31"
+h1n1pdm_clades_2023-07:
+  <<: *h1n1pdm_clades
+  min_date: "2023-07-01"
+  max_date: "2025-06-30"
+h1n1pdm_clades_2023-10:
+  <<: *h1n1pdm_clades
+  min_date: "2023-10-01"
+  max_date: "2025-09-30"
+h1n1pdm_clades_2024-01:
+  <<: *h1n1pdm_clades
+  min_date: "2024-01-01"
+  max_date: "2025-12-31"
+h1n1pdm_clades_2024-04:
+  <<: *h1n1pdm_clades
+  min_date: "2024-04-01"
+  max_date: "2026-03-31"
+h1n1pdm_clades_2024-07:
+  <<: *h1n1pdm_clades
+  min_date: "2024-07-01"
+  max_date: "2026-06-30"
+h1n1pdm_clades_2024-10:
+  <<: *h1n1pdm_clades
+  min_date: "2024-10-01"
+  max_date: "2026-09-30"
+h1n1pdm_clades_2025-01:
+  <<: *h1n1pdm_clades
+  min_date: "2025-01-01"
+  max_date: "2026-12-31"
+h1n1pdm_clades_2025-04:
+  <<: *h1n1pdm_clades
+  min_date: "2025-04-01"
+  max_date: "2027-03-31"
+h1n1pdm_clades_2025-07:
+  <<: *h1n1pdm_clades
+  min_date: "2025-07-01"
+  max_date: "2027-06-30"
+
+# vic_clades windows
+vic_clades_2016-01:
+  <<: *vic_clades
+  min_date: "2016-01-01"
+  max_date: "2017-12-31"
+vic_clades_2016-04:
+  <<: *vic_clades
+  min_date: "2016-04-01"
+  max_date: "2018-03-31"
+vic_clades_2016-07:
+  <<: *vic_clades
+  min_date: "2016-07-01"
+  max_date: "2018-06-30"
+vic_clades_2016-10:
+  <<: *vic_clades
+  min_date: "2016-10-01"
+  max_date: "2018-09-30"
+vic_clades_2017-01:
+  <<: *vic_clades
+  min_date: "2017-01-01"
+  max_date: "2018-12-31"
+vic_clades_2017-04:
+  <<: *vic_clades
+  min_date: "2017-04-01"
+  max_date: "2019-03-31"
+vic_clades_2017-07:
+  <<: *vic_clades
+  min_date: "2017-07-01"
+  max_date: "2019-06-30"
+vic_clades_2017-10:
+  <<: *vic_clades
+  min_date: "2017-10-01"
+  max_date: "2019-09-30"
+vic_clades_2018-01:
+  <<: *vic_clades
+  min_date: "2018-01-01"
+  max_date: "2019-12-31"
+vic_clades_2018-04:
+  <<: *vic_clades
+  min_date: "2018-04-01"
+  max_date: "2020-03-31"
+vic_clades_2018-07:
+  <<: *vic_clades
+  min_date: "2018-07-01"
+  max_date: "2020-06-30"
+vic_clades_2018-10:
+  <<: *vic_clades
+  min_date: "2018-10-01"
+  max_date: "2020-09-30"
+vic_clades_2019-01:
+  <<: *vic_clades
+  min_date: "2019-01-01"
+  max_date: "2020-12-31"
+vic_clades_2019-04:
+  <<: *vic_clades
+  min_date: "2019-04-01"
+  max_date: "2021-03-31"
+vic_clades_2019-07:
+  <<: *vic_clades
+  min_date: "2019-07-01"
+  max_date: "2021-06-30"
+vic_clades_2019-10:
+  <<: *vic_clades
+  min_date: "2019-10-01"
+  max_date: "2021-09-30"
+vic_clades_2020-01:
+  <<: *vic_clades
+  min_date: "2020-01-01"
+  max_date: "2021-12-31"
+vic_clades_2021-04:
+  <<: *vic_clades
+  min_date: "2021-04-01"
+  max_date: "2023-03-31"
+vic_clades_2021-07:
+  <<: *vic_clades
+  min_date: "2021-07-01"
+  max_date: "2023-06-30"
+vic_clades_2021-10:
+  <<: *vic_clades
+  min_date: "2021-10-01"
+  max_date: "2023-09-30"
+vic_clades_2022-01:
+  <<: *vic_clades
+  min_date: "2022-01-01"
+  max_date: "2023-12-31"
+vic_clades_2022-04:
+  <<: *vic_clades
+  min_date: "2022-04-01"
+  max_date: "2024-03-31"
+vic_clades_2022-07:
+  <<: *vic_clades
+  min_date: "2022-07-01"
+  max_date: "2024-06-30"
+vic_clades_2022-10:
+  <<: *vic_clades
+  min_date: "2022-10-01"
+  max_date: "2024-09-30"
+vic_clades_2023-01:
+  <<: *vic_clades
+  min_date: "2023-01-01"
+  max_date: "2024-12-31"
+vic_clades_2023-04:
+  <<: *vic_clades
+  min_date: "2023-04-01"
+  max_date: "2025-03-31"
+vic_clades_2023-07:
+  <<: *vic_clades
+  min_date: "2023-07-01"
+  max_date: "2025-06-30"
+vic_clades_2023-10:
+  <<: *vic_clades
+  min_date: "2023-10-01"
+  max_date: "2025-09-30"
+vic_clades_2024-01:
+  <<: *vic_clades
+  min_date: "2024-01-01"
+  max_date: "2025-12-31"
+vic_clades_2024-04:
+  <<: *vic_clades
+  min_date: "2024-04-01"
+  max_date: "2026-03-31"
+vic_clades_2024-07:
+  <<: *vic_clades
+  min_date: "2024-07-01"
+  max_date: "2026-06-30"
+vic_clades_2024-10:
+  <<: *vic_clades
+  min_date: "2024-10-01"
+  max_date: "2026-09-30"
+vic_clades_2025-01:
+  <<: *vic_clades
+  min_date: "2025-01-01"
+  max_date: "2026-12-31"
+vic_clades_2025-04:
+  <<: *vic_clades
+  min_date: "2025-04-01"
+  max_date: "2027-03-31"
+vic_clades_2025-07:
+  <<: *vic_clades
+  min_date: "2025-07-01"
+  max_date: "2027-06-30"
+
 sarscov2_lineages_2020:
   variant_classification: "pango_lineages"
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"

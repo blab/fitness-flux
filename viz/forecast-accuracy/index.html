@@ -13,7 +13,7 @@
     const id =
         new URLSearchParams(location.search).get("dataset") ??
         meta?.default ??
-        "sarscov2_clades";
+        "all";
     const data = await fetch(`./data/${id}.json`).then((r) => r.json());
     const fig = render(slot, data, { mode: "slide" });
     new ResizeObserver(() => fig.resize()).observe(slot);

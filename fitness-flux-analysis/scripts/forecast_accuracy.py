@@ -11,17 +11,26 @@ does not re-fit anything.
 
 Window pairing
 --------------
-Each dataset (e.g. sarscov2_clades) is fit in overlapping windows that slide
-forward ~6 months, so a window W's successor W+1 is fit on data shifted +6
-months and extends exactly 6 months beyond W. We treat W's final date T as the
-"date of estimation" and evaluate a hindcast (in-window, lead <= 0) plus a
-forecast (lead > 0) against W+1's empirical smoothed frequency as retrospective
-truth. Successors are found by a day-gap tolerance on the windows' final dates
-(NOT relativedelta arithmetic, which mis-lands on end-of-month dates); a window
-whose +6-month successor is missing from config["datasets"] is skipped.
+Each dataset is fit in overlapping windows that slide forward by a fixed amount
+(SARS-CoV-2: 1-year windows sliding 6 months; flu: 2-year windows sliding 1
+year). A window W's successor W+1 is the one fit ~one slide later, found by a
+day-gap tolerance on the actual final data dates (--slide-days; NOT relativedelta
+arithmetic, which mis-lands on end-of-month dates, and NOT the nominal config
+bounds, since sparse flu data can end early). A window whose successor is missing
+(e.g. across a bridge window) is skipped.
 
-Predictions (over W's fitted variant set S = metadata["variants"], incl. "other")
+The forecast horizon is INDEPENDENT of the slide. We treat W's final date T as
+the "date of estimation" and evaluate a fixed hindcast (in-window, lead <= 0) and
+forecast (lead > 0) window against W+1's empirical smoothed frequency as truth.
+For flu the successor spans a full year beyond W, but we still score only
+--forecast-days (default 180): beyond ~6 months flu data is sparse and MLR and
+naive converge, so the 6-12 month tail is uninformative and excluded.
+
+Predictions (over W's *named* clades S = metadata["variants"] minus "other")
 --------------------------------------------------------------------------------
+The "other" bucket is excluded and the named clades are renormalized to sum 1, so
+we score how well named-clade relative frequencies are predicted (neither model can
+forecast the growing "other" bucket of newly emerging clades).
 delta_v (per-day log-growth slope) is recovered exactly from the exported growth
 advantage: the MLR export writes ga_v = exp(delta_v * tau_v) with the same
 per-variant tau_v used at fit time (scripts/generation_time.py), so
@@ -39,10 +48,10 @@ isolates the forward projection.
 
 Truth and error
 ---------------
-Truth at date t is W+1's weekly_raw_freq remapped onto S (any W+1 variant not in
-S folded into "other"), renormalized over S. Absolute error (Abousamra Eq 2) is
-AE_t = (1/n) * sum_{v in S} |truth_v(t) - pred_v(t)|, n = |S|. We aggregate AE
-across window pairs on a shared lead grid (weekly bins) to get MAE(lead).
+Truth at date t is W+1's weekly_raw_freq restricted to S and renormalized over S
+(W+1's "other" bucket and post-W emergent clades are dropped). Absolute error
+(Abousamra Eq 2) is AE_t = (1/n) * sum_{v in S} |truth_v(t) - pred_v(t)|, n = |S|.
+We aggregate AE across window pairs on a shared lead grid (weekly bins) to get MAE(lead).
 
 Limitations
 -----------
@@ -69,11 +78,12 @@ import ff_io
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
 from generation_time import generation_time_for, load_aliasor  # noqa: E402
 
-# Successor windows sit ~6 months (181/184 days) after their predecessor; this
-# tolerance accepts that spread while rejecting a +12-month jump when the true
-# +6-month successor is absent from config["datasets"].
-MIN_GAP_DAYS = 150
-MAX_GAP_DAYS = 210
+# A window's successor sits ~one slide later (SARS-CoV-2 slides 6 months; flu
+# slides 1 year). We accept a successor whose final data date is within +/-20% of
+# the slide, which spans the real spread (e.g. 181-184 d for a 6-month slide,
+# 324-407 d for a 1-year slide) while rejecting a doubled jump when the true
+# successor is absent, and same-year duplicates from bridge windows.
+GAP_TOLERANCE = 0.20
 
 
 def parse_args():
@@ -82,6 +92,13 @@ def parse_args():
     )
     parser.add_argument("--dataset", required=True, help="e.g. sarscov2_clades")
     parser.add_argument("--mlr-dir", default="mlr-estimates")
+    parser.add_argument(
+        "--slide-days",
+        type=int,
+        default=180,
+        help="days ahead to find each window's successor (the truth source); 180 pairs "
+        "the window two quarters ahead for a 6-month horizon. Independent of --forecast-days.",
+    )
     parser.add_argument(
         "--generation-time",
         type=float,
@@ -135,12 +152,25 @@ def load_windows(mlr_dir, dataset):
     return windows
 
 
-def build_pairs(windows):
-    """Consecutive (W, W+1) where W+1's final date is ~6 months after W's."""
+def build_pairs(windows, slide_days):
+    """(W, successor) pairs where the successor's final data date is ~slide_days later.
+
+    Windows are sorted by final date. The successor is not necessarily the adjacent
+    window: with a 3-month slide but a 6-month (180 d) forecast horizon, each window
+    pairs with the one two quarters ahead. Take the nearest window whose gap falls in
+    the tolerance band; a window with no such successor (e.g. across a data gap) is skipped.
+    """
+    lo = slide_days * (1 - GAP_TOLERANCE)
+    hi = slide_days * (1 + GAP_TOLERANCE)
     pairs = []
-    for cur, nxt in zip(windows, windows[1:]):
-        if MIN_GAP_DAYS <= day_gap(nxt[2], cur[2]) <= MAX_GAP_DAYS:
-            pairs.append((cur, nxt))
+    for i, cur in enumerate(windows):
+        for nxt in windows[i + 1:]:
+            gap = day_gap(nxt[2], cur[2])
+            if gap > hi:
+                break  # sorted by final date: no later window qualifies
+            if gap >= lo:
+                pairs.append((cur, nxt))
+                break  # nearest qualifying successor
     return pairs
 
 
@@ -178,38 +208,40 @@ def normalize(values):
 
 
 def remap_truth(truth_next, variant_set, d):
-    """W+1 weekly_raw_freq at date d, folded onto W's variant set S.
+    """W+1 weekly_raw_freq at date d, restricted to W's named clades (variant_set)
+    and renormalized to sum 1 over them.
 
-    Variants absent from S are folded into "other" (when S has it); their mass
-    still counts toward the denominator either way, so the residual of clades
-    that emerged after W is reflected as error. Returns None when d has no
-    non-null truth (smoothing-edge gaps).
+    Mass outside variant_set — W+1's "other" bucket and clades that emerged after W
+    — is dropped, matching the named-clade-only convention (we score how well the
+    named clades' relative frequencies are predicted, since neither model can
+    forecast the growing "other"). Returns None when d has no non-null named truth.
     """
     s = set(variant_set)
-    folded = {v: 0.0 for v in variant_set}
-    total = 0.0
-    seen = False
+    kept = {}
     for variant, series in truth_next.items():
-        value = series.get(d)
-        if value is None:
+        if variant not in s:
             continue
-        seen = True
-        total += value
-        if variant in s:
-            folded[variant] += value
-        elif "other" in s:
-            folded["other"] += value
-    if not seen or total <= 0:
+        value = series.get(d)
+        if value is not None:
+            kept[variant] = value
+    total = sum(kept.values())
+    if not kept or total <= 0:
         return None
-    return {v: folded[v] / total for v in variant_set}
+    return {v: kept.get(v, 0.0) / total for v in variant_set}
 
 
 def forecast_pair(cur, nxt, tau_fn, epsilon, hindcast_days, forecast_days):
-    """Rows (date, lead, n, model, abs_error) for one (W, W+1) pair."""
+    """Rows (date, lead, n, model, abs_error) for one (W, W+1) pair.
+
+    Frequencies are over W's *named* clades (the "other" bucket is excluded and the
+    named clades are renormalized to sum 1), for both predictions and truth.
+    """
     _, m, T = cur
     _, nm, _ = nxt
-    variant_set = m["metadata"]["variants"]
+    variant_set = [v for v in m["metadata"]["variants"] if v != "other"]
     n = len(variant_set)
+    if n < 2:
+        return []  # need >=2 named clades to define relative frequencies
 
     ga = ff_io.variant_growth_advantages(m)          # missing / "other" -> 1.0
     modeled = ff_io.variant_modeled_frequencies(m)   # {v: {date: freq}} (median)
@@ -280,9 +312,10 @@ def main():
     tau_fn = make_tau_fn(args)
 
     windows = load_windows(args.mlr_dir, args.dataset)
-    pairs = build_pairs(windows)
+    pairs = build_pairs(windows, args.slide_days)
     ff_io.log(
-        f"{args.dataset}: {len(windows)} windows, {len(pairs)} forecastable pairs"
+        f"{args.dataset}: {len(windows)} windows, {len(pairs)} forecastable pairs "
+        f"(slide {args.slide_days}d, horizon +{args.forecast_days}d / -{args.hindcast_days}d)"
     )
 
     all_rows = []  # (pair_label, window, next_window, date, lead, n, model, ae)
