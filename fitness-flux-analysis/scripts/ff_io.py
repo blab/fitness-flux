@@ -56,14 +56,26 @@ def primary_location(mlr):
     return locations[0]
 
 
-def variant_growth_advantages(mlr):
+def regions(mlr):
+    """All non-hierarchical geographic locations (regions) in an MLR fit, sorted.
+
+    Under the hierarchical multi-region model each region carries its own
+    ga/freq/weekly_raw_freq series (plus a pooled ``hierarchical`` ga). The
+    per-region forecast evaluation iterates over these.
+    """
+    return sorted(loc for loc in mlr["metadata"]["location"] if loc != "hierarchical")
+
+
+def variant_growth_advantages(mlr, location=None):
     """variant -> growth advantage (linear ``ga``) for the median series.
 
     Mirrors ``variantFitnessesForTimePoint``: a variant present in the metadata
     but lacking a ``ga`` record defaults to 1. ``other`` is retained here and is
-    excluded later where appropriate.
+    excluded later where appropriate. ``location`` picks a region; None falls back
+    to ``primary_location`` (single-region behavior).
     """
-    location = primary_location(mlr)
+    if location is None:
+        location = primary_location(mlr)
     variants = mlr["metadata"]["variants"]
     ga = {}
     for record in mlr["data"]:
@@ -78,16 +90,17 @@ def variant_growth_advantages(mlr):
     return {variant: ga.get(variant, 1.0) for variant in variants}
 
 
-def variant_growth_advantage_intervals(mlr, level=95):
+def variant_growth_advantage_intervals(mlr, level=95, location=None):
     """variant -> (lower, upper) HDI bounds of the growth advantage ``ga``.
 
     Reads the ``HDI_{level}_lower`` / ``HDI_{level}_upper`` records of the ``ga``
-    site for the primary location. The interval WIDTH (upper - lower) is a
+    site for one region (None => primary). The interval WIDTH (upper - lower) is a
     per-variant growth-rate uncertainty, available from posterior fits (NUTS,
     FullRank) but degenerate under a MAP point estimate. Variants without a ``ga``
     record (e.g. the pivot) are omitted.
     """
-    location = primary_location(mlr)
+    if location is None:
+        location = primary_location(mlr)
     lo_key, hi_key = f"HDI_{level}_lower", f"HDI_{level}_upper"
     bounds = {}
     for record in mlr["data"]:
@@ -104,18 +117,19 @@ def variant_growth_advantage_intervals(mlr, level=95):
     return {v: (b["lo"], b["hi"]) for v, b in bounds.items() if "lo" in b and "hi" in b}
 
 
-def variant_weekly_frequencies(mlr):
-    """variant -> {date: weekly_raw_freq} for the primary-location series."""
-    return _variant_date_series(mlr, site="weekly_raw_freq")
+def variant_weekly_frequencies(mlr, location=None):
+    """variant -> {date: weekly_raw_freq} for one region (None => primary)."""
+    return _variant_date_series(mlr, site="weekly_raw_freq", location=location)
 
 
-def variant_modeled_frequencies(mlr):
-    """variant -> {date: MLR-modeled freq} (median) for the primary location."""
-    return _variant_date_series(mlr, site="freq", ps="median")
+def variant_modeled_frequencies(mlr, location=None):
+    """variant -> {date: MLR-modeled freq} (median) for one region (None => primary)."""
+    return _variant_date_series(mlr, site="freq", ps="median", location=location)
 
 
-def _variant_date_series(mlr, site, ps=None):
-    location = primary_location(mlr)
+def _variant_date_series(mlr, site, ps=None, location=None):
+    if location is None:
+        location = primary_location(mlr)
     series = {}
     for record in mlr["data"]:
         if record.get("value") is None:

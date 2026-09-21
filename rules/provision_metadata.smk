@@ -26,13 +26,16 @@ rule provision_metadata:
     params:
         url = lambda w: config["provision"][w.virus]["metadata_url"],
         decompress = lambda w: config["provision"][w.virus]["decompress"],
-        columns = lambda w: config["provision"][w.virus]["columns"]
+        columns = lambda w: config["provision"][w.virus]["columns"],
+        # Public buckets (SARS-CoV-2 ncov open) are fetched unsigned so the workflow
+        # runs with no AWS credentials; the private seasonal-flu buckets omit this.
+        no_sign = lambda w: "--no-sign-request" if config["provision"][w.virus].get("no_sign_request") else ""
     log:
         "logs/provision/{virus}.txt"
     shell:
         """
         set -euo pipefail
-        ( aws s3 cp {params.url} - \
+        ( aws s3 cp {params.no_sign} {params.url} - \
             | {params.decompress} \
             | tsv-select -H -f {params.columns} \
             | zstd -c > {output} ) 2> {log}

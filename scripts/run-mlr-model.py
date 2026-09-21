@@ -458,6 +458,11 @@ if __name__ == "__main__":
         + "Default is false if unspecified."
     )
     parser.add_argument(
+        "--no-hier", action='store_true', default=False,
+        help="Force NON-hierarchical (independent per-location) fitting, overriding "
+        + "model.hierarchical=true in config. Used for the pooling-off comparison arm."
+    )
+    parser.add_argument(
         "--raw-freq-window",
         type=int,
         default=7,
@@ -474,7 +479,9 @@ if __name__ == "__main__":
 
     override_hier = None
     if args.hier:
-        override_hier = args.hier
+        override_hier = True
+    if args.no_hier:
+        override_hier = False
 
     # Use mlr config generation time unless a dataset-specific generation time is specified
     generation_time = None

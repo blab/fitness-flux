@@ -230,11 +230,12 @@ def remap_truth(truth_next, variant_set, d):
     return {v: kept.get(v, 0.0) / total for v in variant_set}
 
 
-def forecast_pair(cur, nxt, tau_fn, epsilon, hindcast_days, forecast_days):
-    """Rows (date, lead, n, model, abs_error) for one (W, W+1) pair.
+def forecast_pair(cur, nxt, tau_fn, epsilon, hindcast_days, forecast_days, location=None):
+    """Rows (date, lead, n, model, abs_error) for one (W, W+1) pair in one region.
 
     Frequencies are over W's *named* clades (the "other" bucket is excluded and the
-    named clades are renormalized to sum 1), for both predictions and truth.
+    named clades are renormalized to sum 1), for both predictions and truth. All
+    series are read for ``location`` (a region); None => primary (single-region).
     """
     _, m, T = cur
     _, nm, _ = nxt
@@ -243,9 +244,9 @@ def forecast_pair(cur, nxt, tau_fn, epsilon, hindcast_days, forecast_days):
     if n < 2:
         return []  # need >=2 named clades to define relative frequencies
 
-    ga = ff_io.variant_growth_advantages(m)          # missing / "other" -> 1.0
-    modeled = ff_io.variant_modeled_frequencies(m)   # {v: {date: freq}} (median)
-    truth_next = ff_io.variant_weekly_frequencies(nm)
+    ga = ff_io.variant_growth_advantages(m, location=location)          # missing / "other" -> 1.0
+    modeled = ff_io.variant_modeled_frequencies(m, location=location)   # {v: {date: freq}} (median)
+    truth_next = ff_io.variant_weekly_frequencies(nm, location=location)
 
     freqT = normalize({v: (modeled.get(v, {}).get(T) or 0.0) for v in variant_set})
     delta = {v: math.log(max(ga.get(v, 1.0), epsilon)) / tau_fn(v) for v in variant_set}
@@ -274,9 +275,9 @@ def forecast_pair(cur, nxt, tau_fn, epsilon, hindcast_days, forecast_days):
 
 
 def aggregate(all_rows, bin_days):
-    """MAE(lead) curve: mean abs_error per model within weekly lead bins."""
+    """MAE(lead) curve: mean abs_error per model within weekly lead bins (pooled over regions)."""
     bucket = defaultdict(lambda: defaultdict(list))  # bin_index -> model -> [ae]
-    for _pair, _win, _nxt, _d, lead, _n, model, ae in all_rows:
+    for _region, _pair, _win, _nxt, _d, lead, _n, model, ae in all_rows:
         bucket[lead // bin_days][model].append(ae)
     curve = []
     for b in sorted(bucket):
@@ -293,14 +294,14 @@ def aggregate(all_rows, bin_days):
     return curve
 
 
-def region_means(all_rows):
+def horizon_means(all_rows):
     """Per-model mean AE over the hindcast (lead <= 0) and forecast (lead > 0)."""
     acc = {"hindcast": defaultdict(list), "forecast": defaultdict(list)}
-    for _pair, _win, _nxt, _d, lead, _n, model, ae in all_rows:
+    for _region, _pair, _win, _nxt, _d, lead, _n, model, ae in all_rows:
         acc["forecast" if lead > 0 else "hindcast"][model].append(ae)
     out = {}
-    for region, by_model in acc.items():
-        out[region] = {
+    for horizon, by_model in acc.items():
+        out[horizon] = {
             model: (sum(v) / len(v) if v else None)
             for model, v in {"mlr": by_model.get("mlr", []), "naive": by_model.get("naive", [])}.items()
         }
@@ -312,29 +313,46 @@ def main():
     tau_fn = make_tau_fn(args)
 
     windows = load_windows(args.mlr_dir, args.dataset)
-    pairs = build_pairs(windows, args.slide_days)
+    # Regions present across the dataset's windows (each window's hierarchical fit
+    # carries one series per sufficiently-sampled region). Forecasts are paired and
+    # scored WITHIN a region (W and W+1 from the same region).
+    all_regions = sorted(set().union(*[set(ff_io.regions(w[1])) for w in windows])) if windows else []
+
+    all_rows = []  # (region, pair_label, window, next_window, date, lead, n, model, ae)
+    pairs_by_region = {}
+    for region in all_regions:
+        region_windows = [w for w in windows if region in ff_io.regions(w[1])]
+        pairs = build_pairs(region_windows, args.slide_days)
+        pairs_by_region[region] = [f"{cur[0]}->{nxt[0]}" for cur, nxt in pairs]
+        for cur, nxt in pairs:
+            label = f"{cur[0]}->{nxt[0]}"
+            for d, lead, n, model, ae in forecast_pair(
+                cur, nxt, tau_fn, args.epsilon, args.hindcast_days, args.forecast_days,
+                location=region,
+            ):
+                all_rows.append((region, label, cur[0], nxt[0], d, lead, n, model, ae))
+        ff_io.log(f"  {region}: {len(region_windows)} windows, {len(pairs)} pairs")
+
+    total_pairs = sum(len(p) for p in pairs_by_region.values())
     ff_io.log(
-        f"{args.dataset}: {len(windows)} windows, {len(pairs)} forecastable pairs "
+        f"{args.dataset}: {len(all_regions)} regions, {total_pairs} region-window pairs "
         f"(slide {args.slide_days}d, horizon +{args.forecast_days}d / -{args.hindcast_days}d)"
     )
-
-    all_rows = []  # (pair_label, window, next_window, date, lead, n, model, ae)
-    for cur, nxt in pairs:
-        label = f"{cur[0]}->{nxt[0]}"
-        for d, lead, n, model, ae in forecast_pair(
-            cur, nxt, tau_fn, args.epsilon, args.hindcast_days, args.forecast_days
-        ):
-            all_rows.append((label, cur[0], nxt[0], d, lead, n, model, ae))
-        ff_io.log(f"  {label}: evaluated")
 
     with open(args.detail_output, "w", newline="") as handle:
         writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
         writer.writerow(
-            ["window", "next_window", "date", "lead_days", "n_variants", "model", "abs_error"]
+            ["region", "window", "next_window", "date", "lead_days", "n_variants", "model", "abs_error"]
         )
-        for _label, window, next_window, d, lead, n, model, ae in all_rows:
-            writer.writerow([window, next_window, d, lead, n, model, f"{ae:.6f}"])
+        for region, _label, window, next_window, d, lead, n, model, ae in all_rows:
+            writer.writerow([region, window, next_window, d, lead, n, model, f"{ae:.6f}"])
     ff_io.log(f"Wrote {len(all_rows)} detail rows to {args.detail_output}")
+
+    by_region = {
+        region: {"n_pairs": len(pairs_by_region[region]),
+                 **horizon_means([r for r in all_rows if r[0] == region])}
+        for region in all_regions
+    }
 
     summary = {
         "dataset": args.dataset,
@@ -342,10 +360,12 @@ def main():
         "lead_bin_days": args.lead_bin_days,
         "hindcast_days": args.hindcast_days,
         "forecast_days": args.forecast_days,
-        "n_pairs": len(pairs),
-        "pairs": [f"{cur[0]}->{nxt[0]}" for cur, nxt in pairs],
+        "regions": all_regions,
+        "n_pairs": total_pairs,
+        "pairs_by_region": pairs_by_region,
         "reference": 0.05,
-        "overall": region_means(all_rows),
+        "overall": horizon_means(all_rows),
+        "by_region": by_region,
         "curve": aggregate(all_rows, args.lead_bin_days),
     }
     with open(args.summary_output, "w") as handle:

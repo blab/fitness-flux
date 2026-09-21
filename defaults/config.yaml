@@ -151,22 +151,23 @@ provision:
   sarscov2:
     metadata_url: "s3://nextstrain-data/files/ncov/open/metadata.tsv.zst"
     decompress: "zstd -dc"
-    columns: "strain,date,country,clade_nextstrain,Nextclade_pango,QC_overall_status"
+    no_sign_request: true  # public bucket; fetch unsigned (no AWS creds needed)
+    columns: "strain,date,country,region,clade_nextstrain,Nextclade_pango,QC_overall_status"
     merge_clades:
       clade_nextstrain:
         WT: ["19A", "19B"]
   h3n2:
     metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/h3n2/metadata.tsv.xz"
     decompress: "xz -dc"
-    columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
+    columns: "strain,date,country,region,subclade_nextclade_ha,qc.overallStatus_ha"
   h1n1pdm:
     metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/h1n1pdm/metadata.tsv.xz"
     decompress: "xz -dc"
-    columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
+    columns: "strain,date,country,region,subclade_nextclade_ha,qc.overallStatus_ha"
   vic:
     metadata_url: "s3://nextstrain-data-private/files/workflows/seasonal-flu/vic/metadata.tsv.xz"
     decompress: "xz -dc"
-    columns: "strain,date,country,subclade_nextclade_ha,qc.overallStatus_ha"
+    columns: "strain,date,country,region,subclade_nextclade_ha,qc.overallStatus_ha"
 
 # Generation time (days) to convert per-day MLR growth rates to per-generation
 # fitness. SARS-CoV-2 splits by Omicron status (assigned per variant at fit time
@@ -199,43 +200,48 @@ _sarscov2_clades: &sarscov2_clades
   local_metadata: "data/sarscov2_merged_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column clade_nextstrain
-    --filter-columns QC_overall_status country
-    --filter-query "QC_overall_status != 'bad' & country == 'USA'"
+    --filter-columns QC_overall_status region
+    --filter-query "QC_overall_status != 'bad' & region != '?'"
+    --location-column region
   clade_min_count: 50
   clade_min_freq: 0.001
+  location_min_seq: 500
 
 _h3n2_clades: &h3n2_clades
   local_metadata: "data/h3n2_subset_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
+    --filter-columns region
+    --filter-query "region != '?'"
+    --location-column region
   clade_min_count: 50
   clade_min_freq: 0.001
   raw_freq_window: 14
+  location_min_seq: 500
 
 _h1n1pdm_clades: &h1n1pdm_clades
   local_metadata: "data/h1n1pdm_subset_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
+    --filter-columns region
+    --filter-query "region != '?'"
+    --location-column region
   clade_min_count: 50
   clade_min_freq: 0.001
   raw_freq_window: 14
+  location_min_seq: 500
 
 _vic_clades: &vic_clades
   local_metadata: "data/vic_subset_metadata.tsv.zst"
   seq_count_options: >-
     --clade-column subclade_nextclade_ha
-    --filter-columns country
-    --filter-query "country == 'USA'"
-    --location-column country
+    --filter-columns region
+    --filter-query "region != '?'"
+    --location-column region
   clade_min_count: 50
   clade_min_freq: 0.001
   raw_freq_window: 14
+  location_min_seq: 500
 
 # sarscov2_clades windows
 sarscov2_clades_2020-01:

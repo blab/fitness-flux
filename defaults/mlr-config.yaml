@@ -22,6 +22,11 @@ model:
   # would otherwise silently become the reference for windows that lack a --pivot.)
   pivot: ""
   hierarchical: true
+  # Cross-region partial-pooling strength for the hierarchical model (HierMLR): each
+  # region's per-variant growth advantage is drawn Normal(shared_mean, pool_scale).
+  # Smaller => stronger shrinkage toward the across-region consensus. evofr's default
+  # is 0.1; 0.25 matches the forecasts-flu config. Only matters with >1 region.
+  pool_scale: 0.25
 
 inference:
   method: "NUTS"
