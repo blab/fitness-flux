@@ -67,23 +67,15 @@ Limitations
 import argparse
 import csv
 import json
-import math
-import os
-import sys
 from collections import defaultdict
-from datetime import date
 
 import ff_io
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
-from generation_time import generation_time_for, load_aliasor  # noqa: E402
-
-# A window's successor sits ~one slide later (SARS-CoV-2 slides 6 months; flu
-# slides 1 year). We accept a successor whose final data date is within +/-20% of
-# the slide, which spans the real spread (e.g. 181-184 d for a 6-month slide,
-# 324-407 d for a 1-year slide) while rejecting a doubled jump when the true
-# successor is absent, and same-year duplicates from bridge windows.
-GAP_TOLERANCE = 0.20
+from forecast_shared import (  # window pairing + forward projection, shared with
+    build_pairs,               # forecast_similarity.py so the two scores cannot
+    load_windows,              # drift apart
+    make_tau_fn,
+    window_predictions,
+)
 
 
 def parse_args():
@@ -137,76 +129,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def day_gap(a_iso, b_iso):
-    """a - b in days, from ISO YYYY-MM-DD strings."""
-    return (date.fromisoformat(a_iso) - date.fromisoformat(b_iso)).days
-
-
-def load_windows(mlr_dir, dataset):
-    """(timepoint, mlr, final_date) per window, sorted by final date."""
-    windows = []
-    for tp in ff_io.seasonal_timepoints(mlr_dir, dataset):
-        mlr = ff_io.load_mlr(mlr_dir, dataset, tp)
-        windows.append((tp, mlr, mlr["metadata"]["dates"][-1]))
-    windows.sort(key=lambda w: w[2])
-    return windows
-
-
-def build_pairs(windows, slide_days):
-    """(W, successor) pairs where the successor's final data date is ~slide_days later.
-
-    Windows are sorted by final date. The successor is not necessarily the adjacent
-    window: with a 3-month slide but a 6-month (180 d) forecast horizon, each window
-    pairs with the one two quarters ahead. Take the nearest window whose gap falls in
-    the tolerance band; a window with no such successor (e.g. across a data gap) is skipped.
-    """
-    lo = slide_days * (1 - GAP_TOLERANCE)
-    hi = slide_days * (1 + GAP_TOLERANCE)
-    pairs = []
-    for i, cur in enumerate(windows):
-        for nxt in windows[i + 1:]:
-            gap = day_gap(nxt[2], cur[2])
-            if gap > hi:
-                break  # sorted by final date: no later window qualifies
-            if gap >= lo:
-                pairs.append((cur, nxt))
-                break  # nearest qualifying successor
-    return pairs
-
-
-def make_tau_fn(args):
-    """variant -> generation time tau. Uniform when no pre-Omicron split."""
-    if args.generation_time_pre_omicron is None or args.variant_classification is None:
-        return lambda v: args.generation_time
-    aliasor = (
-        load_aliasor(args.aliasing)
-        if args.variant_classification == "lineages"
-        else None
-    )
-    return lambda v: generation_time_for(
-        v,
-        args.variant_classification,
-        args.generation_time_pre_omicron,
-        args.generation_time,
-        aliasor,
-    )
-
-
-def softmax(logits):
-    """logits: {variant: value} -> {variant: probability}."""
-    hi = max(logits.values())
-    exps = {v: math.exp(x - hi) for v, x in logits.items()}
-    total = sum(exps.values())
-    return {v: e / total for v, e in exps.items()}
-
-
-def normalize(values):
-    total = sum(values.values())
-    if total <= 0:
-        return {v: 0.0 for v in values}
-    return {v: x / total for v, x in values.items()}
-
-
 def remap_truth(truth_next, variant_set, d):
     """W+1 weekly_raw_freq at date d, restricted to W's named clades (variant_set)
     and renormalized to sum 1 over them.
@@ -237,36 +159,17 @@ def forecast_pair(cur, nxt, tau_fn, epsilon, hindcast_days, forecast_days, locat
     named clades are renormalized to sum 1), for both predictions and truth. All
     series are read for ``location`` (a region); None => primary (single-region).
     """
-    _, m, T = cur
     _, nm, _ = nxt
-    variant_set = [v for v in m["metadata"]["variants"] if v != "other"]
-    n = len(variant_set)
-    if n < 2:
-        return []  # need >=2 named clades to define relative frequencies
-
-    ga = ff_io.variant_growth_advantages(m, location=location)          # missing / "other" -> 1.0
-    modeled = ff_io.variant_modeled_frequencies(m, location=location)   # {v: {date: freq}} (median)
     truth_next = ff_io.variant_weekly_frequencies(nm, location=location)
 
-    freqT = normalize({v: (modeled.get(v, {}).get(T) or 0.0) for v in variant_set})
-    delta = {v: math.log(max(ga.get(v, 1.0), epsilon)) / tau_fn(v) for v in variant_set}
-    logf0 = {v: math.log(max(freqT[v], epsilon)) for v in variant_set}
-
     rows = []
-    for d in nm["metadata"]["dates"]:
-        lead = day_gap(d, T)
-        if lead < -hindcast_days or lead > forecast_days:
-            continue
+    for d, lead, variant_set, pred_mlr, pred_naive in window_predictions(
+        cur, nxt, tau_fn, epsilon, hindcast_days, forecast_days, location=location
+    ):
         truth = remap_truth(truth_next, variant_set, d)
         if truth is None:
             continue
-        if lead <= 0:
-            # Hindcast: both models are the in-window fit, so they coincide.
-            pred_mlr = normalize({v: (modeled.get(v, {}).get(d) or 0.0) for v in variant_set})
-            pred_naive = pred_mlr
-        else:
-            pred_mlr = softmax({v: logf0[v] + delta[v] * lead for v in variant_set})
-            pred_naive = freqT
+        n = len(variant_set)
         ae_mlr = sum(abs(truth[v] - pred_mlr[v]) for v in variant_set) / n
         ae_naive = sum(abs(truth[v] - pred_naive[v]) for v in variant_set) / n
         rows.append((d, lead, n, "mlr", ae_mlr))
