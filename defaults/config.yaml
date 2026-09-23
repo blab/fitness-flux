@@ -187,6 +187,19 @@ generation_time:
 mutation_counts:
   nextclade_url: "https://nextstrain.org/nextclade/nextstrain/sars-cov-2/wuhan-hu-1/orfs"
 
+# Seasonal-flu auspice tree used to reconstruct the HA1 amino-acid sequence at
+# each clade's MRCA node. Those sequences define the global clade similarity map
+# behind the similarity-aware forecast score (rules/forecast_analysis.smk). The
+# 12-year build spans every analysis window and embeds its own root sequence, so
+# no separate root-sequence file is needed.
+# Re-fetch with `--forcerun download_clade_tree`.
+clade_distance:
+  trees:
+    h3n2_clades:
+      url: "https://data.nextstrain.org/seasonal-flu_h3n2_ha_12y.json"
+      gene: "HA1"
+      clade_key: "subclade"
+
 # All clade datasets slide forward every 3 months (quarterly), labeled by window
 # start month (YYYY-MM). SARS-CoV-2 uses 1-year windows; flu uses 2-year windows
 # (sparser data, slower dynamics, and to bridge more of the 2020-2022 COVID trough).

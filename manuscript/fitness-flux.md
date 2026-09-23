@@ -142,6 +142,69 @@ Negative leads (hindcast) fall within the fitting window, where the MLR and naiv
 The dashed line marks 5% error; faint lines show the individual window pairs, and $n$ is the number of pairs contributing to each panel.
 :::
 
+### Scoring forecasts by amino acid distance rather than clade label
+
+The error above treats clade labels as exchangeable: a forecast that puts its mass on a clade's immediate parent is charged exactly as much as one that puts it on a distant clade.
+For vaccine strain selection that is the wrong accounting, because a vaccine matched to a near relative of the clade that sweeps is a near hit while one matched to a distant clade is a miss.
+The distinction is not hypothetical for H3N2: every one of the 40 windows contains at least one parent-descendant clade pair co-circulating in its named set.
+
+To score forecasts in a way that tracks this, we represent each clade by the reconstructed HA1 amino-acid sequence at its most recent common ancestor and measure the distance between clades as the number of HA1 positions at which those sequences differ ([@fig:clade-distance]).
+Across the 48 clades in the resulting map this spans 60 variable HA1 positions, with pairwise distances from 0 to 34 amino acids.
+Clade labels are a lossy stand-in for that quantity: ancestor-descendant pairs differ by 3.8 amino acids on average and sibling pairs by 3.9, against 15.9 for pairs whose labels share no ancestry, but the three distributions overlap across the whole range — and J and J.3, which the label-based score treats as entirely distinct, have identical HA1 MRCA sequences.
+
+We then score the *same* forecasts in the space of HA1 mutation profiles: each clade-frequency vector becomes, for every variable HA1 position, the fraction of the population carrying each amino acid, and the error is the distance between the forecast profile and the observed profile ([@fig:similarity-accuracy]).
+Because a single global map covers every clade in the tree, the forecast and the truth no longer need to share a clade set — each is renormalized over its own window's named clades, and clades that emerged after the date of estimation enter the truth at their own coordinates rather than being dropped.
+Error is then read in amino acids, and nothing about the forecasts themselves changes.
+
+Scored this way MLR's advantage over persistence is larger than the clade-label score reports, but it is concentrated at intermediate lead rather than sustained to the end of the year.
+Averaged over the whole one-year forecast window, MLR forecasts are off by 3.85 HA1 amino acids against 4.10 for persistence, a 6.3% advantage, while the same forecasts scored by clade label differ by 2.1% (6.25% against 6.39% mean absolute error).
+Table 1 breaks that out at three lead times.
+At three and six months MLR is clearly ahead by HA1 distance, with mean error 10.9% and 8.5% below persistence, while the clade-label score credits it with 7.1% and 2.1%.
+By twelve months the advantage has gone under both scores: 2.0% by HA1 distance and 0.2% by clade label, which is to say the two models are indistinguishable.
+
+The win rate — the fraction of region-weeks in which MLR lands strictly closer than persistence — does not follow the mean-error advantage.
+At three months MLR's mean error is 10.9% below persistence by HA1 distance and yet it wins only 50.9% of region-weeks, so the early gain comes from a minority of windows in which MLR is far closer rather than from its being closer more often.
+The win rate instead peaks at six months, at 62.6% by HA1 distance against 52.9% by clade label, and falls to 45.4% at twelve months against 32.6% by label.
+The amino-acid score therefore does not rescue MLR at the longest lead.
+What it shows is that MLR's six-month edge is real and substantially larger than the label score credits, and that by a year neither model holds a useful edge over the other.
+Where MLR does win, it wins because when it is wrong about which clade will dominate it is wrong in the direction of a near relative, while persistence — anchored on the currently dominant clade — more often sits further away in HA1 space.
+The label score is also increasingly unable to tell the two models apart at all: it returns exactly equal errors in 0.9% of region-weeks at three months, 3.4% at six and 24.6% at twelve, where HA1 distance never ties.
+
+**Table 1. H3N2 forecast accuracy at three, six and twelve months, scored by HA1 distance and by clade label.**
+The same MLR and naive persistence forecasts, compared against the same observed frequencies, differing only in how the distance between a forecast and the truth is measured.
+The clade-label rows are the mean absolute frequency error used elsewhere in this paper, taken over the union of the forecast's and the truth's clade sets since the two need not agree; that divisor is common to both models and so affects only the level, not the comparison.
+MLR advantage is the reduction in mean error relative to naive; win rate is the fraction of region-weeks in which MLR's error is strictly smaller, with ties counted against MLR.
+All three blocks come from the one-year pairing (250 window pairs), covering leads of 85 to 90 days (344 region-weeks), 175 to 180 days (350 region-weeks) and 360 to 365 days (390 region-weeks).
+The clade-label score returns exact ties in 0.9%, 3.4% and 24.6% of those region-weeks respectively; the HA1 distance never ties.
+
+| Score | MLR | Naive | MLR advantage | MLR win rate |
+|---|---|---|---|---|
+| *At the 90-day endpoint* | | | | |
+| HA1 distance | 2.45 aa | 2.75 aa | 10.9% | 50.9% |
+| Clade label (mean absolute error) | 4.30% | 4.63% | 7.1% | 50.6% |
+| *At the 180-day endpoint* | | | | |
+| HA1 distance | 4.04 aa | 4.42 aa | 8.5% | 62.6% |
+| Clade label (mean absolute error) | 6.85% | 6.99% | 2.1% | 52.9% |
+| *At the 365-day endpoint* | | | | |
+| HA1 distance | 6.47 aa | 6.60 aa | 2.0% | 45.4% |
+| Clade label (mean absolute error) | 9.00% | 9.02% | 0.2% | 32.6% |
+
+The advantage is not uniform across regions: at one year it is positive in seven of ten regions, and negative in Africa, Europe and South Asia, the last of which contributes the fewest sequences.
+
+:::figure{#fig:clade-distance component=clade-distance dataset=h3n2_clades}
+**HA1 distances between H3N2 clades, and how poorly clade labels track them.**
+Left, pairwise distance between the reconstructed HA1 amino-acid sequences at each clade's most recent common ancestor, for the 48 clades in the H3N2 similarity map, ordered by divergence from the root so that the tree's block structure is visible.
+Right, the same 1128 clade pairs split by what their labels alone imply about relatedness, with the group mean marked.
+The three distributions overlap across the full 0-34 amino acid range, so label identity is a weak proxy for HA1 similarity; a label-based forecast score charges the same penalty for every pair shown.
+:::
+
+:::figure{#fig:similarity-accuracy component=similarity-accuracy dataset=h3n2_clades}
+**The same H3N2 forecasts scored by HA1 distance and by clade label.**
+Left, forecast error in HA1 amino acids against lead time over a one-year horizon, for MLR (blue) and naive persistence (red); negative leads fall within the fitting window where the two coincide (grey), and faint lines show individual window pairs.
+Right, the identical forecasts scored by clade label as mean absolute frequency error, where the two models nearly converge.
+Both panels come from the same forecasts and the same observed frequencies; only the distance between them differs.
+:::
+
 ## Conclusions
 
 Genomic surveillance rests on tracking which variants are rising and falling in frequency.
@@ -189,6 +252,32 @@ The MLR forecast is $\hat{x}^{\mathrm{MLR}}_i(t) = \mathrm{softmax}_i[\log x_i(T
 The naive forecast is $\hat{x}^{\mathrm{naive}}_i(t) = x_i(T)$ held constant for $t > T$, and equal to the MLR fit for $t \le T$, so the two coincide over the hindcast and differ only in how they project forward.
 The truth $x_i(t)$ is the empirical smoothed frequency from the later window, restricted to $S$ and renormalized over $S$ (mass in the later window's "other" bucket and in clades that emerged after $T$ is dropped).
 The absolute error at each date is the mean over clades, $\frac{1}{|S|} \sum_{i \in S} \lvert x_i(t) - \hat{x}_i(t) \rvert$ [@abousamra2024fitness], which we average within weekly lead-time bins across each lineage's contributing window pairs (21 for SARS-CoV-2, 32 for H3N2, 19 for H1N1pdm and 22 for B/Victoria) to give mean absolute error as a function of lead time.
+
+### Similarity-aware forecast scoring
+
+To score forecasts by amino acid distance rather than clade identity ([@fig:clade-distance], [@fig:similarity-accuracy]) we build one global clade map for H3N2 from the Nextstrain seasonal-flu HA tree.
+Walking the tree from the root and accumulating HA1 amino-acid mutations along each path gives the HA1 sequence at every internal node; a clade's representative sequence is the one at the shallowest node carrying that clade label, i.e. its most recent common ancestor.
+We use the MRCA sequence rather than the consensus of the sequences assigned to a clade because the consensus is a mixture over whichever descendants happen to fall under that label and therefore shifts with the collapse threshold, while the MRCA sequence depends only on the tree.
+The distance $d(k, l)$ between two clades is the number of HA1 positions at which their MRCA sequences differ.
+One clade named in the analysis windows, B.1.2, has no node of its own in the tree and inherits its nearest reconstructable ancestor's sequence (B.1); `unassigned` has no MRCA and, unlike in the label-based score, is excluded here and the remaining frequencies renormalized (it averages 0.35% of H3N2 sequences).
+
+Each globally variable HA1 position contributes one column per amino acid observed at it across all clades, giving a clade $\times$ column indicator matrix $M$ with a 1 where clade $k$ carries column $c$'s amino acid.
+One column per allele, rather than per non-reference allele, is what keeps the scale consistent: two clades differing at a single position differ in exactly two columns whether that position is biallelic or not.
+Writing $A$ for that matrix scaled by $1/2$, a frequency vector $p$ over clades maps to the population mutation profile $A^{\mathsf{T}} p$, and the error between a forecast $\hat{x}(t)$ and the truth $x(t)$ is
+
+$$ E(t) = \lVert A^{\mathsf{T}} \hat{x}(t) - A^{\mathsf{T}} x(t) \rVert_1 . $$
+
+The scaling makes this read directly in amino acids: two pure clades sit $d(k, l)$ apart.
+The map is deliberately not injective — clades whose MRCA sequences are identical (H3N2 has one such pair, J and J.3) occupy the same point and the score cannot separate them, which is the intended behaviour for a measure of amino acid difference rather than of nomenclature.
+Predictions are unchanged from the label-based score — the same MLR projection and the same persistence baseline, from the same fits — so the comparison isolates the scoring convention.
+Because $M$ is global, the forecast is renormalized over the earlier window's named clades and the truth over the later window's, with no remapping between them; the label-based score by contrast restricts truth to the earlier window's clade set, which drops clades that emerged after $T$ entirely.
+We score both the existing six-month pairing and a one-year pairing (each window paired with the one four quarters ahead), over $[T-90, T+h]$ days for horizon $h$.
+
+The label-based comparator we report alongside is the mean absolute frequency error of the Forecast accuracy section, $\frac{1}{|U|} \sum_i \lvert x_i(t) - \hat{x}_i(t) \rvert$, where $U$ is the union of the forecast's and the truth's clade sets; the union stands in for the single clade set $S$ available there, because here the two sides need not agree.
+That divisor is common to both models at a given date, so it sets the level of the error but cannot change which model is closer.
+To verify the transform we add a uniform separation $\epsilon$ between every pair of distinct clades, via one identity column per clade, and confirm that as $\epsilon$ grows the normalized error converges to $\frac{1}{2}\sum_i \lvert x_i(t) - \hat{x}_i(t) \rvert$, the total-variation distance between the two frequency vectors and thus $\lvert U \rvert / 2$ times that mean absolute error — clade identity being all that survives once every pair is equidistant.
+That check runs as a workflow step ahead of any scoring, together with the requirements that two pure clades sit exactly $d(k,l)$ apart and that moving forecast mass onto a more distant clade always raises the score.
+Reported results use $\epsilon = 0$ throughout.
 
 ### Reproducibility
 

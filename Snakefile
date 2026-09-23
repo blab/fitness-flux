@@ -18,6 +18,7 @@ rule all:
     input:
         rules.all_frequencies.input,
         rules.all_forecast_analysis.input,
+        rules.all_similarity_analysis.input,
 
 rule clean:
     """
@@ -38,7 +39,9 @@ rule clean:
                viz/time-vs-frequency/data viz/time-vs-frequency/meta.json \
                viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json \
                viz/variance-vs-flux/data viz/variance-vs-flux/meta.json \
-               viz/forecast-accuracy/data viz/forecast-accuracy/meta.json
+               viz/forecast-accuracy/data viz/forecast-accuracy/meta.json \
+               viz/clade-distance/data viz/clade-distance/meta.json \
+               viz/similarity-accuracy/data viz/similarity-accuracy/meta.json
         """
 
 rule clean_analysis:
@@ -58,5 +61,7 @@ rule clean_analysis:
                viz/time-vs-frequency/data viz/time-vs-frequency/meta.json \
                viz/frequency-vs-fitness/data viz/frequency-vs-fitness/meta.json \
                viz/variance-vs-flux/data viz/variance-vs-flux/meta.json \
-               viz/forecast-accuracy/data viz/forecast-accuracy/meta.json
+               viz/forecast-accuracy/data viz/forecast-accuracy/meta.json \
+               viz/clade-distance/data viz/clade-distance/meta.json \
+               viz/similarity-accuracy/data viz/similarity-accuracy/meta.json
         """
