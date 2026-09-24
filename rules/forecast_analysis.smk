@@ -143,9 +143,69 @@ SIMILARITY_ANALYSES = [a for a in FORECAST_ANALYSES if a in config.get("clade_di
 # score loses the most information — and it is the vaccine-selection timeline.
 SIMILARITY_HORIZONS = [180, 365]
 
+# Display labels for the similarity figures/tables, per dataset.
+SIMILARITY_LABELS = {"h3n2_clades": "H3N2", "sarscov2_clades": "SARS-CoV-2"}
+
 
 def _clade_tree(analysis, field):
     return config["clade_distance"]["trees"][analysis][field]
+
+
+def _clade_tree_entry(analysis):
+    return config["clade_distance"]["trees"][analysis]
+
+
+def _clade_tree_path(analysis):
+    """The tree JSON for a dataset: a local file (SARS-CoV-2, fetched by
+    download_ncov_tree) when `local` is set, else the download_clade_tree output."""
+    return _clade_tree_entry(analysis).get("local", f"data/{analysis}_clade_tree.json")
+
+
+def _clade_distances_inputs(wildcards):
+    """Tree (+ optional root sidecar) and the MLR windows the map must cover."""
+    entry = _clade_tree_entry(wildcards.analysis)
+    inputs = {
+        "tree": _clade_tree_path(wildcards.analysis),
+        "mlr": _forecast_season_inputs(wildcards),
+    }
+    if entry.get("root"):
+        inputs["root"] = entry["root"]
+    return inputs
+
+
+def _clade_distance_args(wildcards):
+    """Assemble clade_distances.py's per-dataset flags from the tree config.
+
+    H3N2 gets only --gene/--clade-key (its defaults); SARS-CoV-2 adds the root
+    sidecar, the display label, first-word label normalization, the S1 position
+    window, and the WT->root alias."""
+    entry = _clade_tree_entry(wildcards.analysis)
+    parts = [f"--gene {entry['gene']}", f"--clade-key {entry['clade_key']}"]
+    if entry.get("root"):
+        parts.append(f"--root {entry['root']}")
+    if entry.get("gene_label"):
+        parts.append(f"--gene-label {entry['gene_label']!r}")
+    if entry.get("clade_label"):
+        parts.append(f"--clade-label {entry['clade_label']}")
+    if entry.get("min_pos") is not None:
+        parts.append(f"--min-pos {entry['min_pos']}")
+    if entry.get("max_pos") is not None:
+        parts.append(f"--max-pos {entry['max_pos']}")
+    for clade, target in (entry.get("aliases") or {}).items():
+        parts.append(f"--alias {clade}={target}")
+    return " ".join(parts)
+
+
+def _similarity_relatedness(analysis):
+    """How the clade-distance figure classifies relatedness: from the tree
+    topology when labels are not hierarchically nested (SARS-CoV-2, first_word),
+    else from the dot-nested label strings (H3N2)."""
+    return "tree" if _clade_tree_entry(analysis).get("clade_label") == "first_word" else "label"
+
+
+def _similarity_meta_datasets():
+    """`id:Label,...` for viz_meta.py, over the datasets that have a tree."""
+    return ",".join(f"{a}:{SIMILARITY_LABELS.get(a, a)} clades" for a in SIMILARITY_ANALYSES)
 
 
 rule download_clade_tree:
@@ -175,24 +235,21 @@ rule clade_distances:
     diagnostics the figure and Methods quote.
     """
     input:
-        tree = "data/{analysis}_clade_tree.json",
-        mlr = _forecast_season_inputs
+        unpack(_clade_distances_inputs)
     output:
         sequences = "fitness-flux-analysis/results/{analysis}_ha1_mrca.tsv",
         distances = "fitness-flux-analysis/results/{analysis}_distance_matrix.tsv",
         profile = "fitness-flux-analysis/results/{analysis}_profile_table.tsv",
         summary = "fitness-flux-analysis/results/{analysis}_distance_summary.json"
     params:
-        gene = lambda wildcards: _clade_tree(wildcards.analysis, "gene"),
-        clade_key = lambda wildcards: _clade_tree(wildcards.analysis, "clade_key")
+        args = _clade_distance_args
     log:
         "logs/fitness_flux/{analysis}_clade_distances.txt"
     shell:
         """
         python -u fitness-flux-analysis/scripts/clade_distances.py \
             --tree {input.tree} \
-            --gene {params.gene} \
-            --clade-key {params.clade_key} \
+            {params.args} \
             --mlr-dir mlr-estimates \
             --dataset {wildcards.analysis} \
             --sequences-output {output.sequences} \
@@ -255,6 +312,7 @@ rule forecast_similarity:
             --norm l1 --eps 0 \
             --slide-days {wildcards.horizon} \
             --forecast-days {wildcards.horizon} \
+            --endpoint 0 --endpoint 30 --endpoint 90 --endpoint 180 --endpoint 365 \
             {params.generation_time} \
             --detail-output {output.detail} \
             --summary-output {output.summary} 2>&1 | tee {log}
@@ -262,24 +320,31 @@ rule forecast_similarity:
 
 
 rule viz_clade_distance_data:
+    """Per-dataset clade-distance payload. Relatedness is read from the tree
+    topology for non-nested labels (SARS-CoV-2) and from the label strings for
+    dot-nested labels (H3N2). meta.json is written once by viz_similarity_meta."""
     input:
-        sequences = "fitness-flux-analysis/results/h3n2_clades_ha1_mrca.tsv",
-        distances = "fitness-flux-analysis/results/h3n2_clades_distance_matrix.tsv",
-        summary = "fitness-flux-analysis/results/h3n2_clades_distance_summary.json"
+        sequences = "fitness-flux-analysis/results/{analysis}_ha1_mrca.tsv",
+        distances = "fitness-flux-analysis/results/{analysis}_distance_matrix.tsv",
+        summary = "fitness-flux-analysis/results/{analysis}_distance_summary.json"
     output:
-        data = "viz/clade-distance/data/h3n2_clades.json",
-        meta = "viz/clade-distance/meta.json"
+        data = "viz/clade-distance/data/{analysis}.json"
+    wildcard_constraints:
+        analysis = "|".join(SIMILARITY_ANALYSES)
+    params:
+        label = lambda w: SIMILARITY_LABELS.get(w.analysis, w.analysis),
+        relatedness = lambda w: _similarity_relatedness(w.analysis)
     log:
-        "logs/fitness_flux/viz_clade_distance.txt"
+        "logs/fitness_flux/{analysis}_viz_clade_distance.txt"
     shell:
         """
         python -u fitness-flux-analysis/scripts/viz_clade_distance_data.py \
             --sequences {input.sequences} \
             --distances {input.distances} \
             --summary {input.summary} \
-            --label H3N2 \
-            --output {output.data} \
-            --meta-output {output.meta} 2>&1 | tee {log}
+            --label {params.label:q} \
+            --relatedness {params.relatedness} \
+            --output {output.data} 2>&1 | tee {log}
         """
 
 
@@ -287,36 +352,63 @@ def _similarity_track_args(wildcards):
     """`--track HORIZON SUMMARY DETAIL` groups, one per forecast horizon."""
     return " ".join(
         f"--track {h} "
-        f"fitness-flux-analysis/results/h3n2_clades_similarity_{h}d_summary.json "
-        f"fitness-flux-analysis/results/h3n2_clades_similarity_{h}d.tsv"
+        f"fitness-flux-analysis/results/{wildcards.analysis}_similarity_{h}d_summary.json "
+        f"fitness-flux-analysis/results/{wildcards.analysis}_similarity_{h}d.tsv"
         for h in SIMILARITY_HORIZONS
     )
 
 
 rule viz_similarity_accuracy_data:
+    """Per-dataset similarity-accuracy payload. meta.json is written once by
+    viz_similarity_meta."""
     input:
         summaries = expand(
-            "fitness-flux-analysis/results/h3n2_clades_similarity_{horizon}d_summary.json",
+            "fitness-flux-analysis/results/{{analysis}}_similarity_{horizon}d_summary.json",
             horizon=SIMILARITY_HORIZONS,
         ),
         details = expand(
-            "fitness-flux-analysis/results/h3n2_clades_similarity_{horizon}d.tsv",
+            "fitness-flux-analysis/results/{{analysis}}_similarity_{horizon}d.tsv",
             horizon=SIMILARITY_HORIZONS,
         )
     output:
-        data = "viz/similarity-accuracy/data/h3n2_clades.json",
-        meta = "viz/similarity-accuracy/meta.json"
+        data = "viz/similarity-accuracy/data/{analysis}.json"
+    wildcard_constraints:
+        analysis = "|".join(SIMILARITY_ANALYSES)
     params:
-        tracks = _similarity_track_args
+        tracks = _similarity_track_args,
+        label = lambda w: SIMILARITY_LABELS.get(w.analysis, w.analysis),
+        gene_label = lambda w: _clade_tree_entry(w.analysis).get("gene_label", "HA1")
     log:
-        "logs/fitness_flux/viz_similarity_accuracy.txt"
+        "logs/fitness_flux/{analysis}_viz_similarity_accuracy.txt"
     shell:
         """
         python -u fitness-flux-analysis/scripts/viz_similarity_accuracy_data.py \
             {params.tracks} \
-            --label H3N2 \
-            --output {output.data} \
-            --meta-output {output.meta} 2>&1 | tee {log}
+            --label {params.label:q} \
+            --gene-label {params.gene_label:q} \
+            --output {output.data} 2>&1 | tee {log}
+        """
+
+
+rule viz_similarity_meta:
+    """Each similarity component's meta.json: the datasets it carries (those with a
+    clade_distance tree), with SARS-CoV-2 as the default to match the other components."""
+    output:
+        clade_distance = "viz/clade-distance/meta.json",
+        similarity_accuracy = "viz/similarity-accuracy/meta.json"
+    params:
+        datasets = _similarity_meta_datasets(),
+        default = SIMILARITY_ANALYSES[0] if SIMILARITY_ANALYSES else ""
+    log:
+        "logs/fitness_flux/viz_similarity_meta.txt"
+    shell:
+        """
+        python -u fitness-flux-analysis/scripts/viz_meta.py \
+            --datasets {params.datasets:q} --default {params.default} \
+            --output {output.clade_distance} 2>&1 | tee {log}
+        python -u fitness-flux-analysis/scripts/viz_meta.py \
+            --datasets {params.datasets:q} --default {params.default} \
+            --output {output.similarity_accuracy} 2>&1 | tee -a {log}
         """
 
 
@@ -327,7 +419,7 @@ rule all_similarity_analysis:
             analysis=SIMILARITY_ANALYSES,
             horizon=SIMILARITY_HORIZONS,
         ),
-        "viz/clade-distance/data/h3n2_clades.json",
+        expand("viz/clade-distance/data/{analysis}.json", analysis=SIMILARITY_ANALYSES),
+        expand("viz/similarity-accuracy/data/{analysis}.json", analysis=SIMILARITY_ANALYSES),
         "viz/clade-distance/meta.json",
-        "viz/similarity-accuracy/data/h3n2_clades.json",
         "viz/similarity-accuracy/meta.json"

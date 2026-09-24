@@ -199,6 +199,26 @@ clade_distance:
       url: "https://data.nextstrain.org/seasonal-flu_h3n2_ha_12y.json"
       gene: "HA1"
       clade_key: "subclade"
+    # SARS-CoV-2: reuse the all-time ncov tree already fetched for clade colors
+    # (download_ncov_tree, rules/fitness_flux_analysis.smk). It has no embedded
+    # root_sequence, so its sidecar is passed as `root`. The tree annotates the
+    # whole spike (`S`); distance is restricted to the S1 subunit (aa 14-685), the
+    # antigenic analog of HA1. clade_membership labels ("23A (XBB.1.5)") are
+    # normalized to the Nextstrain clade the MLR names ("23A"); the WT bucket
+    # (merged 19A/19B) has no MRCA node and is aliased to the Wuhan-Hu-1 root.
+    # NOTE: bump `local`/`root` to a newer all-time build to cover the most recent
+    # clades (23I, 25H, 26A, 26B are absent from the 2026-03-02 build and dropped).
+    sarscov2_clades:
+      local: "fitness-flux-analysis/ncov_global_all-time_6k_2026-03-02.json"
+      root: "fitness-flux-analysis/ncov_global_all-time_6k_2026-03-02_root-sequence.json"
+      gene: "S"
+      gene_label: "spike S1"
+      clade_key: "clade_membership"
+      clade_label: "first_word"
+      min_pos: 14
+      max_pos: 685
+      aliases:
+        WT: "__root__"
 
 # All clade datasets slide forward every 3 months (quarterly), labeled by window
 # start month (YYYY-MM). SARS-CoV-2 uses 1-year windows; flu uses 2-year windows

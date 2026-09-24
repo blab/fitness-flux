@@ -158,7 +158,8 @@ Error is then read in amino acids, and nothing about the forecasts themselves ch
 
 Scored this way MLR's advantage over persistence is larger than the clade-label score reports, but it is concentrated at intermediate lead rather than sustained to the end of the year.
 Averaged over the whole one-year forecast window, MLR forecasts are off by 3.85 HA1 amino acids against 4.10 for persistence, a 6.3% advantage, while the same forecasts scored by clade label differ by 2.1% (6.25% against 6.39% mean absolute error).
-Table 1 breaks that out at three lead times.
+Table 1 breaks that out at the origin and four forecast horizons.
+The nowcast anchors the scale: at the origin both models reduce to the same in-window fit, off by 0.63 HA1 amino acids of fitting and sampling noise, and the MLR projection first separates from persistence at one month (10.9% closer by HA1 distance).
 At three and six months MLR is clearly ahead by HA1 distance, with mean error 10.9% and 8.5% below persistence, while the clade-label score credits it with 7.1% and 2.1%.
 By twelve months the advantage has gone under both scores: 2.0% by HA1 distance and 0.2% by clade label, which is to say the two models are indistinguishable.
 
@@ -170,15 +171,22 @@ What it shows is that MLR's six-month edge is real and substantially larger than
 Where MLR does win, it wins because when it is wrong about which clade will dominate it is wrong in the direction of a near relative, while persistence — anchored on the currently dominant clade — more often sits further away in HA1 space.
 The label score is also increasingly unable to tell the two models apart at all: it returns exactly equal errors in 0.9% of region-weeks at three months, 3.4% at six and 24.6% at twelve, where HA1 distance never ties.
 
-**Table 1. H3N2 forecast accuracy at three, six and twelve months, scored by HA1 distance and by clade label.**
+**Table 1. H3N2 forecast accuracy at the origin and at one, three, six and twelve months, scored by HA1 distance and by clade label.**
 The same MLR and naive persistence forecasts, compared against the same observed frequencies, differing only in how the distance between a forecast and the truth is measured.
 The clade-label rows are the mean absolute frequency error used elsewhere in this paper, taken over the union of the forecast's and the truth's clade sets since the two need not agree; that divisor is common to both models and so affects only the level, not the comparison.
 MLR advantage is the reduction in mean error relative to naive; win rate is the fraction of region-weeks in which MLR's error is strictly smaller, with ties counted against MLR.
-All three blocks come from the one-year pairing (250 window pairs), covering leads of 85 to 90 days (344 region-weeks), 175 to 180 days (350 region-weeks) and 360 to 365 days (390 region-weeks).
-The clade-label score returns exact ties in 0.9%, 3.4% and 24.6% of those region-weeks respectively; the HA1 distance never ties.
+At the origin (nowcast) both models are the same in-window fit, so their errors coincide and only the error level is informative — a floor of 0.63 HA1 amino acids of fitting and sampling noise, against which the forecast rows should be read; the advantage and win-rate comparison is undefined there (dashes).
+The 30- through 365-day blocks come from the one-year pairing (250 window pairs), covering leads of 25 to 30, 85 to 90, 175 to 180 and 360 to 365 days; the nowcast is taken from the six-month pairing, whose successor window covers the origin.
+The clade-label score returns exact ties in 1.1%, 0.9%, 3.4% and 24.6% of region-weeks at 30, 90, 180 and 365 days respectively; the HA1 distance never ties.
 
 | Score | MLR | Naive | MLR advantage | MLR win rate |
 |---|---|---|---|---|
+| *At the origin (nowcast)* | | | | |
+| HA1 distance | 0.63 aa | 0.63 aa | — | — |
+| Clade label (mean absolute error) | 1.43% | 1.43% | — | — |
+| *At the 30-day endpoint* | | | | |
+| HA1 distance | 1.06 aa | 1.19 aa | 10.9% | 55.4% |
+| Clade label (mean absolute error) | 2.30% | 2.47% | 6.6% | 48.1% |
 | *At the 90-day endpoint* | | | | |
 | HA1 distance | 2.45 aa | 2.75 aa | 10.9% | 50.9% |
 | Clade label (mean absolute error) | 4.30% | 4.63% | 7.1% | 50.6% |
@@ -202,6 +210,57 @@ The three distributions overlap across the full 0-34 amino acid range, so label 
 **The same H3N2 forecasts scored by HA1 distance and by clade label.**
 Left, forecast error in HA1 amino acids against lead time over a one-year horizon, for MLR (blue) and naive persistence (red); negative leads fall within the fitting window where the two coincide (grey), and faint lines show individual window pairs.
 Right, the identical forecasts scored by clade label as mean absolute frequency error, where the two models nearly converge.
+Both panels come from the same forecasts and the same observed frequencies; only the distance between them differs.
+:::
+
+The same construction applies to SARS-CoV-2 using spike in place of HA.
+We build one global clade map from the Nextstrain all-time ncov tree, represent each Nextstrain clade by the reconstructed spike amino-acid sequence at its most recent common ancestor, and restrict the distance to the S1 subunit (positions 14 to 685) as the antigenic analog of HA1 ([@fig:clade-distance-sarscov2]).
+Across the 56 clades in the map this spans 105 variable S1 positions, with pairwise distances from 0 to 59 amino acids.
+Because Nextstrain clade labels such as 21K, 22B and 23A are not hierarchically nested, we read relatedness from the tree topology rather than the label string: ancestor-descendant clade pairs differ by 21.8 S1 amino acids on average and sibling pairs by 9.8, against 30.6 for unrelated pairs, but as for H3N2 the three distributions overlap across the whole range, and 17 clade pairs have identical S1 MRCA sequences.
+
+Scored in spike S1 mutation-profile space, MLR again beats persistence by more than the clade-label score reports, and the two scores diverge more sharply than for H3N2 ([@fig:similarity-accuracy-sarscov2]).
+Averaged over the one-year forecast window MLR forecasts are off by 10.0 S1 amino acids against 10.8 for persistence, a 7.6% advantage, while the same forecasts scored by clade label differ by 3.1% (6.81% against 7.02% mean absolute error).
+Table 2 breaks this out at the origin and four forecast horizons.
+The nowcast again anchors the scale — both models reduce to the same fit, off by 0.85 S1 amino acids — and at one month MLR is far ahead by both scores (37.5% closer by S1 distance and 25.7% by clade label, winning about 69% of region-weeks either way), the one horizon at which the label score still agrees.
+At three, six and twelve months MLR remains ahead by S1 distance, with mean error 16.6%, 7.6% and 1.4% below persistence, and it lands strictly closer in a majority of region-weeks throughout (65.7%, 57.0% and 63.5%).
+The clade-label score, by contrast, credits MLR with 11.9% at three months, exactly 0.0% at six and −0.6% at twelve, and is unable to tell the two models apart in a rising fraction of region-weeks — tied in 10.0%, 26.9% and 61.5% respectively, where the S1 distance never ties.
+Read by clade label the two models look indistinguishable by six months and persistence marginally better by a year; read in spike space MLR keeps a small but consistent edge throughout — the same qualitative correction as for H3N2, and starker here because SARS-CoV-2's clade turnover moves more amino acids per step.
+
+**Table 2. SARS-CoV-2 forecast accuracy at the origin and at one, three, six and twelve months, scored by spike S1 distance and by clade label.**
+The same MLR and naive persistence forecasts, compared against the same observed frequencies, differing only in how the distance between a forecast and the truth is measured, exactly as in Table 1.
+At the origin (nowcast) both models are the same in-window fit and their errors coincide — a floor of 0.85 spike S1 amino acids — so the advantage and win-rate comparison is undefined there (dashes).
+The 30- through 365-day blocks come from the one-year pairing (80 window pairs across six regions), covering leads of 25 to 30, 85 to 90, 175 to 180 and 360 to 365 days; the nowcast is taken from the six-month pairing, whose successor window covers the origin (the one-year pairing's successor opens only after it, so it carries no nowcast).
+The clade-label score returns exact ties in 4.5%, 10.0%, 26.9% and 61.5% of region-weeks at 30, 90, 180 and 365 days respectively; the spike S1 distance never ties.
+
+| Score | MLR | Naive | MLR advantage | MLR win rate |
+|---|---|---|---|---|
+| *At the origin (nowcast)* | | | | |
+| Spike S1 distance | 0.85 aa | 0.85 aa | — | — |
+| Clade label (mean absolute error) | 1.30% | 1.30% | — | — |
+| *At the 30-day endpoint* | | | | |
+| Spike S1 distance | 1.26 aa | 2.02 aa | 37.5% | 68.7% |
+| Clade label (mean absolute error) | 1.66% | 2.24% | 25.7% | 69.4% |
+| *At the 90-day endpoint* | | | | |
+| Spike S1 distance | 5.56 aa | 6.67 aa | 16.6% | 65.7% |
+| Clade label (mean absolute error) | 5.23% | 5.94% | 11.9% | 50.5% |
+| *At the 180-day endpoint* | | | | |
+| Spike S1 distance | 10.89 aa | 11.79 aa | 7.6% | 57.0% |
+| Clade label (mean absolute error) | 8.20% | 8.20% | 0.0% | 25.6% |
+| *At the 365-day endpoint* | | | | |
+| Spike S1 distance | 19.60 aa | 19.88 aa | 1.4% | 63.5% |
+| Clade label (mean absolute error) | 9.23% | 9.17% | −0.6% | 7.1% |
+
+:::figure{#fig:clade-distance-sarscov2 component=clade-distance dataset=sarscov2_clades}
+**Spike S1 distances between SARS-CoV-2 clades, and how poorly clade labels track them.**
+Left, pairwise distance between the reconstructed spike S1 amino-acid sequences at each Nextstrain clade's most recent common ancestor, for the 56 clades in the SARS-CoV-2 similarity map, ordered by divergence from the root so that the tree's block structure is visible.
+Right, the same 1540 clade pairs split by tree-topology relatedness (ancestor/descendant, sibling, unrelated), with the group mean marked.
+The three distributions overlap across the full 0-59 amino acid range, so relatedness is a weak proxy for S1 similarity; a label-based forecast score charges the same penalty for every pair shown.
+:::
+
+:::figure{#fig:similarity-accuracy-sarscov2 component=similarity-accuracy dataset=sarscov2_clades}
+**The same SARS-CoV-2 forecasts scored by spike S1 distance and by clade label.**
+Left, forecast error in spike S1 amino acids against lead time over a one-year horizon, for MLR (blue) and naive persistence (red); negative leads fall within the fitting window where the two coincide (grey), and faint lines show individual window pairs.
+Right, the identical forecasts scored by clade label as mean absolute frequency error, where the two models converge and, past six months, are tied in most region-weeks.
 Both panels come from the same forecasts and the same observed frequencies; only the distance between them differs.
 :::
 
@@ -260,6 +319,7 @@ Walking the tree from the root and accumulating HA1 amino-acid mutations along e
 We use the MRCA sequence rather than the consensus of the sequences assigned to a clade because the consensus is a mixture over whichever descendants happen to fall under that label and therefore shifts with the collapse threshold, while the MRCA sequence depends only on the tree.
 The distance $d(k, l)$ between two clades is the number of HA1 positions at which their MRCA sequences differ.
 One clade named in the analysis windows, B.1.2, has no node of its own in the tree and inherits its nearest reconstructable ancestor's sequence (B.1); `unassigned` has no MRCA and, unlike in the label-based score, is excluded here and the remaining frequencies renormalized (it averages 0.35% of H3N2 sequences).
+For SARS-CoV-2 the identical procedure is applied to the Nextstrain all-time ncov tree with spike in place of HA, restricting the distance to the S1 subunit (positions 14 to 685); the tree's `clade_membership` labels are matched to the Nextstrain clade the frequency analysis names by their leading token (so "23A (XBB.1.5)" matches "23A"), and the `WT` bucket, which merges the basal 19A and 19B clades and carries no node of its own, takes the Wuhan-Hu-1 root sequence.
 
 Each globally variable HA1 position contributes one column per amino acid observed at it across all clades, giving a clade $\times$ column indicator matrix $M$ with a 1 where clade $k$ carries column $c$'s amino acid.
 One column per allele, rather than per non-reference allele, is what keeps the scale consistent: two clades differing at a single position differ in exactly two columns whether that position is biallelic or not.

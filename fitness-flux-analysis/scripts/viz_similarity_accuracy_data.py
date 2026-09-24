@@ -81,8 +81,18 @@ def main():
         help="one group per forecast horizon; repeat. The longest supplies the panels.",
     )
     parser.add_argument("--label", default="H3N2")
+    parser.add_argument(
+        "--gene-label",
+        default="HA1",
+        help="scored region, for the axis/metric labels (H3N2: HA1; SARS-CoV-2: spike S1)",
+    )
     parser.add_argument("--output", required=True)
-    parser.add_argument("--meta-output", required=True)
+    parser.add_argument(
+        "--meta-output",
+        default=None,
+        help="optional; the similarity components' meta.json is normally written "
+        "once by the viz_similarity_meta rule",
+    )
     args = parser.parse_args()
 
     tracks = []
@@ -105,8 +115,8 @@ def main():
     metrics = [
         {
             "key": "aa",
-            "label": f"Scored by {summary.get('gene', 'HA1')} distance",
-            "ylabel": "Forecast error (HA1 amino acids)",
+            "label": f"Scored by {args.gene_label} distance",
+            "ylabel": f"Forecast error ({args.gene_label} amino acids)",
             "curve": aa_curve,
             "pairs": pairs_for(primary["detail"], bin_days, "error_aa"),
             "mlr_mean": round(forecast["mlr_eps0"], 4),
@@ -142,11 +152,12 @@ def main():
             "models": MODELS,
         },
     )
-    viz_io.write_json(
-        args.meta_output,
-        {"datasets": [{"id": "h3n2_clades", "label": "Similarity-aware accuracy"}], "default": "h3n2_clades"},
-        indent=2,
-    )
+    if args.meta_output:
+        viz_io.write_json(
+            args.meta_output,
+            {"datasets": [{"id": "h3n2_clades", "label": "Similarity-aware accuracy"}], "default": "h3n2_clades"},
+            indent=2,
+        )
 
 
 if __name__ == "__main__":
