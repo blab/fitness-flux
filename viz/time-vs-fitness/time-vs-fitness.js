@@ -231,7 +231,10 @@ export function render(container, data, opts = {}) {
     // the single dominant-variant slope annotation in the header.
     const annotation = segments.length ? "" : slopeText(points);
 
+    // Fonts come from the host theme's --mono token (legend, header and toggle
+    // inherit it); the Plot svg opts in separately below.
     const root = document.createElement("div");
+    root.style.fontFamily = "var(--mono)";
     container.appendChild(root);
 
     let lastWidth = 0;
@@ -339,11 +342,13 @@ export function render(container, data, opts = {}) {
         }
 
         const plotEl = Plot.plot({
-                style: { fontSize: axisFont },
+                // Inline fontFamily overrides Plot's font-family="system-ui,
+                // sans-serif" svg attribute; ticks, labels and tips inherit it.
+                style: { fontSize: axisFont, fontFamily: "var(--mono)" },
                 width: plotWidth,
                 height,
                 marginTop: 20,
-                marginLeft: 58,
+                marginLeft: 68,
                 marginBottom: 36,
                 marginRight: 12,
                 color: { type: "identity" },
